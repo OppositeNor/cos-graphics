@@ -1,13 +1,3 @@
-/**
- * @file link_list.c
- * @author OppositeNor
- * @brief Link list container
- * @version 0.1
- * @date 2023-02-22
- * 
- * 
- */
-
 #include "link_list.h"
 #include <string.h>
 #include <stdarg.h>

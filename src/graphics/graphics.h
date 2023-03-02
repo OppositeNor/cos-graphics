@@ -260,9 +260,9 @@ typedef struct{
      */
     CGVector2 scale;
     /**
-     * @brief rotation of the geometry
+     * @brief rotation of the geometry (in radians)
      */
-    CGVector2 rotation;
+    float rotation;
 }CGGeometryProperty;
 
 /**

@@ -7,13 +7,31 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define CGGladInitializeCheck() \
+    if (!cg_is_glad_initialized)\
+        CGInitGLAD();           \
+    ((void)0)
+
 CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
-const char* cg_default_geo_vshader_path = "/src/graphics/shaders/default_geo_shader.vert";
-const char* cg_default_geo_fshader_path = "/src/graphics/shaders/default_geo_shader.frag";
+/**
+ * @brief vertex shader path for a geometry
+ */
+const char* cg_default_geo_vshader_path = "./src/graphics/shaders/default_geo_shader.vert";
+/**
+ * @brief fragment shader path for a geometry
+ */
+const char* cg_default_geo_fshader_path = "./src/graphics/shaders/default_geo_shader.frag";
 
-CGShaderProgram cg_default_shader_program;
+/**
+ * @brief default shader for geometry
+ */
+CGShaderProgram cg_default_geo_shader_program;
+/**
+ * @brief default vao for geometry
+ */
+CGShaderProgram cg_default_geo_shader_vao;
 
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
@@ -62,7 +80,6 @@ void CGInitGLFW()
 
 void CGTerminateGraphics()
 {
-    GLFW_KEY_0;
     if (cg_is_glfw_initialized)
     {
         glfwTerminate();
@@ -78,7 +95,7 @@ void CGInitGLAD()
         exit(-1);
     }
 
-    // initialize default shader
+    //initialize default shader for geometries
     CGShaderSource* shader_source = 
         CGCreateShaderSourceFromPath(
             cg_default_geo_vshader_path,
@@ -95,11 +112,15 @@ void CGInitGLAD()
         CG_ERROR("Failed to create default shader");
         exit(-1);
     }
+    cg_default_geo_shader_program = CGCreateShaderProgram(shader);
     CGDeleteShaderSource(shader_source);
-    cg_default_shader_program = CGCreateShaderProgram(shader);
-    CGDeleteShader(cg_default_shader_program);
-    glUseProgram(cg_default_shader_program);
+    CGDeleteShader(shader);
+
     
+    //initialize default vao for geometry shader
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
     cg_is_glad_initialized = CG_TRUE;
 }
 
@@ -142,8 +163,7 @@ CGViewport* CGCreateViewport(CGWindow* window)
     }
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
-    if(!cg_is_glad_initialized)
-        CGInitGLAD();
+    CGGladInitializeCheck();
     if (!cg_is_glad_initialized)
         return NULL;
     CGViewport* viewport = (CGViewport*)malloc(sizeof(CGViewport));
@@ -223,18 +243,33 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     CGShaderSource* result = (CGShaderSource*)malloc(sizeof(CGShaderSource));
     if (result == NULL)
     {
-        CG_ERROR("Construct shader source failed");
+        CG_ERROR("Construct shader source failed.");
         return NULL;
     }
     char* vert_source = CGLoadFile(vertex_path);
+    if (vert_source == NULL)
+    {
+        CG_ERROR("Load vertex shader source failed.");
+        return NULL;
+    }
     CGMakeStr(result->vertex, vert_source, "Construct vertex shader source failed.");
     free(vert_source);
     char* frag_source = CGLoadFile(fragment_path);
+    if (frag_source == NULL)
+    {
+        CG_ERROR("Load fragment shader source failed.");
+        return NULL;
+    }
     CGMakeStr(result->fragment, frag_source, "Construct fragment shader source failed.");
     free(frag_source);
     if (use_geometry)
     {
         char* geo_source = CGLoadFile(geometry_path);
+        if (geo_source == NULL)
+        {
+            CG_ERROR("Load geometry shader source failed.");
+            return NULL;
+        }
         CGMakeStr(result->geometry, geo_source, "Construct geometry shader source failed.");
         free(geo_source);
     }
@@ -249,6 +284,7 @@ void CGDeleteShaderSource(CGShaderSource* shader_source)
         free(shader_source->fragment);
         free(shader_source->geometry);
         free(shader_source);
+        shader_source = NULL;
     }
 }
 
@@ -278,10 +314,15 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
 
 CGShader* CGCreateShader(CGShaderSource* shader_source)
 {
-    CGShader* shader = (CGShader*)malloc(sizeof(CGShader));
     if (shader_source == NULL)
     {
         CG_ERROR("Attempting to compile a NULL shader source.");
+        return NULL;
+    }
+    CGShader* shader = (CGShader*)malloc(sizeof(CGShader));
+    if (shader == NULL)
+    {
+        CG_ERROR("Construct shader failed");
         return NULL;
     }
     shader->vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -313,6 +354,7 @@ void CGDeleteShader(CGShader* shader)
     glDeleteShader(shader->vertex);
     glDeleteShader(shader->fragment);
     free(shader);
+    shader = NULL;
 }
 
 CGShaderProgram CGCreateShaderProgram(CGShader* shader)
@@ -333,15 +375,19 @@ void CGUseShaderProgram(CGShaderProgram program)
     if (program != 0)
         glUseProgram(program);
     else
-        glUseProgram(cg_default_shader_program);
+        glUseProgram(cg_default_geo_shader_program);
 }
 
 void CGSetShaderUniform4f(
     CGShaderProgram shader_program, const char* uniform_name,
     float val_1, float val_2, float val_3, float val_4)
 {
-    if (!cg_is_glad_initialized)
-        CGInitGLAD();
+    CGGladInitializeCheck();
+    if (uniform_name == NULL)
+    {
+        CG_ERROR("Attempting to set a uniform with name \"NULL\"");
+        return;
+    }
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniform4f(uniform_location, val_1, val_2, val_3, val_4);
 }
@@ -393,20 +439,19 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     }
     result[0] = triangle->vert_1.x;
     result[1] = triangle->vert_1.y;
-    result[2] = 0;
+    result[2] = triangle->z;
     result[3] = triangle->vert_2.x;
     result[4] = triangle->vert_2.y;
-    result[5] = 0;
+    result[2] = triangle->z;
     result[6] = triangle->vert_3.x;
     result[7] = triangle->vert_3.y;
-    result[8] = 0;
+    result[2] = triangle->z;
     return result;
 }
 
 void CGSetVBOValue(unsigned int* vbo, float* vertices, unsigned int vertex_size, unsigned int usage, CG_BOOL donot_unbind)
 {
-    if (!cg_is_glad_initialized)
-        CGInitGLAD();
+    CGGladInitializeCheck();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
     glBufferData(GL_ARRAY_BUFFER, vertex_size, vertices, usage);
     if (!donot_unbind)
@@ -428,18 +473,19 @@ void CGDrawTrangle(CGTriangle* triangle)
         CG_ERROR("Attempting to draw a NULL triangle object");
         return;
     }
-    if (!cg_is_glad_initialized)
-        CGInitGLAD();
+    CGGladInitializeCheck();
     // draw color
-    CGColor color;
+    static CGColor color;
     if (triangle->property != NULL)
         color = triangle->property->color;
     else
         color = CGConstructColor(0.5f, 0.5f, 0.0f, 1.0f);
     
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
-
     unsigned int vbo = CGCreateGeoVBO(triangle_vertices, 6 * sizeof(float), GL_DYNAMIC_DRAW, CG_TRUE);
-
-    
+    glUseProgram(cg_default_geo_shader_program);
+    glBindVertexArray(cg_default_geo_shader_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+    free(triangle_vertices);
 }
