@@ -160,11 +160,11 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     const char* geometry_path, CG_BOOL use_geometry);
 
 /**
- * @brief Free the resources used by the shader source
+ * @brief Delete the resources used by the shader source
  * 
  * @param source shader source
  */
-void CGFreeShaderSource(CGShaderSource* shader_source);
+void CGDeleteShaderSource(CGShaderSource* shader_source);
 
 /**
  * @brief Shaders
@@ -201,6 +201,13 @@ typedef struct{
  */
 CGShader* CGCreateShader(CGShaderSource* shader_source);
 
+/**
+ * @brief Delete shader object
+ * 
+ * @param shader shader object to be deleted
+ */
+void CGDeleteShader(CGShader* shader);
+
 typedef unsigned int CGShaderProgram;
 
 /**
@@ -210,6 +217,13 @@ typedef unsigned int CGShaderProgram;
  * @return CGShaderProgram shader program
  */
 CGShaderProgram CGCreateShaderProgram(CGShader* shader);
+
+/**
+ * @brief use shader program
+ * 
+ * @param program the shader program. If program is 0, the shader program will be set to the default shader program
+ */
+void CGUseShaderProgram(CGShaderProgram program);
 
 /**
  * @brief Set opengl shader 4f uniform with
