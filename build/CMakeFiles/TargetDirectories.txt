@@ -1,0 +1,12 @@
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/CMakeFiles/CosGraphics.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/CMakeFiles/edit_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/CMakeFiles/rebuild_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/containers/CMakeFiles/containers.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/containers/CMakeFiles/edit_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/containers/CMakeFiles/rebuild_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/graphics/CMakeFiles/graphics.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/graphics/CMakeFiles/edit_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/graphics/CMakeFiles/rebuild_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/file_manager/CMakeFiles/file_manager.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/file_manager/CMakeFiles/edit_cache.dir
+/home/oppositenormal/Documents/programming/OpenGLStudy/build/src/file_manager/CMakeFiles/rebuild_cache.dir

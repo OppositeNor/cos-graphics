@@ -1,0 +1,174 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/containers",
+					"jsonFile" : "directory-src.containers-Debug-201af117d86542e887fa.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "src/containers",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src/graphics",
+					"jsonFile" : "directory-src.graphics-Debug-b504ff7107bad588abeb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "src/graphics",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/file_manager",
+					"jsonFile" : "directory-src.file_manager-Debug-7f7363c681b3ed7b4734.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 3,
+					"source" : "src/file_manager",
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "CosGraphics",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "containers",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "graphics",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3
+					],
+					"name" : "file_manager",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "CosGraphics::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CosGraphics-Debug-e091adcac364dff0d770.json",
+					"name" : "CosGraphics",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "containers::@c55ae0591715b291234d",
+					"jsonFile" : "target-containers-Debug-6a6886b8e3bd8b80a82d.json",
+					"name" : "containers",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "file_manager::@e82922fd347b14f75743",
+					"jsonFile" : "target-file_manager-Debug-4acb7adfc62213049668.json",
+					"name" : "file_manager",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "graphics::@51dde881cca20334ba54",
+					"jsonFile" : "target-graphics-Debug-ee2e62226c69e00c8571.json",
+					"name" : "graphics",
+					"projectIndex" : 2
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/oppositenormal/Documents/programming/OpenGLStudy/build",
+		"source" : "/home/oppositenormal/Documents/programming/OpenGLStudy"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
