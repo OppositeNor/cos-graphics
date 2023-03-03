@@ -246,34 +246,31 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
         CG_ERROR("Construct shader source failed.");
         return NULL;
     }
-    char* vert_source = CGLoadFile(vertex_path);
-    if (vert_source == NULL)
+    result->vertex = CGLoadFile(vertex_path);
+    if (result->vertex == NULL)
     {
         CG_ERROR("Load vertex shader source failed.");
         return NULL;
     }
-    CGMakeStr(result->vertex, vert_source, "Construct vertex shader source failed.");
-    free(vert_source);
-    char* frag_source = CGLoadFile(fragment_path);
-    if (frag_source == NULL)
+    result->fragment = CGLoadFile(fragment_path);
+    if (result->fragment == NULL)
     {
         CG_ERROR("Load fragment shader source failed.");
         return NULL;
     }
-    CGMakeStr(result->fragment, frag_source, "Construct fragment shader source failed.");
-    free(frag_source);
     if (use_geometry)
     {
-        char* geo_source = CGLoadFile(geometry_path);
-        if (geo_source == NULL)
+        result->geometry = CGLoadFile(geometry_path);
+        if (result->geometry == NULL)
         {
             CG_ERROR("Load geometry shader source failed.");
             return NULL;
         }
-        CGMakeStr(result->geometry, geo_source, "Construct geometry shader source failed.");
-        free(geo_source);
     }
+    else
+        result->geometry = NULL;
     result->use_geometry = use_geometry;
+    return result;
 }
 
 void CGDeleteShaderSource(CGShaderSource* shader_source)
@@ -353,6 +350,8 @@ void CGDeleteShader(CGShader* shader)
 {
     glDeleteShader(shader->vertex);
     glDeleteShader(shader->fragment);
+    if (shader->use_geometry)
+        glDeleteShader(shader->geometry);
     free(shader);
     shader = NULL;
 }
@@ -442,10 +441,10 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     result[2] = triangle->z;
     result[3] = triangle->vert_2.x;
     result[4] = triangle->vert_2.y;
-    result[2] = triangle->z;
+    result[5] = triangle->z;
     result[6] = triangle->vert_3.x;
     result[7] = triangle->vert_3.y;
-    result[2] = triangle->z;
+    result[8] = triangle->z;
     return result;
 }
 
