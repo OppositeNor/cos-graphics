@@ -15,6 +15,7 @@ char* CGLoadFile(const char* file_path)
     while(fgetc(file) != EOF){
         ++file_size;
     }
+    ++file_size;
     char* file_data = (char*)malloc(file_size * sizeof(char));
     if (file_data == NULL)
     {

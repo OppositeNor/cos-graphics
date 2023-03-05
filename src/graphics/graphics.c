@@ -28,6 +28,12 @@ const char* cg_default_geo_fshader_path = "./src/graphics/shaders/default_geo_sh
  * @brief default shader for geometry
  */
 CGShaderProgram cg_default_geo_shader_program;
+
+/**
+ * @brief shader program for drawing geometry
+ */
+CGShaderProgram cg_geo_shader_program;
+
 /**
  * @brief default vao for geometry
  */
@@ -103,19 +109,19 @@ void CGInitGLAD()
         );
     if (shader_source == NULL)
     {
-        CG_ERROR("Failed to create default shader");
+        CG_ERROR("Failed to create default shader.");
         exit(-1);
     }
     CGShader* shader = CGCreateShader(shader_source);
     if (shader == NULL)
     {
-        CG_ERROR("Failed to create default shader");
+        CG_ERROR("Failed to create default shader.");
         exit(-1);
     }
     cg_default_geo_shader_program = CGCreateShaderProgram(shader);
+    cg_geo_shader_program = cg_default_geo_shader_program;
     CGDeleteShaderSource(shader_source);
     CGDeleteShader(shader);
-
     
     //initialize default vao for geometry shader
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -303,7 +309,7 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
     if (!success)
     {
         glGetShaderInfoLog(shader_id, CG_INFO_LOG_SIZE, NULL, info_log);
-        CG_ERROR("Failed to render shader with id: %d. Output log: %s", shader_id, info_log);
+        CG_ERROR("Failed to compile shader with id: %d. \nOutput log: %s", shader_id, info_log);
         return CG_FALSE;
     }
     return CG_TRUE;
@@ -372,9 +378,9 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader)
 void CGUseShaderProgram(CGShaderProgram program)
 {
     if (program != 0)
-        glUseProgram(program);
+        cg_geo_shader_program = program;
     else
-        glUseProgram(cg_default_geo_shader_program);
+        cg_geo_shader_program = cg_default_geo_shader_program;
 }
 
 void CGSetShaderUniform4f(
@@ -413,7 +419,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
-    result->z = 1;
+    result->z = 0;
     result->property = NULL;
     return result;
 }
@@ -478,12 +484,14 @@ void CGDrawTrangle(CGTriangle* triangle)
     if (triangle->property != NULL)
         color = triangle->property->color;
     else
-        color = CGConstructColor(0.5f, 0.5f, 0.0f, 1.0f);
+        color = CGConstructColor(1.0f, 0.5f, 0.0f, 1.0f);
     
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
-    unsigned int vbo = CGCreateGeoVBO(triangle_vertices, 6 * sizeof(float), GL_DYNAMIC_DRAW, CG_TRUE);
-    glUseProgram(cg_default_geo_shader_program);
+
+    unsigned int vbo = CGCreateGeoVBO(triangle_vertices, 3 * sizeof(float), GL_DYNAMIC_DRAW, CG_TRUE);
+    glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
+    CGSetShaderUniform4f(cg_geo_shader_program, "color", color.r, color.g, color.b, color.alpha);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     free(triangle_vertices);
