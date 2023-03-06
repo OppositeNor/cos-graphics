@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define CGGladInitializeCheck() \
     if (!cg_is_glad_initialized)\
@@ -14,6 +15,8 @@
 
 CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
+
+CGGeometryProperty* cg_default_geo_property;
 
 unsigned int cg_vbo;
 
@@ -41,6 +44,13 @@ CGShaderProgram cg_geo_shader_program;
  */
 unsigned int cg_default_geo_shader_vao;
 
+const float cg_normal_matrix[16] = {
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+};
+
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 
@@ -52,6 +62,15 @@ void CGSetVBOValue(unsigned int* vbo, unsigned int vertices_size, float* vertice
 
 // create geometry's vbo
 unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind);
+
+// create transform matrix
+float* CGCreateTransformMatrix(CGVector2 transform);
+
+// create scale matrix
+float* CGCreateScaleMatrix(CGVector2 scale);
+
+// create rotation matrix
+float* CGCreateRotateMatrix(float rotate);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -139,6 +158,12 @@ void CGInitGLAD()
     glGenBuffers(1, &cg_vbo);
     glBindVertexArray(0);
 
+    cg_default_geo_property = CGCreateGeometryProperty(
+        CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f), 
+        CGConstructVector2(0.2f, 0.0f),
+        CGConstructVector2(1.0f, 1.0f),
+        0.0f);
+    
     cg_is_glad_initialized = CG_TRUE;
 }
 
@@ -146,7 +171,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
 {
     if (!cg_is_glfw_initialized)
         CGInitGLFW();
-    
+
     CGWindow* window = (CGWindow*)malloc(sizeof(CGWindow));
     if (window == NULL)
     {
@@ -204,6 +229,7 @@ void CGSetClearScreenColor(const CGColor color)
 
 void CGTickRenderStart()
 {
+    cg_default_geo_property->rotation += 0.01f;
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
     //check OpenGL error
@@ -403,18 +429,84 @@ void CGUseShaderProgram(CGShaderProgram program)
         cg_geo_shader_program = cg_default_geo_shader_program;
 }
 
-void CGSetShaderUniform4f(
+void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
+{
+    CGGladInitializeCheck();
+    if (uniform_name == NULL)
+    {
+        CG_ERROR("Attempting to set a uniform with a NULL name");
+        return;
+    }
+    GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
+    glUniform1f(uniform_location, value);
+}
+
+void CGSetShaderUniformVec4f(
     CGShaderProgram shader_program, const char* uniform_name,
     float val_1, float val_2, float val_3, float val_4)
 {
     CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
-        CG_ERROR("Attempting to set a uniform with name \"NULL\"");
+        CG_ERROR("Attempting to set a uniform with a NULL name");
         return;
     }
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniform4f(uniform_location, val_1, val_2, val_3, val_4);
+}
+
+void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, float* data)
+{
+    CGGladInitializeCheck();
+    if (uniform_name == NULL)
+    {
+        CG_ERROR("Attempting to set a uniform with a NULL name");
+        return;
+    }
+    GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
+    glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
+}
+
+CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
+{
+    CGGeometryProperty* property = (CGGeometryProperty*)malloc(sizeof(CGGeometryProperty));
+    property->color = color;
+    property->transform = transform;
+    property->scale = scale;
+    property->rotation = rotation;
+    return property;
+}
+
+float* CGCreateTransformMatrix(CGVector2 transform)
+{
+    float* result = (float*)malloc(sizeof(float) * 16);
+    memcpy(result, cg_normal_matrix, sizeof(float) * 16);
+    result[3] = transform.x;
+    result[7] = transform.y;
+    return result;
+}
+
+float* CGCreateScaleMatrix(CGVector2 scale)
+{
+    float* result = (float*)malloc(sizeof(float) * 16);
+    memcpy(result, cg_normal_matrix, sizeof(float) * 16);
+    result[0] = scale.x;
+    result[5] = scale.y;
+    return result;
+}
+
+float* CGCreateRotateMatrix(float rotate)
+{
+    float* result = (float*)malloc(sizeof(float) * 16);
+    memcpy(result, cg_normal_matrix, sizeof(float) * 16);
+    if (rotate == 0)
+        return result;
+    float sin_theta = sin(rotate), cos_theta = cos(rotate);
+    result[0] = cos_theta;
+    result[1] = -1 * sin_theta;
+    result[4] = sin_theta;
+    result[5] = cos_theta;
+    return result;
 }
 
 CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
@@ -496,7 +588,7 @@ unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigne
     return result;
 }
 
-void CGDrawTrangle(CGTriangle* triangle)
+void CGDrawTriangle(CGTriangle* triangle)
 {
     if (triangle == NULL)
     {
@@ -504,12 +596,11 @@ void CGDrawTrangle(CGTriangle* triangle)
         return;
     }
     CGGladInitializeCheck();
-    // color
-    static CGColor color;
+    static CGGeometryProperty* property;
     if (triangle->property != NULL)
-        color = triangle->property->color;
+        property = triangle->property;
     else
-        color = CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f);
+        property = cg_default_geo_property;
     
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
     if (triangle_vertices == NULL)
@@ -522,7 +613,21 @@ void CGDrawTrangle(CGTriangle* triangle)
     CGSetVBOValue(&cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
     glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
-    CGSetShaderUniform4f(cg_geo_shader_program, "color", color.r, color.g, color.b, color.alpha);
+    CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
+        property->color.r, property->color.g, property->color.b, property->color.alpha);
+    float* tmp_mat = CGCreateTransformMatrix(property->transform);
+    CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", tmp_mat);
+    free(tmp_mat);
+    tmp_mat = CGCreateScaleMatrix(property->scale);
+    CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", tmp_mat);
+    free(tmp_mat);
+    tmp_mat = CGCreateRotateMatrix(property->rotation);
+    CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", tmp_mat);
+    free(tmp_mat);
+    int window_width, window_height;
+    glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window_height);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);

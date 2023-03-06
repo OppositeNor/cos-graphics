@@ -15,9 +15,8 @@ include_directories(
 add_library(${PROJECT_NAME}
     "graphics.h"
     "graphics.c"
-    "sprite.h"
-    "sprite.c"
 )
 target_link_libraries(${PROJECT_NAME}
     ${libs}
+    m
 )

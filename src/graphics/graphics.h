@@ -226,7 +226,16 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader);
 void CGUseShaderProgram(CGShaderProgram program);
 
 /**
- * @brief Set opengl shader 4f uniform with
+ * @brief Set opengl shader 1f uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param value value
+ */
+void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value);
+
+/**
+ * @brief Set opengl shader vector 4f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -235,11 +244,19 @@ void CGUseShaderProgram(CGShaderProgram program);
  * @param val_3 value 3
  * @param val_4 value 4
  */
-void CGSetShaderUniform4f(
+void CGSetShaderUniformVec4f(
     CGShaderProgram shader_program, const char* uniform_name,
-    float val_1, float val_2, float val_3, float val_4);
+    float val_1, float val_2, float val_3, float val_4
+);
 
-
+/**
+ * @brief Set opengl shader matrix 4f uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param data uniform data
+ */
+void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, float* data);
 
 /************GEOMETRIES************/
 
@@ -252,9 +269,9 @@ typedef struct{
      */
     CGColor color;
     /**
-     * @brief offset of the vertices
+     * @brief transform of the geometry
      */
-    CGVector2 offset;
+    CGVector2 transform;
     /**
      * @brief scale of the geometry
      */
@@ -264,6 +281,17 @@ typedef struct{
      */
     float rotation;
 }CGGeometryProperty;
+
+/**
+ * @brief Create CGGeometry property object
+ * 
+ * @param color color
+ * @param transform transform
+ * @param scale scale
+ * @param rotation rotation
+ * @return CGGeometryProperty* 
+ */
+CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
 
 /**
  * @brief Triangle
@@ -310,6 +338,6 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property);
 /**
  * @brief draw triangle
  */
-void CGDrawTrangle(CGTriangle* triangle);
+void CGDrawTriangle(CGTriangle* triangle);
 
 #endif  //_GRAPHICS_H_
