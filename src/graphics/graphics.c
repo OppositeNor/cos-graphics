@@ -231,9 +231,12 @@ void CGTickRenderStart()
 {
     static float timer = 0;
     timer += 0.02;
-    //cg_default_geo_property->transform.x = 100;
+    /**** 测试警戒线 ****/
+    cg_default_geo_property->transform.x = sin(timer) * 100;
     //cg_default_geo_property->scale.x = sin(timer);
-    cg_default_geo_property->rotation = timer;
+    cg_default_geo_property->rotation = 2;
+    /******************/
+
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
     //check OpenGL error
@@ -490,8 +493,8 @@ float* CGCreateTransformMatrix(CGVector2 transform)
         return NULL;
     }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
-    result[3] = transform.x;
-    result[7] = transform.y;
+    result[12] = transform.x;
+    result[13] = transform.y;
     
     return result;
 }
