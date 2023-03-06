@@ -229,14 +229,6 @@ void CGSetClearScreenColor(const CGColor color)
 
 void CGTickRenderStart()
 {
-    static float timer = 0;
-    timer += 0.02;
-    /**** 测试警戒线 ****/
-    cg_default_geo_property->transform.x = sin(timer) * 100;
-    //cg_default_geo_property->scale.x = sin(timer);
-    cg_default_geo_property->rotation = 2;
-    /******************/
-
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
     //check OpenGL error
