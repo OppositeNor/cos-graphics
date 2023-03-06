@@ -256,7 +256,7 @@ void CGSetShaderUniformVec4f(
  * @param uniform_name uniform name
  * @param data uniform data
  */
-void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, float* data);
+void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data);
 
 /************GEOMETRIES************/
 

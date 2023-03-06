@@ -160,7 +160,7 @@ void CGInitGLAD()
 
     cg_default_geo_property = CGCreateGeometryProperty(
         CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f), 
-        CGConstructVector2(0.2f, 0.0f),
+        CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
     
@@ -229,7 +229,11 @@ void CGSetClearScreenColor(const CGColor color)
 
 void CGTickRenderStart()
 {
-    cg_default_geo_property->rotation += 0.01f;
+    static float timer = 0;
+    timer += 0.02;
+    //cg_default_geo_property->transform.x = 100;
+    //cg_default_geo_property->scale.x = sin(timer);
+    cg_default_geo_property->rotation = timer;
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
     //check OpenGL error
@@ -455,7 +459,7 @@ void CGSetShaderUniformVec4f(
     glUniform4f(uniform_location, val_1, val_2, val_3, val_4);
 }
 
-void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, float* data)
+void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data)
 {
     CGGladInitializeCheck();
     if (uniform_name == NULL)
@@ -480,15 +484,26 @@ CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform,
 float* CGCreateTransformMatrix(CGVector2 transform)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
+    if (result == NULL)
+    {
+        CG_ERROR("failed to allocate memory for transform matrix");
+        return NULL;
+    }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     result[3] = transform.x;
     result[7] = transform.y;
+    
     return result;
 }
 
 float* CGCreateScaleMatrix(CGVector2 scale)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
+    if (result == NULL)
+    {
+        CG_ERROR("failed to allocate memory for scale matrix");
+        return NULL;
+    }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     result[0] = scale.x;
     result[5] = scale.y;
@@ -498,6 +513,11 @@ float* CGCreateScaleMatrix(CGVector2 scale)
 float* CGCreateRotateMatrix(float rotate)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
+    if (result == NULL)
+    {
+        CG_ERROR("failed to allocate memory for rotation matrix");
+        return NULL;
+    }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     if (rotate == 0)
         return result;
@@ -615,15 +635,28 @@ void CGDrawTriangle(CGTriangle* triangle)
     glBindVertexArray(cg_default_geo_shader_vao);
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
+
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
-    CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", tmp_mat);
+    if (tmp_mat != NULL)
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", tmp_mat);
+    else
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", cg_normal_matrix);
     free(tmp_mat);
+
     tmp_mat = CGCreateScaleMatrix(property->scale);
-    CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", tmp_mat);
+    if (tmp_mat != NULL)
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", tmp_mat);
+    else
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", cg_normal_matrix);
     free(tmp_mat);
+
     tmp_mat = CGCreateRotateMatrix(property->rotation);
-    CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", tmp_mat);
+    if (tmp_mat != NULL)
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", tmp_mat);
+    else
+        CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", cg_normal_matrix);
     free(tmp_mat);
+
     int window_width, window_height;
     glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);

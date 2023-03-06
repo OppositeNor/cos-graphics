@@ -11,10 +11,6 @@ int main()
     CGSetClearScreenColor(CGConstructColor(0.2f, 0.2f, 0.2f, 1.0f));
     CGTriangle *triangle = CGCreateTriangle( 
         CGConstructVector2(100, 100),
-        CGConstructVector2(-100, -100),
-        CGConstructVector2(-100, 100));
-    CGTriangle *triangle2 = CGCreateTriangle( 
-        CGConstructVector2(100, 100),
         CGConstructVector2(100, -100),
         CGConstructVector2(-100, 100));
     triangle->property;
@@ -23,12 +19,11 @@ int main()
     while(!CGShouldWindowClose(window))
     {
         CGTickRenderStart();
-        CGDrawTriangle(triangle2);
+        CGDrawTriangle(triangle);
 
         CGTickRenderEnd(window);
     }
     free(triangle);
-    free(triangle2);
     CGTerminateGraphics();
     free(window);
     return 0;
