@@ -88,15 +88,17 @@ void CGInitGLFW()
 
 void CGTerminateGraphics()
 {
+    if (cg_is_glad_initialized)
+    {
+        glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
+        glDeleteBuffers(1, &cg_vbo);
+        glDeleteProgram(cg_default_geo_shader_program);
+        cg_is_glad_initialized = CG_FALSE;
+    }
     if (cg_is_glfw_initialized)
     {
         glfwTerminate();
         cg_is_glfw_initialized = CG_FALSE;
-    }
-    if (cg_is_glad_initialized)
-    {
-        glDeleteProgram(cg_default_geo_shader_program);
-        glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
     }
 }
 
@@ -389,6 +391,7 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader)
         glAttachShader(result, shader->fragment);
         if (shader->use_geometry)
             glAttachShader(result, shader->geometry);
+        glLinkProgram(result);
     }
     return result;
 }
@@ -421,7 +424,7 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     result.vert_1 = vert_1;
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
-    result.z = 1;
+    result.z = 0;
     result.property = NULL;
     return result;
 }
@@ -507,7 +510,7 @@ void CGDrawTrangle(CGTriangle* triangle)
     if (triangle->property != NULL)
         color = triangle->property->color;
     else
-        color = CGConstructColor(1.0f, 0.5f, 0.0f, 1.0f);
+        color = CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f);
     
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
     if (triangle_vertices == NULL)
@@ -523,6 +526,5 @@ void CGDrawTrangle(CGTriangle* triangle)
     CGSetShaderUniform4f(cg_geo_shader_program, "color", color.r, color.g, color.b, color.alpha);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
-    glDeleteBuffers(1, &cg_vbo);
     free(triangle_vertices);
 }

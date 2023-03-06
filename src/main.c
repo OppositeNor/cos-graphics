@@ -9,8 +9,8 @@ int main()
     if (window == NULL)
         return 0;
     CGSetClearScreenColor(CGConstructColor(0.2f, 0.2f, 0.2f, 1.0f));
-    CGTriangle *triangle = CGCreateTriangle(
-        CGConstructVector2(0.5, 0.5), 
+    CGTriangle *triangle = CGCreateTriangle( 
+        CGConstructVector2(0.5, 0.5),
         CGConstructVector2(-0.5, -0.5),
         CGConstructVector2(-0.5, 0.5));
     while(!CGShouldWindowClose(window))
