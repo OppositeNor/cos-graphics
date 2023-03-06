@@ -135,7 +135,6 @@ void CGInitGLAD()
     // initialize default vao for geometry shader
     glGenVertexArrays(1, &cg_default_geo_shader_vao);
     glBindVertexArray(cg_default_geo_shader_vao);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glGenBuffers(1, &cg_vbo);
     glBindVertexArray(0);
@@ -524,6 +523,7 @@ void CGDrawTrangle(CGTriangle* triangle)
     glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
     CGSetShaderUniform4f(cg_geo_shader_program, "color", color.r, color.g, color.b, color.alpha);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     free(triangle_vertices);
