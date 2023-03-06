@@ -15,6 +15,8 @@
 CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
+unsigned int cg_vbo;
+
 /**
  * @brief vertex shader path for a geometry
  */
@@ -37,7 +39,7 @@ CGShaderProgram cg_geo_shader_program;
 /**
  * @brief default vao for geometry
  */
-CGShaderProgram cg_default_geo_shader_vao;
+unsigned int cg_default_geo_shader_vao;
 
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
@@ -46,10 +48,10 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 float* CGMakeTriangleVertices(CGTriangle* triangle);
 
 // set vbo value
-void CGSetVBOValue(unsigned int* vbo, float* vertices, unsigned int vertex_size, unsigned int usage, CG_BOOL donot_unbind);
+void CGSetVBOValue(unsigned int* vbo, unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind);
 
 // create geometry's vbo
-unsigned int CGCreateGeoVBO(float* vertices, unsigned int vertex_size, unsigned int usage, CG_BOOL donot_unbind);
+unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -91,6 +93,11 @@ void CGTerminateGraphics()
         glfwTerminate();
         cg_is_glfw_initialized = CG_FALSE;
     }
+    if (cg_is_glad_initialized)
+    {
+        glDeleteProgram(cg_default_geo_shader_program);
+        glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
+    }
 }
 
 void CGInitGLAD()
@@ -123,9 +130,13 @@ void CGInitGLAD()
     CGDeleteShaderSource(shader_source);
     CGDeleteShader(shader);
     
-    //initialize default vao for geometry shader
+    // initialize default vao for geometry shader
+    glGenVertexArrays(1, &cg_default_geo_shader_vao);
+    glBindVertexArray(cg_default_geo_shader_vao);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glGenBuffers(1, &cg_vbo);
+    glBindVertexArray(0);
 
     cg_is_glad_initialized = CG_TRUE;
 }
@@ -187,16 +198,20 @@ CGViewport* CGCreateViewport(CGWindow* window)
 void CGSetClearScreenColor(const CGColor color)
 {
     if (cg_is_glad_initialized)
-    {
         glClearColor(color.r, color.g, color.b, color.alpha);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
 }
 
 void CGTickRenderStart()
 {
     glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    //check OpenGL error
+    int gl_error_code = glGetError();
+    if (gl_error_code != GL_NO_ERROR)
+    {
+        CG_ERROR("OpenGL Error: Error code: 0x%x.", gl_error_code);
+        exit(-1);
+    }
 }
 
 void CGTickRenderEnd(CGWindow* window)
@@ -342,7 +357,10 @@ CGShader* CGCreateShader(CGShaderSource* shader_source)
     }
     shader->use_geometry = shader_source->use_geometry;
     if (!shader_source->use_geometry)
+    {
+        shader_source->geometry = NULL;
         return shader;
+    }
     shader->geometry = glCreateShader(GL_GEOMETRY_SHADER);
     if (!CGCompileShader(shader->geometry, shader_source->geometry))
     {
@@ -364,7 +382,7 @@ void CGDeleteShader(CGShader* shader)
 
 CGShaderProgram CGCreateShaderProgram(CGShader* shader)
 {
-    CGShaderProgram result;
+    CGShaderProgram result = glCreateProgram();
     if (shader != NULL)
     {
         glAttachShader(result, shader->vertex);
@@ -439,7 +457,12 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     float* result = (float*)malloc(sizeof(float) * 9);
     if (result == NULL)
     {
-        CG_ERROR("Failed to create triangle");
+        CG_ERROR("Failed to allocate memory for triangle vertexes.");
+        return NULL;
+    }
+    if (triangle == NULL)
+    {
+        CG_ERROR("Attempting to set a property to a NULL triangle object");
         return NULL;
     }
     result[0] = triangle->vert_1.x;
@@ -454,20 +477,20 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     return result;
 }
 
-void CGSetVBOValue(unsigned int* vbo, float* vertices, unsigned int vertex_size, unsigned int usage, CG_BOOL donot_unbind)
+void CGSetVBOValue(unsigned int* vbo, unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind)
 {
     CGGladInitializeCheck();
     glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertex_size, vertices, usage);
+    glBufferData(GL_ARRAY_BUFFER, vertices_size, vertices, usage);
     if (!donot_unbind)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-unsigned int CGCreateGeoVBO(float* vertices, unsigned int vertex_size, unsigned int usage, CG_BOOL donot_unbind)
+unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind)
 {
     unsigned int result;
     glGenBuffers(1, &result);
-    CGSetVBOValue(&result, vertices, vertex_size, usage, donot_unbind);
+    CGSetVBOValue(&result, vertices_size, vertices, usage, donot_unbind);
     return result;
 }
 
@@ -479,7 +502,7 @@ void CGDrawTrangle(CGTriangle* triangle)
         return;
     }
     CGGladInitializeCheck();
-    // draw color
+    // color
     static CGColor color;
     if (triangle->property != NULL)
         color = triangle->property->color;
@@ -487,12 +510,19 @@ void CGDrawTrangle(CGTriangle* triangle)
         color = CGConstructColor(1.0f, 0.5f, 0.0f, 1.0f);
     
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
+    if (triangle_vertices == NULL)
+    {
+        CG_ERROR("Failed to draw triangle.");
+        return;
+    }
 
-    unsigned int vbo = CGCreateGeoVBO(triangle_vertices, 3 * sizeof(float), GL_DYNAMIC_DRAW, CG_TRUE);
+    // draw
+    CGSetVBOValue(&cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
     glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
     CGSetShaderUniform4f(cg_geo_shader_program, "color", color.r, color.g, color.b, color.alpha);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
+    glDeleteBuffers(1, &cg_vbo);
     free(triangle_vertices);
 }
