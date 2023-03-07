@@ -226,6 +226,13 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader);
 void CGUseShaderProgram(CGShaderProgram program);
 
 /**
+ * @brief delete shader program
+ * 
+ * @param program shader program to be deleted
+ */
+void CGDeleteShaderProgram(CGShaderProgram program);
+
+/**
  * @brief Set opengl shader 1f uniform
  * 
  * @param shader_program shader program

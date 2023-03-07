@@ -430,6 +430,11 @@ void CGUseShaderProgram(CGShaderProgram program)
         cg_geo_shader_program = cg_default_geo_shader_program;
 }
 
+void CGDeleteShaderProgram(CGShaderProgram program)
+{
+    glDeleteProgram(program);
+}
+
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
 {
     CGGladInitializeCheck();
