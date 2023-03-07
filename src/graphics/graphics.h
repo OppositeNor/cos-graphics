@@ -289,9 +289,16 @@ typedef struct{
  * @param transform transform
  * @param scale scale
  * @param rotation rotation
- * @return CGGeometryProperty* 
+ * @return CGGeometryProperty* geometry property object instance
  */
 CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
+
+/**
+ * @brief delete geometry property object. This will be called when the property is binded to a geometry and
+ * when the geometry is freed.
+ * @param property geometry property
+ */
+void CGDeleteGeometryProperty(CGGeometryProperty* property);
 
 /**
  * @brief Triangle
@@ -303,9 +310,13 @@ typedef struct{
     CGVector2 vert_3;
     float z;
     /**
-     * @brief geometry properties of the triangle
+     * @brief geometry properties of the triangle.
      */
     CGGeometryProperty* property;
+    /**
+     * @brief If set to true, the geometry property will not be freed.
+     */
+    CG_BOOL donnot_free_property;
 }CGTriangle;
 
 /**

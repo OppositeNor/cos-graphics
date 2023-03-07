@@ -112,6 +112,8 @@ void CGTerminateGraphics()
         glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
         glDeleteBuffers(1, &cg_vbo);
         glDeleteProgram(cg_default_geo_shader_program);
+        CGDeleteGeometryProperty(cg_default_geo_property);
+        CGDeleteShaderProgram(cg_default_geo_shader_program);
         cg_is_glad_initialized = CG_FALSE;
     }
     if (cg_is_glfw_initialized)
@@ -474,6 +476,11 @@ CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform,
     property->scale = scale;
     property->rotation = rotation;
     return property;
+}
+
+void CGDeleteGeometryProperty(CGGeometryProperty* property)
+{
+    free(property);
 }
 
 float* CGCreateTransformMatrix(CGVector2 transform)
