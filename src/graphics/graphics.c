@@ -660,26 +660,25 @@ void CGDrawTriangle(CGTriangle* triangle)
     else
         property = cg_default_geo_property;
     
-    // draw
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //draw
     CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
+    free(triangle_vertices);
     glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
 
+    //set uniforms
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
-    
     CGSetMatrixesUniforms(property);
     int window_width, window_height;
     glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window_height);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_ebo);
     
-    free(triangle_vertices);
 }
 
 float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
@@ -695,16 +694,16 @@ float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
         CG_ERROR("Failed to allocate vertices memories.");
         return NULL;
     }
-    vertices[0] = quadrangle->vert_1.x;
-    vertices[1] = quadrangle->vert_1.y;
-    vertices[2] = quadrangle->z;
-    vertices[3] = quadrangle->vert_2.x;
-    vertices[4] = quadrangle->vert_2.y;
-    vertices[5] = quadrangle->z;
-    vertices[6] = quadrangle->vert_3.x;
-    vertices[7] = quadrangle->vert_3.y;
-    vertices[8] = quadrangle->z;
-    vertices[9] = quadrangle->vert_4.x;
+    vertices[0]  = quadrangle->vert_1.x;
+    vertices[1]  = quadrangle->vert_1.y;
+    vertices[2]  = quadrangle->z;
+    vertices[3]  = quadrangle->vert_2.x;
+    vertices[4]  = quadrangle->vert_2.y;
+    vertices[5]  = quadrangle->z;
+    vertices[6]  = quadrangle->vert_3.x;
+    vertices[7]  = quadrangle->vert_3.y;
+    vertices[8]  = quadrangle->z;
+    vertices[9]  = quadrangle->vert_4.x;
     vertices[10] = quadrangle->vert_4.y;
     vertices[11] = quadrangle->z;
     return vertices;
@@ -757,13 +756,22 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle)
     else
         property = cg_default_geo_property;
     glBindVertexArray(cg_default_geo_shader_vao);
-    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_quadrangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
     CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, sizeof(float) * 12, vertices, GL_DYNAMIC_DRAW, CG_TRUE);
     free(vertices);
+    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_quadrangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glUseProgram(cg_geo_shader_program);
+
+    //set uniforms
+    CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
+        property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    int window_width, window_height;
+    glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window_height);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 }

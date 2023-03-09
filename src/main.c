@@ -1,3 +1,4 @@
+#if 0
 #include "graphics/graphics.h"
 #include "log/log.h"
 #include <stdio.h>
@@ -28,3 +29,34 @@ int main()
     free(window);
     return 0;
 }
+#endif
+
+#if 1
+#include "graphics/graphics.h"
+#include "log/log.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
+    if (window == NULL)
+        return 0;
+    CGSetClearScreenColor(CGConstructColor(0.2f, 0.2f, 0.2f, 1.0f));
+    CGQuadrangle quad = CGConstructQuadrangle(
+        CGConstructVector2(-100, -100),
+        CGConstructVector2(-100, 100),
+        CGConstructVector2(100, 100),
+        CGConstructVector2(100, -100));
+    
+    while(!CGShouldWindowClose(window))
+    {
+        CGTickRenderStart();
+        CGDrawQuadrangle(&quad);
+        CGTickRenderEnd(window);
+    }
+    CGTerminateGraphics();
+    free(window);
+    return 0;
+}
+#endif
