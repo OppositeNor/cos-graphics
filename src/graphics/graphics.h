@@ -295,7 +295,7 @@ typedef struct{
  * @param color color
  * @param transform transform
  * @param scale scale
- * @param rotation rotation
+ * @param rotation rotation (clockwise)
  * @return CGGeometryProperty* geometry property object instance
  */
 CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
@@ -383,7 +383,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
  * @param vert_4 vertex 4
  * @return CGQuadrangle* created quadrangle object
  */
-CGQuadrangle* CGCreateQuadrangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 /**
  * @brief Draw quadrangle

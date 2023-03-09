@@ -137,6 +137,9 @@ void CGInitGLAD()
         CG_ERROR("GLAD setup OpenGL loader failed");
         exit(-1);
     }
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.2, 0.2, 0.2, 1.0);
 
     //initialize default shader for geometries
     CGShaderSource* shader_source = 
@@ -217,11 +220,12 @@ CGViewport* CGCreateViewport(CGWindow* window)
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
     CGGladInitializeCheck();
-    if (!cg_is_glad_initialized)
-        return NULL;
     CGViewport* viewport = (CGViewport*)malloc(sizeof(CGViewport));
     if (viewport == NULL)
+    {
+        CG_ERROR("Failed to allocate memory for viewport.");
         return NULL;
+    }
     
     viewport->demension.x = window->width;
     viewport->demension.y = window->height;
@@ -484,6 +488,11 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
 {
     CGGeometryProperty* property = (CGGeometryProperty*)malloc(sizeof(CGGeometryProperty));
+    if (property == NULL)
+    {
+        CG_ERROR("Failed to allocate memory for CGGeometryProperty.");
+        return NULL;
+    }
     property->color = color;
     property->transform = transform;
     property->scale = scale;
@@ -539,8 +548,8 @@ float* CGCreateRotateMatrix(float rotate)
         return result;
     float sin_theta = sin(rotate), cos_theta = cos(rotate);
     result[0] = cos_theta;
-    result[1] = -1 * sin_theta;
-    result[4] = sin_theta;
+    result[1] = sin_theta;
+    result[4] = -1 * sin_theta;
     result[5] = cos_theta;
     return result;
 }
@@ -549,24 +558,32 @@ void CGSetMatrixesUniforms(CGGeometryProperty* property)
 {
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
     if (tmp_mat != NULL)
+    {
         CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", tmp_mat);
+        free(tmp_mat);
+    }
     else
         CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", cg_normal_matrix);
-    free(tmp_mat);
 
     tmp_mat = CGCreateScaleMatrix(property->scale);
     if (tmp_mat != NULL)
+    {
         CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", tmp_mat);
+        free(tmp_mat);
+    }
     else
         CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", cg_normal_matrix);
-    free(tmp_mat);
 
     tmp_mat = CGCreateRotateMatrix(property->rotation);
     if (tmp_mat != NULL)
+    {
         CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", tmp_mat);
+        free(tmp_mat);
+    }
     else
         CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", cg_normal_matrix);
-    free(tmp_mat);
+    
+    tmp_mat = NULL;
 }
 
 CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
@@ -647,13 +664,13 @@ void CGDrawTriangle(CGTriangle* triangle)
         CG_ERROR("Attempting to draw a NULL triangle object");
         return;
     }
-    CGGladInitializeCheck();
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
     if (triangle_vertices == NULL)
     {
         CG_ERROR("Failed to draw triangle.");
         return;
     }
+    CGGladInitializeCheck();
     static CGGeometryProperty* property;
     if (triangle->property != NULL)
         property = triangle->property;
@@ -716,11 +733,12 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
     result.vert_4 = vert_4;
+    result.z = 0.0f;
     result.property = NULL;
     return result;
 }
 
-CGQuadrangle* CGCreateQuadrangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
+CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
 {
     CGQuadrangle* result = (CGQuadrangle*)malloc(sizeof(CGQuadrangle));
     if (result == NULL)
@@ -732,6 +750,7 @@ CGQuadrangle* CGCreateQuadrangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVec
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
+    result->z = 0.0f;
     result->property = NULL;
     return result;
 }
@@ -743,21 +762,23 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle)
         CG_ERROR("Attempting to draw a NULL quadrangle.");
         return;
     }
-    CGGladInitializeCheck();
     float* vertices = CGGetQuadrangleVertices(quadrangle);
     if (vertices == NULL)
     {
         CG_ERROR("Failed to draw quadrangle.");
         return;
     }
-    CGGeometryProperty* property;
+    CGGladInitializeCheck();
+    static CGGeometryProperty* property;
     if (quadrangle->property != NULL)
         property = quadrangle->property;
     else
         property = cg_default_geo_property;
-    glBindVertexArray(cg_default_geo_shader_vao);
+    
     CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, sizeof(float) * 12, vertices, GL_DYNAMIC_DRAW, CG_TRUE);
     free(vertices);
+
+    glBindVertexArray(cg_default_geo_shader_vao);
     CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_quadrangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glUseProgram(cg_geo_shader_program);
