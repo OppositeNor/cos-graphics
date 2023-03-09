@@ -361,35 +361,35 @@ typedef struct{
     CGVector2 vert_4;
     float z;
     CGGeometryProperty* property;
-}CGRectangle;
+}CGQuadrangle;
 
 /**
- * @brief Construct a CGRectangle object
+ * @brief Construct a CGQuadrangle object
  * 
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
  * @param vert_3 vertex 3
  * @param vert_4 vertex 4
- * @return CGRectangle constructed triangle data
+ * @return CGQuadrangle constructed triangle data
  */
-CGRectangle CGConstructRectangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 /**
- * @brief Create rectangle object
+ * @brief Create quadrangle object
  * 
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
  * @param vert_3 vertex 3
  * @param vert_4 vertex 4
- * @return CGRectangle* created rectangle object
+ * @return CGQuadrangle* created quadrangle object
  */
-CGRectangle* CGCreateRectangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+CGQuadrangle* CGCreateQuadrangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 /**
- * @brief Draw rectangle
+ * @brief Draw quadrangle
  * 
- * @param rectangle Rectangle object to draw
+ * @param quadrangle Quadrangle object to draw
  */
-void CGDrawRectangle(CGRectangle* rectangle);
+void CGDrawQuadrangle(CGQuadrangle* quadrangle);
 
 #endif  //_GRAPHICS_H_
