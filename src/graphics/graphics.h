@@ -43,7 +43,7 @@ typedef struct {
 }CGColor;
 
 /**
- * @brief Create a Color object
+ * @brief Construct a Color
  * 
  * @param r red value (range from 0.0 to 1.0)
  * @param g green value (range from 0.0 to 1.0)
@@ -56,7 +56,7 @@ CGColor CGConstructColor(float r, float g, float b, float alpha);
 CGVector2 CGConstructVector2(float x, float y);
 
 /**
- * @brief Create window
+ * @brief Create window object
  * 
  * @param width width of the window
  * @param height height of the window
@@ -67,7 +67,7 @@ CGVector2 CGConstructVector2(float x, float y);
 CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen);
 
 /**
- * @brief Create viewport
+ * @brief Create viewport object
  * 
  * @param window window instance
  * @return CGViewport* viewport instance
@@ -136,7 +136,7 @@ typedef struct{
 }CGShaderSource;
 
 /**
- * @brief Create a shader source object in stack
+ * @brief Create a shader source object
  * 
  * @param vertex vertex source. If you want to set this manually, you can set this parameter to NULL.
  * @param fragment fragment source If you want to set this manually, you can set this parameter to NULL.
@@ -148,7 +148,7 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
     const char* geometry, CG_BOOL use_geometry);
 
 /**
- * @brief Create a shader source from file
+ * @brief Create a CGShaderSource object from file
  * 
  * @param vertex_path vertex shader path
  * @param fragment_path fragment shader path
@@ -160,7 +160,7 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     const char* geometry_path, CG_BOOL use_geometry);
 
 /**
- * @brief Delete the resources used by the shader source
+ * @brief Delete the CGShaderSource object used by the shader source
  * 
  * @param source shader source
  */
@@ -194,9 +194,9 @@ typedef struct{
 }CGShader;
 
 /**
- * @brief create shader program from source
+ * @brief create a CGShader program from shader_source
  * 
- * @param shader shader instance
+ * @param shader_source shader source
  * @return CGShader shader object with shader ids of the compiled shader source
  */
 CGShader* CGCreateShader(CGShaderSource* shader_source);
@@ -320,14 +320,10 @@ typedef struct{
      * @brief geometry properties of the triangle.
      */
     CGGeometryProperty* property;
-    /**
-     * @brief If set to true, the geometry property will not be freed.
-     */
-    CG_BOOL donnot_free_property;
 }CGTriangle;
 
 /**
- * @brief Create a triangle in stack
+ * @brief Construct a triangle
  * 
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
@@ -336,7 +332,7 @@ typedef struct{
  */
 CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 /**
- * @brief Create a triangle in heap
+ * @brief Create a triangle
  * 
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
@@ -357,5 +353,43 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property);
  * @brief draw triangle
  */
 void CGDrawTriangle(CGTriangle* triangle);
+
+typedef struct{
+    CGVector2 vert_1;
+    CGVector2 vert_2;
+    CGVector2 vert_3;
+    CGVector2 vert_4;
+    float z;
+    CGGeometryProperty* property;
+}CGRectangle;
+
+/**
+ * @brief Construct a CGRectangle object
+ * 
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @param vert_4 vertex 4
+ * @return CGRectangle constructed triangle data
+ */
+CGRectangle CGConstructRectangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+
+/**
+ * @brief Create rectangle object
+ * 
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @param vert_4 vertex 4
+ * @return CGRectangle* created rectangle object
+ */
+CGRectangle* CGCreateRectangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+
+/**
+ * @brief Draw rectangle
+ * 
+ * @param rectangle Rectangle object to draw
+ */
+void CGDrawRectangle(CGRectangle* rectangle);
 
 #endif  //_GRAPHICS_H_

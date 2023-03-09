@@ -19,6 +19,7 @@ CG_BOOL cg_is_glad_initialized = CG_FALSE;
 CGGeometryProperty* cg_default_geo_property;
 
 unsigned int cg_vbo;
+unsigned int cg_ebo;
 
 /**
  * @brief vertex shader path for a geometry
@@ -51,17 +52,22 @@ const float cg_normal_matrix[16] = {
     0, 0, 0, 1
 };
 
+unsigned int cg_rectangle_indices[6] = {
+    0, 1, 2,
+    0, 2, 3
+};
+
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 
 // make the triangle vertices array from an triangle
 float* CGMakeTriangleVertices(CGTriangle* triangle);
 
-// set vbo value
-void CGSetVBOValue(unsigned int* vbo, unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind);
+// make the rectangle vertices array from an rectangle
+float* CGGetRectangleVertices(CGRectangle* rectangle);
 
-// create geometry's vbo
-unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind);
+// set buffer value
+void CGSetBufferValue(GLenum buffer_type, unsigned int* buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage, CG_BOOL donot_unbind);
 
 // create transform matrix
 float* CGCreateTransformMatrix(CGVector2 transform);
@@ -111,6 +117,7 @@ void CGTerminateGraphics()
     {
         glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
         glDeleteBuffers(1, &cg_vbo);
+        glDeleteBuffers(1, &cg_ebo);
         glDeleteProgram(cg_default_geo_shader_program);
         CGDeleteGeometryProperty(cg_default_geo_property);
         CGDeleteShaderProgram(cg_default_geo_shader_program);
@@ -158,6 +165,7 @@ void CGInitGLAD()
     glBindVertexArray(cg_default_geo_shader_vao);
     glEnableVertexAttribArray(0);
     glGenBuffers(1, &cg_vbo);
+    glGenBuffers(1, &cg_ebo);
     glBindVertexArray(0);
 
     cg_default_geo_property = CGCreateGeometryProperty(
@@ -352,7 +360,7 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
     if (!success)
     {
         glGetShaderInfoLog(shader_id, CG_INFO_LOG_SIZE, NULL, info_log);
-        CG_ERROR("Failed to compile shader with id: %d. \nOutput log: %s", shader_id, info_log);
+        CG_ERROR("Failed to compile shader with id: %d. \nOutput log: %s.", shader_id, info_log);
         return CG_FALSE;
     }
     return CG_TRUE;
@@ -368,7 +376,7 @@ CGShader* CGCreateShader(CGShaderSource* shader_source)
     CGShader* shader = (CGShader*)malloc(sizeof(CGShader));
     if (shader == NULL)
     {
-        CG_ERROR("Construct shader failed");
+        CG_ERROR("Construct shader failed.");
         return NULL;
     }
     shader->vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -440,7 +448,7 @@ void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_na
     CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
-        CG_ERROR("Attempting to set a uniform with a NULL name");
+        CG_ERROR("Attempting to set a uniform with a NULL name.");
         return;
     }
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
@@ -454,7 +462,7 @@ void CGSetShaderUniformVec4f(
     CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
-        CG_ERROR("Attempting to set a uniform with a NULL name");
+        CG_ERROR("Attempting to set a uniform with a NULL name.");
         return;
     }
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
@@ -466,7 +474,7 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
     CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
-        CG_ERROR("Attempting to set a uniform with a NULL name");
+        CG_ERROR("Attempting to set a uniform with a NULL name.");
         return;
     }
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
@@ -486,6 +494,7 @@ CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform,
 void CGDeleteGeometryProperty(CGGeometryProperty* property)
 {
     free(property);
+    property = NULL;
 }
 
 float* CGCreateTransformMatrix(CGVector2 transform)
@@ -493,7 +502,7 @@ float* CGCreateTransformMatrix(CGVector2 transform)
     float* result = (float*)malloc(sizeof(float) * 16);
     if (result == NULL)
     {
-        CG_ERROR("failed to allocate memory for transform matrix");
+        CG_ERROR("failed to allocate memory for transform matrix.");
         return NULL;
     }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
@@ -508,7 +517,7 @@ float* CGCreateScaleMatrix(CGVector2 scale)
     float* result = (float*)malloc(sizeof(float) * 16);
     if (result == NULL)
     {
-        CG_ERROR("failed to allocate memory for scale matrix");
+        CG_ERROR("failed to allocate memory for scale matrix.");
         return NULL;
     }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
@@ -522,7 +531,7 @@ float* CGCreateRotateMatrix(float rotate)
     float* result = (float*)malloc(sizeof(float) * 16);
     if (result == NULL)
     {
-        CG_ERROR("failed to allocate memory for rotation matrix");
+        CG_ERROR("Failed to allocate memory for rotation matrix.");
         return NULL;
     }
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
@@ -552,7 +561,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     CGTriangle* result = (CGTriangle*)malloc(sizeof(CGTriangle));
     if (result == NULL)
     {
-        CG_ERROR("Failed to allocate memory for triangle");
+        CG_ERROR("Failed to allocate memory for triangle.");
         return NULL;
     }
     result->vert_1 = vert_1;
@@ -567,7 +576,7 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property)
 {
     if (triangle == NULL)
     {
-        CG_ERROR("Attempting to set a property to a NULL triangle object");
+        CG_ERROR("Attempting to set a property to a NULL triangle object.");
         return;
     }
     triangle->property = property;
@@ -575,15 +584,15 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property)
 
 float* CGMakeTriangleVertices(CGTriangle* triangle)
 {
+    if (triangle == NULL)
+    {
+        CG_ERROR("Attempting to set a property to a NULL triangle object.");
+        return NULL;
+    }
     float* result = (float*)malloc(sizeof(float) * 9);
     if (result == NULL)
     {
         CG_ERROR("Failed to allocate memory for triangle vertexes.");
-        return NULL;
-    }
-    if (triangle == NULL)
-    {
-        CG_ERROR("Attempting to set a property to a NULL triangle object");
         return NULL;
     }
     result[0] = triangle->vert_1.x;
@@ -598,21 +607,13 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     return result;
 }
 
-void CGSetVBOValue(unsigned int* vbo, unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind)
+void CGSetBufferValue(GLenum buffer_type, unsigned int* buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage, CG_BOOL donot_unbind)
 {
     CGGladInitializeCheck();
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices_size, vertices, usage);
+    glBindBuffer(buffer_type, *buffer);
+    glBufferData(buffer_type, buffer_size, buffer_data, usage);
     if (!donot_unbind)
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-unsigned int CGCreateGeoVBO(unsigned int vertices_size, float* vertices, unsigned int usage, CG_BOOL donot_unbind)
-{
-    unsigned int result;
-    glGenBuffers(1, &result);
-    CGSetVBOValue(&result, vertices_size, vertices, usage, donot_unbind);
-    return result;
+        glBindBuffer(buffer_type, 0);
 }
 
 void CGDrawTriangle(CGTriangle* triangle)
@@ -637,7 +638,7 @@ void CGDrawTriangle(CGTriangle* triangle)
     }
 
     // draw
-    CGSetVBOValue(&cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
     glUseProgram(cg_geo_shader_program);
     glBindVertexArray(cg_default_geo_shader_vao);
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
@@ -672,4 +673,81 @@ void CGDrawTriangle(CGTriangle* triangle)
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     free(triangle_vertices);
+}
+
+float* CGGetRectangleVertices(CGRectangle* rectangle)
+{
+    if (rectangle == NULL)
+    {
+        CG_ERROR("Attempting to get rectangle vertices from a NULL CGRectangle");
+        return NULL;
+    }
+    float* vertices = (float*)malloc(sizeof(float) * 12);
+    if (vertices == NULL)
+    {
+        CG_ERROR("Failed to allocate vertices memories.");
+        return NULL;
+    }
+    vertices[0] = rectangle->vert_1.x;
+    vertices[1] = rectangle->vert_1.y;
+    vertices[2] = rectangle->z;
+    vertices[3] = rectangle->vert_2.x;
+    vertices[4] = rectangle->vert_2.y;
+    vertices[5] = rectangle->z;
+    vertices[6] = rectangle->vert_3.x;
+    vertices[7] = rectangle->vert_3.y;
+    vertices[8] = rectangle->z;
+    vertices[9] = rectangle->vert_4.x;
+    vertices[10] = rectangle->vert_4.y;
+    vertices[11] = rectangle->z;
+    return vertices;
+}
+
+CGRectangle CGConstructRectangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
+{
+    CGRectangle result;
+    result.vert_1 = vert_1;
+    result.vert_2 = vert_2;
+    result.vert_3 = vert_3;
+    result.vert_4 = vert_4;
+    result.property = NULL;
+    return result;
+}
+
+CGRectangle* CGCreateRectangleObject(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
+{
+    CGRectangle* result = (CGRectangle*)malloc(sizeof(CGRectangle));
+    if (result == NULL)
+    {
+        CG_ERROR("Failed to allocate memory for CGRectangle object");
+        return NULL;
+    }
+    result->vert_1 = vert_1;
+    result->vert_2 = vert_2;
+    result->vert_3 = vert_3;
+    result->vert_4 = vert_4;
+    result->property = NULL;
+    return result;
+}
+
+void CGDrawRectangle(CGRectangle* rectangle)
+{
+    if (rectangle == NULL)
+    {
+        CG_ERROR("Attempting to draw a NULL rectangle.");
+        return;
+    }
+    CGGladInitializeCheck();
+    float* vertices = CGGetRectangleVertices(rectangle);
+    if (vertices == NULL)
+    {
+        CG_ERROR("Failed to draw rectangle.");
+        return;
+    }
+    glBindVertexArray(cg_default_geo_shader_vao);
+    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_rectangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, sizeof(float) * 12, vertices, GL_DYNAMIC_DRAW, CG_TRUE);
+    free(vertices);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 }
