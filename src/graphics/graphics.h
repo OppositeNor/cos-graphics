@@ -350,9 +350,12 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
 void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property);
 
 /**
- * @brief draw triangle
+ * @brief Draw triangle on screen.
+ * 
+ * @param triangle triangle to draw on screen
+ * @param window window to draw on
  */
-void CGDrawTriangle(CGTriangle* triangle);
+void CGDrawTriangle(CGTriangle* triangle, CGWindow* window);
 
 typedef struct{
     CGVector2 vert_1;
@@ -386,10 +389,11 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 /**
- * @brief Draw quadrangle
+ * @brief Draw a quadrangle on window
  * 
- * @param quadrangle Quadrangle object to draw
+ * @param quadrangle the quadrangle to draw
+ * @param window the window to draw on
  */
-void CGDrawQuadrangle(CGQuadrangle* quadrangle);
+void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
 
 #endif  //_GRAPHICS_H_

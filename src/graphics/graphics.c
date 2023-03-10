@@ -96,6 +96,11 @@ CGVector2 CGConstructVector2(float x, float y)
     return vector;
 }
 
+void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
 void CGInitGLFW()
 {
     if (!glfwInit())
@@ -231,7 +236,7 @@ CGViewport* CGCreateViewport(CGWindow* window)
     viewport->demension.y = window->height;
 
     glViewport(0, 0, window->width, window->height);
-
+    glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
     return viewport;
 }
 
@@ -657,11 +662,16 @@ void CGSetBufferValue(GLenum buffer_type, unsigned int* buffer, unsigned int buf
         glBindBuffer(buffer_type, 0);
 }
 
-void CGDrawTriangle(CGTriangle* triangle)
+void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
+    if (window == NULL || window->glfw_window_instance == NULL)
+    {
+        CG_ERROR("Cannot draw triangle on a NULL window.");
+        return;
+    }
     if (triangle == NULL)
     {
-        CG_ERROR("Attempting to draw a NULL triangle object");
+        CG_ERROR("Attempting to draw a NULL triangle object.");
         return;
     }
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
@@ -671,6 +681,8 @@ void CGDrawTriangle(CGTriangle* triangle)
         return;
     }
     CGGladInitializeCheck();
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
     static CGGeometryProperty* property;
     if (triangle->property != NULL)
         property = triangle->property;
@@ -687,10 +699,8 @@ void CGDrawTriangle(CGTriangle* triangle)
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
-    int window_width, window_height;
-    glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window_height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -755,8 +765,13 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     return result;
 }
 
-void CGDrawQuadrangle(CGQuadrangle* quadrangle)
+void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
+    if (window == NULL || window->glfw_window_instance == NULL)
+    {
+        CG_ERROR("Cannot draw quadrangle on a NULL window.");
+        return;
+    }
     if (quadrangle == NULL)
     {
         CG_ERROR("Attempting to draw a NULL quadrangle.");
@@ -769,6 +784,8 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle)
         return;
     }
     CGGladInitializeCheck();
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
     static CGGeometryProperty* property;
     if (quadrangle->property != NULL)
         property = quadrangle->property;
@@ -787,10 +804,8 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle)
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
-    int window_width, window_height;
-    glfwGetFramebufferSize(glfwGetCurrentContext(), &window_width, &window_height);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window_width);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window_height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glEnableVertexAttribArray(0);
