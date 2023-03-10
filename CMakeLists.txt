@@ -11,15 +11,11 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/graphics
     ${PROJECT_SOURCE_DIR}/src/containers
-    ${PROJECT_SOURCE_DIR}/dependencies/glad/include
     ${PROJECT_SOURCE_DIR}/include)
 
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 add_executable(${PROJECT_NAME}
-    dependencies/glad/src/glad.c
-
-    src/defs.h
     src/main.c
 )
 
