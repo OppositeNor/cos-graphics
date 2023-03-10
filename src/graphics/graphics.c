@@ -1,6 +1,6 @@
-#include "graphics.h"
-#include "log/log.h"
-#include "file_manager/file_manager.h"
+#include "cos_graphics/graphics.h"
+#include "cos_graphics/log.h"
+#include "cos_graphics/file_manager.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

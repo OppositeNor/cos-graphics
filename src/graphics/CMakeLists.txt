@@ -1,4 +1,4 @@
-project(graphics)
+project(cg_graphics)
 
 # opengl
 find_package(OpenGL REQUIRED)
@@ -9,12 +9,12 @@ find_package(glfw3 REQUIRED)
 LIST(APPEND libs glfw)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/dependencies/glad/include)
 
 add_library(${PROJECT_NAME}
-    "graphics.h"
-    "graphics.c"
+    ${CMAKE_SOURCE_DIR}/include/cos_graphics/graphics.h
+    graphics.c
 )
 target_link_libraries(${PROJECT_NAME}
     ${libs}

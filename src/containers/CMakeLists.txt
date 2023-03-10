@@ -1,4 +1,4 @@
-project(containers)
+project(cg_containers)
 
 add_library(${PROJECT_NAME}
     "link_list.h"

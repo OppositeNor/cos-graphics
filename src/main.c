@@ -32,8 +32,8 @@ int main()
 #endif
 
 #if 1
-#include "graphics/graphics.h"
-#include "log/log.h"
+#include "cos_graphics/graphics.h"
+#include "cos_graphics/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,5 +1,5 @@
-#include "file_manager.h"
-#include "log/log.h"
+#include "cos_graphics/file_manager.h"
+#include "cos_graphics/log.h"
 
 #include <stdio.h>
 #include <stdlib.h>

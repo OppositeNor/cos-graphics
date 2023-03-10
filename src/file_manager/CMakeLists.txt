@@ -1,10 +1,10 @@
-project(file_manager)
+project(cg_file_manager)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 add_library(${PROJECT_NAME}
-    file_manager.h
+    ${CMAKE_SOURCE_DIR}/include/cos_graphics/file_manager.h
     file_manager.c
 )
