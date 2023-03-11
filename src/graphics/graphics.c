@@ -24,11 +24,11 @@ unsigned int cg_ebo;
 /**
  * @brief vertex shader path for a geometry
  */
-const char* cg_default_geo_vshader_path = "./src/graphics/shaders/default_geo_shader.vert";
+const char* cg_default_geo_vshader_path = "./shaders/default_geo_shader.vert";
 /**
  * @brief fragment shader path for a geometry
  */
-const char* cg_default_geo_fshader_path = "./src/graphics/shaders/default_geo_shader.frag";
+const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
 
 /**
  * @brief default shader for geometry

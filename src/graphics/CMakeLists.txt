@@ -12,7 +12,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/dependencies/glad/include)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${CMAKE_SOURCE_DIR}/dependencies/glad/src/glad.c
 
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/graphics.h

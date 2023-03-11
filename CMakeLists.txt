@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 project(CosGraphics LANGUAGES C)
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 add_subdirectory(src/containers)
 add_subdirectory(src/graphics)
@@ -14,6 +15,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include)
 
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+
 
 add_executable(${PROJECT_NAME}
     src/main.c
