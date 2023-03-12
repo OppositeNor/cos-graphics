@@ -30,18 +30,17 @@ set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/export/bin)
 add_library(${PROJECT_NAME}_lib STATIC
     ${SOURCES}
 )
+
+target_link_libraries(${PROJECT_NAME}_lib
+    ${libs}
+)
 if (USE_TEST_EXE)
     add_executable(${PROJECT_NAME}_demo 
         ${SOURCES}
         src/main.c
     )
-    list(APPEND libs ${CMAKE_SOURCE_DIR}/export/lib/libCosGraphics_lib.a)
+    target_link_libraries(${PROJECT_NAME}_demo
+        ${libs}
+        ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libCosGraphics_lib.a
+    )
 endif()
-
-target_link_libraries(${PROJECT_NAME}_lib
-    ${libs}
-)
-
-target_link_libraries(${PROJECT_NAME}_demo
-    ${libs}
-)
