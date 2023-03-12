@@ -31,16 +31,14 @@ add_library(${PROJECT_NAME}_lib STATIC
     ${SOURCES}
 )
 
-target_link_libraries(${PROJECT_NAME}_lib
+target_link_libraries(${PROJECT_NAME}_lib PUBLIC
     ${libs}
 )
 if (USE_TEST_EXE)
-    add_executable(${PROJECT_NAME}_demo 
-        ${SOURCES}
+    add_executable(${PROJECT_NAME}_demo
         src/main.c
     )
     target_link_libraries(${PROJECT_NAME}_demo
-        ${libs}
-        ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libCosGraphics_lib.a
+    ${PROJECT_NAME}_lib
     )
 endif()
