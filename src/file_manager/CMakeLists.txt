@@ -1,12 +1,12 @@
 project(cg_file_manager)
 
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-
-include_directories(
+set(CG_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/include
 )
 
-add_library(${PROJECT_NAME} STATIC
+set(SOURCES
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/file_manager.h
-    file_manager.c
+    ${PROJECT_SOURCE_DIR}/file_manager.c
+    ${SOURCES}
+    PARENT_SCOPE
 )

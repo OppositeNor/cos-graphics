@@ -1,29 +1,47 @@
 cmake_minimum_required(VERSION 3.8)
 
 project(CosGraphics LANGUAGES C)
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/export/lib)
 
-add_subdirectory(src/containers)
+set (USE_TEST_EXE ON)
+
 add_subdirectory(src/graphics)
 add_subdirectory(src/file_manager)
 add_subdirectory(src/log)
 
+# opengl
+find_package(OpenGL REQUIRED)
+list(APPEND libs OpenGL::GL)
+
+# GLFW
+find_package(glfw3 REQUIRED)
+list(APPEND libs glfw)
+
+list(APPEND libs m)
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/graphics
-    ${PROJECT_SOURCE_DIR}/src/containers
-    ${PROJECT_SOURCE_DIR}/include)
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/dependencies/glad/include)
 
-set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/export/bin)
 
+add_library(${PROJECT_NAME}_lib STATIC
+    ${SOURCES}
+)
+if (USE_TEST_EXE)
+    add_executable(${PROJECT_NAME}_demo 
+        ${SOURCES}
+        src/main.c
+    )
+    list(APPEND libs ${CMAKE_SOURCE_DIR}/export/lib/libCosGraphics_lib.a)
+endif()
 
-add_executable(${PROJECT_NAME}
-    src/main.c
+target_link_libraries(${PROJECT_NAME}_lib
+    ${libs}
 )
 
-target_link_libraries(${PROJECT_NAME} 
-    cg_containers
-    cg_graphics
-    cg_file_manager
-    cg_log
+target_link_libraries(${PROJECT_NAME}_demo
+    ${libs}
 )
