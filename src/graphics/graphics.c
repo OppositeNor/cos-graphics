@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define CGGladInitializeCheck(window)                           \
+#define CGGladInitializeCheck()                           \
     if (!cg_is_glad_initialized) {                              \
         CGInitGLAD();                                           \
     }                                                           \
@@ -187,7 +187,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     CGWindow* window = (CGWindow*)malloc(sizeof(CGWindow));
     if (window == NULL)
     {
-        CG_ERROR("Create window failed");
+        CG_ERROR("Failed to allocate memory for window.");
         return NULL;
     }
     window->width = width;
@@ -198,7 +198,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
     if (window->glfw_window_instance == NULL)
     {
-        CG_ERROR("Create window failed");
+        CG_ERROR("Failed to create GLFW window.");
         glfwTerminate();
         free(window);
         return NULL;
@@ -219,19 +219,18 @@ void CGCreateViewport(CGWindow* window)
 {
     if (window == NULL || window->glfw_window_instance == NULL)
     {
-        CG_ERROR("Attempting to create a viewport on a NULL window");
+        CG_ERROR("Attempting to create a viewport on a NULL window.");
         return;
     }
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
-    CGGladInitializeCheck(window);
+    CGGladInitializeCheck();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
 
-    // initialize default vao for geometry shader
     glGenVertexArrays(1, &window->vao);
     glBindVertexArray(window->vao);
     glEnableVertexAttribArray(0);
@@ -455,7 +454,7 @@ void CGDeleteShaderProgram(CGShaderProgram program)
 
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
 {
-    CGGladInitializeCheck(NULL);
+    CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
         CG_ERROR("Attempting to set a uniform with a NULL name.");
@@ -469,7 +468,7 @@ void CGSetShaderUniformVec4f(
     CGShaderProgram shader_program, const char* uniform_name,
     float val_1, float val_2, float val_3, float val_4)
 {
-    CGGladInitializeCheck(NULL);
+    CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
         CG_ERROR("Attempting to set a uniform with a NULL name.");

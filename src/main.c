@@ -75,11 +75,11 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        CGTickRenderStart(window2);
-        CGDrawQuadrangle(&quad2, window);
-        //CGDrawQuadrangle(&quad1, window2);
+        //CGTickRenderStart(window2);
+        //CGDrawQuadrangle(&quad2, window);
+        CGDrawQuadrangle(&quad1, window);
         CGTickRenderEnd(window);
-        CGTickRenderEnd(window2);
+        //CGTickRenderEnd(window2);
     }
     CGDestroyWindow(window);
     CGDestroyWindow(window2);
