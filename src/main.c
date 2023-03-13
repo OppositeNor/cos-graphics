@@ -41,6 +41,7 @@ int main()
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
+    CGWindow* window2 = CGCreateWindow(640, 480, "Graphics test 2", CG_FALSE);
     if (window == NULL)
         return 0;
     CGQuadrangle quad1 = CGConstructQuadrangle(
@@ -55,12 +56,12 @@ int main()
         (CGVector2){100, -100});
     float rotation = 0.0f;
     quad1.property = CGCreateGeometryProperty(
-        CGConstructColor(1.0f, 0.0f, 0.0f, 1.0f),
+        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation);
     quad2.property = CGCreateGeometryProperty(
-        CGConstructColor(1.0f, 0.0f, 0.0f, 1.0f),
+        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation
@@ -73,13 +74,16 @@ int main()
         quad1.property->scale.y = cos(clock);
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
-        CGTickRenderStart();
+        CGTickRenderStart(window);
+        CGTickRenderStart(window2);
         CGDrawQuadrangle(&quad2, window);
-        CGDrawQuadrangle(&quad1, window);
+        //CGDrawQuadrangle(&quad1, window2);
         CGTickRenderEnd(window);
+        CGTickRenderEnd(window2);
     }
+    CGDestroyWindow(window);
+    CGDestroyWindow(window2);
     CGTerminateGraphics();
-    free(window);
     window = NULL;
     CGDeleteGeometryProperty(quad1.property);
     return 0;

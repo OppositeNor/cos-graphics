@@ -19,6 +19,7 @@ typedef struct {
     int height;
     CG_BOOL use_full_screen;
     void* glfw_window_instance;
+    unsigned int vao;
 } CGWindow;
 
 /**
@@ -67,12 +68,19 @@ CGVector2 CGConstructVector2(float x, float y);
 CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen);
 
 /**
+ * @brief Destroy the window
+ * 
+ * @param window 
+ */
+void CGDestroyWindow(CGWindow* window);
+
+/**
  * @brief Create viewport object
  * 
  * @param window window instance
  * @return CGViewport* viewport instance
  */
-CGViewport* CGCreateViewport(CGWindow* window);
+void CGCreateViewport(CGWindow* window);
 
 /**
  * @brief terminate graphics. 
@@ -90,7 +98,7 @@ void CGSetClearScreenColor(const CGColor color);
 /**
  * @brief start the tick render. Call this every frame before the render.
  */
-void CGTickRenderStart();
+void CGTickRenderStart(CGWindow* window);
 
 /**
  * @brief end of the tick render. Call this every frame after the render
@@ -395,5 +403,22 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
  * @param window the window to draw on
  */
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
+
+/**
+ * @brief Camera
+ * 
+ */
+typedef struct {
+    CGVector2 position;
+    float rotation;
+    CGVector2 capture_region;
+}CGCamera;
+
+/**
+ * @brief Create camera object
+ * 
+ * @return CGCamera* created camera object
+ */
+CGCamera* CGCreateCamera(CGWindow* window);
 
 #endif  //_GRAPHICS_H_

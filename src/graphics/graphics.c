@@ -8,15 +8,22 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define CGGladInitializeCheck() \
-    if (!cg_is_glad_initialized)\
-        CGInitGLAD();           \
+#define CGGladInitializeCheck(window)                           \
+    if (!cg_is_glad_initialized) {                              \
+        CGInitGLAD();                                           \
+    }                                                           \
     ((void)0)
 
 CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
 CGGeometryProperty* cg_default_geo_property;
+
+/**
+ * @brief Current camera in use
+ * 
+ */
+CGCamera* cg_current_camera;
 
 unsigned int cg_vbo;
 unsigned int cg_ebo;
@@ -39,11 +46,6 @@ CGShaderProgram cg_default_geo_shader_program;
  * @brief shader program for drawing geometry
  */
 CGShaderProgram cg_geo_shader_program;
-
-/**
- * @brief default vao for geometry
- */
-unsigned int cg_default_geo_shader_vao;
 
 const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
@@ -98,6 +100,8 @@ CGVector2 CGConstructVector2(float x, float y)
 
 void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 {
+    if (window != glfwGetCurrentContext())
+        glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
 }
 
@@ -120,7 +124,6 @@ void CGTerminateGraphics()
 {
     if (cg_is_glad_initialized)
     {
-        glDeleteVertexArrays(1, &cg_default_geo_shader_vao);
         glDeleteBuffers(1, &cg_vbo);
         glDeleteBuffers(1, &cg_ebo);
         glDeleteProgram(cg_default_geo_shader_program);
@@ -142,9 +145,6 @@ void CGInitGLAD()
         CG_ERROR("GLAD setup OpenGL loader failed");
         exit(-1);
     }
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glClearColor(0.2, 0.2, 0.2, 1.0);
 
     //initialize default shader for geometries
     CGShaderSource* shader_source = 
@@ -167,22 +167,16 @@ void CGInitGLAD()
     cg_geo_shader_program = cg_default_geo_shader_program;
     CGDeleteShaderSource(shader_source);
     CGDeleteShader(shader);
-    
-    // initialize default vao for geometry shader
-    glGenVertexArrays(1, &cg_default_geo_shader_vao);
-    glBindVertexArray(cg_default_geo_shader_vao);
-    glEnableVertexAttribArray(0);
-    glGenBuffers(1, &cg_vbo);
-    glGenBuffers(1, &cg_ebo);
-    glBindVertexArray(0);
-
     cg_default_geo_property = CGCreateGeometryProperty(
         CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f), 
         CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
-    
+    cg_current_camera = NULL;
     cg_is_glad_initialized = CG_TRUE;
+
+    glGenBuffers(1, &cg_vbo);
+    glGenBuffers(1, &cg_ebo);
 }
 
 CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
@@ -209,35 +203,40 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         free(window);
         return NULL;
     }
-    if (CGCreateViewport(window) == NULL)
-        return NULL;
+    CGCreateViewport(window);
 
     return window;
 }
 
-CGViewport* CGCreateViewport(CGWindow* window)
+void CGDestroyWindow(CGWindow* window)
+{
+    glDeleteVertexArrays(1, &window->vao);
+    glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
+    free(window);
+}
+
+void CGCreateViewport(CGWindow* window)
 {
     if (window == NULL || window->glfw_window_instance == NULL)
     {
         CG_ERROR("Attempting to create a viewport on a NULL window");
-        return NULL;
+        return;
     }
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
-    CGGladInitializeCheck();
-    CGViewport* viewport = (CGViewport*)malloc(sizeof(CGViewport));
-    if (viewport == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for viewport.");
-        return NULL;
-    }
-    
-    viewport->demension.x = window->width;
-    viewport->demension.y = window->height;
+    CGGladInitializeCheck(window);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
+
+    // initialize default vao for geometry shader
+    glGenVertexArrays(1, &window->vao);
+    glBindVertexArray(window->vao);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
-    return viewport;
 }
 
 void CGSetClearScreenColor(const CGColor color)
@@ -246,8 +245,10 @@ void CGSetClearScreenColor(const CGColor color)
         glClearColor(color.r, color.g, color.b, color.alpha);
 }
 
-void CGTickRenderStart()
+void CGTickRenderStart(CGWindow* window)
 {
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
     //check OpenGL error
@@ -454,7 +455,7 @@ void CGDeleteShaderProgram(CGShaderProgram program)
 
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
 {
-    CGGladInitializeCheck();
+    CGGladInitializeCheck(NULL);
     if (uniform_name == NULL)
     {
         CG_ERROR("Attempting to set a uniform with a NULL name.");
@@ -468,7 +469,7 @@ void CGSetShaderUniformVec4f(
     CGShaderProgram shader_program, const char* uniform_name,
     float val_1, float val_2, float val_3, float val_4)
 {
-    CGGladInitializeCheck();
+    CGGladInitializeCheck(NULL);
     if (uniform_name == NULL)
     {
         CG_ERROR("Attempting to set a uniform with a NULL name.");
@@ -693,7 +694,7 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
     free(triangle_vertices);
     glUseProgram(cg_geo_shader_program);
-    glBindVertexArray(cg_default_geo_shader_vao);
+    glBindVertexArray(window->vao);
 
     //set uniforms
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
@@ -795,7 +796,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, sizeof(float) * 12, vertices, GL_DYNAMIC_DRAW, CG_TRUE);
     free(vertices);
 
-    glBindVertexArray(cg_default_geo_shader_vao);
+    glBindVertexArray(window->vao);
     CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_quadrangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glUseProgram(cg_geo_shader_program);
@@ -807,7 +808,24 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+    
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+}
+
+CGCamera* CGCreateCamera(CGWindow* window)
+{
+    if (window == NULL)
+    {
+        //todo
+    }
+    CGCamera* camera = (CGCamera*)malloc(sizeof(CGCamera));
+    if (camera == NULL)
+    {
+        CG_ERROR("Cannot allocate memory for camera object.");
+        return NULL;
+    }
+    camera->position = (CGVector2){0, 0};
+    camera->rotation = 0.0f;
+    camera->capture_region = (CGVector2){window->width, window->height};
 }
