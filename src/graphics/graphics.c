@@ -257,6 +257,7 @@ void CGCreateViewport(CGWindow* window)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
 }
 
@@ -719,16 +720,17 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     //draw
     glBindVertexArray(window->triangle_vao);
     glUseProgram(cg_geo_shader_program);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 9, triangle_vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 9 * sizeof(float), triangle_vertices);
     free(triangle_vertices);
+
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
     glBindVertexArray(0);
-    
 }
 
 float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
@@ -815,7 +817,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     else
         property = cg_default_geo_property;
     
-    //draw quadrangle
+    //draw
     glBindVertexArray(window->quadrangle_vao);
     glUseProgram(cg_default_geo_shader_program);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);

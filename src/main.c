@@ -1,4 +1,4 @@
-#if 0
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -31,7 +31,7 @@ int main()
 }
 #endif
 
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
