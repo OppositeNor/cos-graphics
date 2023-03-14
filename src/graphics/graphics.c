@@ -27,6 +27,10 @@ CGGeometryProperty* cg_default_geo_property;
  */
 CGCamera* cg_current_camera;
 
+#define CG_BUFFERS_TRIANGLE_VBO 0
+#define CG_BUFFERS_QUADRANGLE_VBO 1
+#define CG_BUFFERS_QUADRANGLE_EBO 2
+
 unsigned int cg_buffers[MAX_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
 
@@ -177,6 +181,9 @@ void CGInitGLAD()
         0.0f);
     cg_current_camera = NULL;
     cg_is_glad_initialized = CG_TRUE;
+
+    glGenBuffers(3, cg_buffers);
+    cg_buffer_count = 3;
 }
 
 CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
@@ -231,20 +238,13 @@ void CGCreateViewport(CGWindow* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
-    float temp_vertices[12] = {
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f
-    };
+    float temp_vertices[12] = {0};
     cg_buffer_count = 0;
 
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
     glBindVertexArray(window->triangle_vao);
-    glGenBuffers(1, &cg_buffers[cg_buffer_count]);
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[cg_buffer_count], sizeof(float) * 9, temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
-    ++cg_buffer_count;
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_TRIANGLE_VBO], sizeof(float) * 9, temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -252,10 +252,8 @@ void CGCreateViewport(CGWindow* window)
     // set quadrangle vao properties
     glGenVertexArrays(1, &window->quadrangle_vao);
     glBindVertexArray(window->quadrangle_vao);
-    glGenBuffers(2, &cg_buffers[cg_buffer_count]);
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[cg_buffer_count], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
-    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_buffers[cg_buffer_count + 1], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW, CG_TRUE);
-    cg_buffer_count += 2;
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_QUADRANGLE_VBO], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
+    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_QUADRANGLE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW, CG_TRUE);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -819,7 +817,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     
     //draw quadrangle
     glBindVertexArray(window->quadrangle_vao);
-    CGUseShaderProgram(cg_geo_shader_program);
+    glUseProgram(cg_default_geo_shader_program);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
     free(vertices);
 

@@ -1,4 +1,4 @@
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -31,7 +31,7 @@ int main()
 }
 #endif
 
-#if 0
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -41,7 +41,7 @@ int main()
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
-    CGWindow* window2 = CGCreateWindow(640, 480, "Graphics test 2", CG_FALSE);
+    //CGWindow* window2 = CGCreateWindow(640, 480, "Graphics test 2", CG_FALSE);
     if (window == NULL)
         return 0;
     CGQuadrangle quad1 = CGConstructQuadrangle(
@@ -80,16 +80,16 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        CGTickRenderStart(window2);
+        //CGTickRenderStart(window2);
         CGDrawQuadrangle(&quad2, window);
-        //CGDrawQuadrangle(&quad1, window2);
+        CGDrawQuadrangle(&quad1, window);
         CGTickRenderEnd(window);
-        CGTickRenderEnd(window2);
+        //CGTickRenderEnd(window2);
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
     CGDestroyWindow(window);
-    CGDestroyWindow(window2);
+    //CGDestroyWindow(window2);
     CGTerminateGraphics();
     window = NULL;
     CGDeleteGeometryProperty(quad1.property);
