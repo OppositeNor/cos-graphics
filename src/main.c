@@ -1,6 +1,6 @@
-#if 0
-#include "graphics/graphics.h"
-#include "log/log.h"
+#if 1
+#include "cos_graphics/graphics.h"
+#include "cos_graphics/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,16 +11,16 @@ int main()
         return 0;
     CGSetClearScreenColor(CGConstructColor(0.2f, 0.2f, 0.2f, 1.0f));
     CGTriangle *triangle = CGCreateTriangle( 
-        (CGVector2){100, 100),
-        (CGVector2){100, -100),
-        (CGVector2){-100, 100));
+        (CGVector2){100, 100},
+        (CGVector2){100, -100},
+        (CGVector2){-100, 100});
     triangle->property;
     unsigned long long delta;
     
     while(!CGShouldWindowClose(window))
     {
-        CGTickRenderStart();
-        CGDrawTriangle(triangle);
+        CGTickRenderStart(window);
+        CGDrawTriangle(triangle, window);
 
         CGTickRenderEnd(window);
     }
@@ -31,7 +31,7 @@ int main()
 }
 #endif
 
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -66,8 +66,13 @@ int main()
         (CGVector2){1, 1},
         rotation
     );
+    double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
+        static double tick_start_time = 0;
+        static double delta = 0.01;
+        tick_start_time = CGGetCurrentTime();
+        
         static float clock = 0;
         clock += 0.05f;
         quad1.property->scale.x = sin(clock);
@@ -75,11 +80,13 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        //CGTickRenderStart(window2);
-        //CGDrawQuadrangle(&quad2, window);
-        CGDrawQuadrangle(&quad1, window);
+        CGTickRenderStart(window2);
+        CGDrawQuadrangle(&quad2, window);
+        //CGDrawQuadrangle(&quad1, window2);
         CGTickRenderEnd(window);
-        //CGTickRenderEnd(window2);
+        CGTickRenderEnd(window2);
+        tick_end_time = CGGetCurrentTime();
+        delta = tick_end_time - tick_start_time;
     }
     CGDestroyWindow(window);
     CGDestroyWindow(window2);

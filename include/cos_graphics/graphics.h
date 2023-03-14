@@ -19,7 +19,8 @@ typedef struct {
     int height;
     CG_BOOL use_full_screen;
     void* glfw_window_instance;
-    unsigned int vao;
+    unsigned int triangle_vao;
+    unsigned int quadrangle_vao;
 } CGWindow;
 
 /**
@@ -113,6 +114,13 @@ void CGTickRenderEnd(CGWindow* window);
  * @param window window instance
  */
 CG_BOOL CGShouldWindowClose(CGWindow* window);
+
+/**
+ * @brief Get current time
+ * 
+ * @return double number of seconds after this program is initialized
+ */
+double CGGetCurrentTime();
 
 /**************SHADER**************/
 

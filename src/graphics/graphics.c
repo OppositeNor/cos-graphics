@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define CGGladInitializeCheck()                           \
+#define MAX_BUFFER_SIZE 512
+
+#define CGGladInitializeCheck()                                 \
     if (!cg_is_glad_initialized) {                              \
         CGInitGLAD();                                           \
     }                                                           \
@@ -25,8 +27,9 @@ CGGeometryProperty* cg_default_geo_property;
  */
 CGCamera* cg_current_camera;
 
-unsigned int cg_vbo;
-unsigned int cg_ebo;
+unsigned int cg_buffers[MAX_BUFFER_SIZE] = {0};
+unsigned int cg_buffer_count;
+
 
 /**
  * @brief vertex shader path for a geometry
@@ -110,13 +113,13 @@ void CGInitGLFW()
     if (!glfwInit())
     {
         CG_ERROR("GLFW initialization failed");
-        return;
+        exit(-1);
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+    glfwSwapInterval(0);
     cg_is_glfw_initialized = CG_TRUE;
 }
 
@@ -124,8 +127,8 @@ void CGTerminateGraphics()
 {
     if (cg_is_glad_initialized)
     {
-        glDeleteBuffers(1, &cg_vbo);
-        glDeleteBuffers(1, &cg_ebo);
+        glDeleteBuffers(cg_buffer_count, cg_buffers);
+        cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
         CGDeleteGeometryProperty(cg_default_geo_property);
         CGDeleteShaderProgram(cg_default_geo_shader_program);
@@ -174,9 +177,6 @@ void CGInitGLAD()
         0.0f);
     cg_current_camera = NULL;
     cg_is_glad_initialized = CG_TRUE;
-
-    glGenBuffers(1, &cg_vbo);
-    glGenBuffers(1, &cg_ebo);
 }
 
 CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
@@ -210,7 +210,8 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
 
 void CGDestroyWindow(CGWindow* window)
 {
-    glDeleteVertexArrays(1, &window->vao);
+    glDeleteVertexArrays(1, &window->triangle_vao);
+    glDeleteVertexArrays(1, &window->quadrangle_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     free(window);
 }
@@ -230,9 +231,32 @@ void CGCreateViewport(CGWindow* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
+    float temp_vertices[12] = {
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f
+    };
+    cg_buffer_count = 0;
 
-    glGenVertexArrays(1, &window->vao);
-    glBindVertexArray(window->vao);
+    // set triangle vao properties
+    glGenVertexArrays(1, &window->triangle_vao);
+    glBindVertexArray(window->triangle_vao);
+    glGenBuffers(1, &cg_buffers[cg_buffer_count]);
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[cg_buffer_count], sizeof(float) * 9, temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
+    ++cg_buffer_count;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
+    // set quadrangle vao properties
+    glGenVertexArrays(1, &window->quadrangle_vao);
+    glBindVertexArray(window->quadrangle_vao);
+    glGenBuffers(2, &cg_buffers[cg_buffer_count]);
+    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[cg_buffer_count], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW, CG_TRUE);
+    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_buffers[cg_buffer_count + 1], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW, CG_TRUE);
+    cg_buffer_count += 2;
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
@@ -261,12 +285,17 @@ void CGTickRenderStart(CGWindow* window)
 
 void CGTickRenderEnd(CGWindow* window)
 {
-    glfwSwapBuffers((GLFWwindow*)window->glfw_window_instance);
+    glfwSwapBuffers(window->glfw_window_instance);
 }
 
 CG_BOOL CGShouldWindowClose(CGWindow* window)
 {
-    return (CG_BOOL)glfwWindowShouldClose((GLFWwindow*)window->glfw_window_instance);
+    return (CG_BOOL)glfwWindowShouldClose(window->glfw_window_instance);
+}
+
+double CGGetCurrentTime()
+{
+    return glfwGetTime();
 }
 
 void CGMakeStr(char* to, const char* from, const char* error_message)
@@ -454,12 +483,12 @@ void CGDeleteShaderProgram(CGShaderProgram program)
 
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
 {
-    CGGladInitializeCheck();
     if (uniform_name == NULL)
     {
         CG_ERROR("Attempting to set a uniform with a NULL name.");
         return;
     }
+    CGGladInitializeCheck();
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniform1f(uniform_location, value);
 }
@@ -690,19 +719,15 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
         property = cg_default_geo_property;
     
     //draw
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, 9 * sizeof(float), triangle_vertices, GL_DYNAMIC_DRAW, GL_TRUE);
-    free(triangle_vertices);
+    glBindVertexArray(window->triangle_vao);
     glUseProgram(cg_geo_shader_program);
-    glBindVertexArray(window->vao);
-
-    //set uniforms
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 9, triangle_vertices);
+    free(triangle_vertices);
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
     
@@ -786,21 +811,18 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
-    static CGGeometryProperty* property;
+    CGGeometryProperty* property;
     if (quadrangle->property != NULL)
         property = quadrangle->property;
     else
         property = cg_default_geo_property;
     
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_vbo, sizeof(float) * 12, vertices, GL_DYNAMIC_DRAW, CG_TRUE);
+    //draw quadrangle
+    glBindVertexArray(window->quadrangle_vao);
+    CGUseShaderProgram(cg_geo_shader_program);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
     free(vertices);
 
-    glBindVertexArray(window->vao);
-    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_ebo, sizeof(unsigned int) * 6, cg_quadrangle_indices, GL_DYNAMIC_DRAW, CG_TRUE);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glUseProgram(cg_geo_shader_program);
-
-    //set uniforms
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     CGSetMatrixesUniforms(property);
@@ -808,7 +830,6 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     
-    glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 }
 
