@@ -68,7 +68,6 @@ int main()
         (CGVector2){1, 1},
         rotation
     );
-    
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -84,9 +83,9 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
+        CGDrawTriangle(triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
-        CGDrawTriangle(triangle, window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;

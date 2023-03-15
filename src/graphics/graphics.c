@@ -227,6 +227,8 @@ void CGCreateViewport(CGWindow* window)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
     CGGladInitializeCheck();
 
+    glEnable(GL_DEPTH_TEST);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
@@ -269,7 +271,7 @@ void CGTickRenderStart(CGWindow* window)
         glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
     glfwSwapBuffers(window->glfw_window_instance);
     glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void CGTickRenderEnd()
