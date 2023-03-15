@@ -1,4 +1,4 @@
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -13,7 +13,6 @@ int main()
         (CGVector2){100, 100},
         (CGVector2){100, -100},
         (CGVector2){-100, 100});
-    unsigned long long delta;
     
     while(!CGShouldWindowClose(window))
     {
@@ -30,7 +29,7 @@ int main()
 }
 #endif
 
-#if 0
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -54,7 +53,7 @@ int main()
         (CGVector2){50, 100},
         (CGVector2){100, -100});
     float rotation = 0.0f;
-    /*
+    
     quad1.property = CGCreateGeometryProperty(
         CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
@@ -66,7 +65,7 @@ int main()
         (CGVector2){1, 1},
         rotation
     );
-    */
+    
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -76,10 +75,10 @@ int main()
         
         static float clock = 0;
         clock += 0.05f;
-        //quad1.property->scale.x = sin(clock);
-        //quad1.property->scale.y = cos(clock);
-        //quad2.property->scale.x = cos(clock - 2.5);
-        //quad2.property->scale.y = sin(clock - 2.5);
+        quad1.property->scale.x = sin(clock);
+        quad1.property->scale.y = cos(clock);
+        quad2.property->scale.x = cos(clock - 2.5);
+        quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
         //CGTickRenderStart(window2);
         CGDrawQuadrangle(&quad2, window);

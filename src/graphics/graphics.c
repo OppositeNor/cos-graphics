@@ -76,7 +76,7 @@ float* CGMakeTriangleVertices(CGTriangle* triangle);
 float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle);
 
 // set buffer value
-void CGSetBufferValue(GLenum buffer_type, unsigned int* buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
+void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
 
 // create transform matrix
 float* CGCreateTransformMatrix(CGVector2 transform);
@@ -244,19 +244,22 @@ void CGCreateViewport(CGWindow* window)
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
     glBindVertexArray(window->triangle_vao);
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_TRIANGLE_VBO], sizeof(float) * 9, temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_TRIANGLE_VBO], 9 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // set quadrangle vao properties
     glGenVertexArrays(1, &window->quadrangle_vao);
     glBindVertexArray(window->quadrangle_vao);
-    CGSetBufferValue(GL_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_QUADRANGLE_VBO], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
-    CGSetBufferValue(GL_ELEMENT_ARRAY_BUFFER, &cg_buffers[CG_BUFFERS_QUADRANGLE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_VBO], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
 }
@@ -696,10 +699,10 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
     return result;
 }
 
-void CGSetBufferValue(GLenum buffer_type, unsigned int* buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
+void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
 {
     CGGladInitializeCheck();
-    glBindBuffer(buffer_type, *buffer);
+    glBindBuffer(buffer_type, buffer);
     glBufferData(buffer_type, buffer_size, buffer_data, usage);
 }
 
@@ -724,15 +727,16 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
-    static CGGeometryProperty* property;
+    CGGeometryProperty* property;
     if (triangle->property != NULL)
         property = triangle->property;
     else
         property = cg_default_geo_property;
-    
+
     //draw
     glBindVertexArray(window->triangle_vao);
     glUseProgram(cg_geo_shader_program);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_TRIANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 9 * sizeof(float), triangle_vertices);
     free(triangle_vertices);
 
@@ -742,6 +746,7 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
@@ -831,6 +836,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     //draw
     glBindVertexArray(window->quadrangle_vao);
     glUseProgram(cg_default_geo_shader_program);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
     free(vertices);
     
@@ -840,6 +846,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 CGCamera* CGCreateCamera(CGWindow* window)
