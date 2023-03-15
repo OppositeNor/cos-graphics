@@ -39,7 +39,6 @@ int main()
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
-    CGWindow* window2 = CGCreateWindow(640, 480, "Graphics test 2", CG_FALSE);
     if (window == NULL)
         return 0;
     CGQuadrangle quad1 = CGConstructQuadrangle(
@@ -52,6 +51,10 @@ int main()
         (CGVector2){-50, 50},
         (CGVector2){50, 100},
         (CGVector2){100, -100});
+    CGTriangle *triangle = CGCreateTriangle( 
+        (CGVector2){100, 100},
+        (CGVector2){100, -100},
+        (CGVector2){-100, 100});
     float rotation = 0.0f;
     
     quad1.property = CGCreateGeometryProperty(
@@ -77,20 +80,20 @@ int main()
         clock += 0.05f;
         quad1.property->scale.x = sin(clock);
         quad1.property->scale.y = cos(clock);
+        quad1.property->transform.x = sin(clock + 1.3) * 300;
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        //CGTickRenderStart(window2);
         CGDrawQuadrangle(&quad2, window);
-        //CGDrawQuadrangle(&quad1, window2);
-        CGTickRenderEnd(window);
-        //CGTickRenderEnd(window2);
+        CGDrawQuadrangle(&quad1, window);
+        CGDrawTriangle(triangle, window);
+        CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
     CGDestroyWindow(window);
-    //CGDestroyWindow(window2);
     CGTerminateGraphics();
+    free(triangle);
     window = NULL;
     CGDeleteGeometryProperty(quad1.property);
     return 0;

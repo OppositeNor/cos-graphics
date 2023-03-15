@@ -106,7 +106,7 @@ void CGTickRenderStart(CGWindow* window);
  * 
  * @param window window instance
  */
-void CGTickRenderEnd(CGWindow* window);
+void CGTickRenderEnd();
 
 /**
  * @brief should the window be closed
@@ -411,22 +411,4 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
  * @param window the window to draw on
  */
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
-
-/**
- * @brief Camera
- * 
- */
-typedef struct {
-    CGVector2 position;
-    float rotation;
-    CGVector2 capture_region;
-}CGCamera;
-
-/**
- * @brief Create camera object
- * 
- * @return CGCamera* created camera object
- */
-CGCamera* CGCreateCamera(CGWindow* window);
-
 #endif  //_GRAPHICS_H_

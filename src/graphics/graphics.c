@@ -21,12 +21,6 @@ CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
 CGGeometryProperty* cg_default_geo_property;
 
-/**
- * @brief Current camera in use
- * 
- */
-CGCamera* cg_current_camera;
-
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
 #define CG_BUFFERS_QUADRANGLE_EBO 2
@@ -179,7 +173,6 @@ void CGInitGLAD()
         CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
-    cg_current_camera = NULL;
     cg_is_glad_initialized = CG_TRUE;
 
     glGenBuffers(3, cg_buffers);
@@ -274,8 +267,13 @@ void CGTickRenderStart(CGWindow* window)
 {
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
+    glfwSwapBuffers(window->glfw_window_instance);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void CGTickRenderEnd()
+{
     //check OpenGL error
     int gl_error_code = glGetError();
     if (gl_error_code != GL_NO_ERROR)
@@ -283,11 +281,6 @@ void CGTickRenderStart(CGWindow* window)
         CG_ERROR("OpenGL Error: Error code: 0x%x.", gl_error_code);
         exit(-1);
     }
-}
-
-void CGTickRenderEnd(CGWindow* window)
-{
-    glfwSwapBuffers(window->glfw_window_instance);
 }
 
 CG_BOOL CGShouldWindowClose(CGWindow* window)
@@ -847,21 +840,4 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-CGCamera* CGCreateCamera(CGWindow* window)
-{
-    if (window == NULL)
-    {
-        //todo
-    }
-    CGCamera* camera = (CGCamera*)malloc(sizeof(CGCamera));
-    if (camera == NULL)
-    {
-        CG_ERROR("Cannot allocate memory for camera object.");
-        return NULL;
-    }
-    camera->position = (CGVector2){0, 0};
-    camera->rotation = 0.0f;
-    camera->capture_region = (CGVector2){window->width, window->height};
 }
