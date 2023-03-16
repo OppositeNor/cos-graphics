@@ -51,12 +51,12 @@ int main()
         (CGVector2){-50, 50},
         (CGVector2){50, 100},
         (CGVector2){100, -100});
-    CGTriangle *triangle = CGCreateTriangle( 
+    CGTriangle triangle = CGConstructTriangle( 
         (CGVector2){100, 100},
         (CGVector2){100, -100},
         (CGVector2){-100, 100});
     float rotation = 0.0f;
-    
+    triangle.z = 10;
     quad1.property = CGCreateGeometryProperty(
         CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
@@ -76,23 +76,22 @@ int main()
         tick_start_time = CGGetCurrentTime();
         
         static float clock = 0;
-        clock += 0.05f;
+        clock += delta * 3;
         quad1.property->scale.x = sin(clock);
         quad1.property->scale.y = cos(clock);
         quad1.property->transform.x = sin(clock + 1.3) * 300;
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        CGDrawTriangle(triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
+        CGDrawTriangle(&triangle, window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
     CGDestroyWindow(window);
     CGTerminateGraphics();
-    free(triangle);
     window = NULL;
     CGDeleteGeometryProperty(quad1.property);
     return 0;

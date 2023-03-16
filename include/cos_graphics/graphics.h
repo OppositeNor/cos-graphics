@@ -2,6 +2,31 @@
 #define _GRAPHICS_H_
 #include "defs.h"
 
+
+#ifndef CG_RENDER_FAR
+    /**
+     * @brief The largest "z"(or depth) that this program is capable 
+     * to render. you can set this by defining @ref CG_RENDER_FAR 
+     * before you include this header file
+     * @example 
+     * #define CG_RENDER_FAR 256
+     * #include "graphics.h"        // now the largest z value is set to 256
+     */
+    #define CG_RENDER_FAR 256
+#endif
+
+#ifndef CG_RENDER_NEAR
+    /**
+     * @brief The smallest "z"(or depth) that this program is capable 
+     * to render. you can set this by defining @ref CG_RENDER_NEAR 
+     * before you include this header file
+     * @example 
+     * #define CG_RENDER_FAR -256
+     * #include "graphics.h"        // now the smallest z value is set to -256
+     */
+    #define CG_RENDER_NEAR -256
+#endif
+
 /**
  * @brief 2D vector
  */
@@ -327,13 +352,25 @@ void CGDeleteGeometryProperty(CGGeometryProperty* property);
  * @brief Triangle
  */
 typedef struct{
-
+    /**
+     * @brief first vertex position
+     */
     CGVector2 vert_1;
+    /**
+     * @brief second vertex position
+     */
     CGVector2 vert_2;
+    /**
+     * @brief third vertex position
+     */
     CGVector2 vert_3;
+    /**
+     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
+     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     */
     float z;
     /**
-     * @brief geometry properties of the triangle.
+     * @brief Geometry properties of the triangle.
      */
     CGGeometryProperty* property;
 }CGTriangle;
@@ -374,11 +411,30 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property);
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window);
 
 typedef struct{
+    /**
+     * @brief first vertex position
+     */
     CGVector2 vert_1;
+    /**
+     * @brief second vertex position
+     */
     CGVector2 vert_2;
+    /**
+     * @brief third vertex position
+     */
     CGVector2 vert_3;
+    /**
+     * @brief forth vertex position
+     */
     CGVector2 vert_4;
+    /**
+     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
+     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     */
     float z;
+    /**
+     * @brief Geometry property for the quadrangle
+     */
     CGGeometryProperty* property;
 }CGQuadrangle;
 

@@ -8,13 +8,12 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define MAX_BUFFER_SIZE 512
+#define CG_MAX_OPENGL_BUFFER_SIZE 256
 
 #define CGGladInitializeCheck()                                 \
     if (!cg_is_glad_initialized) {                              \
         CGInitGLAD();                                           \
-    }                                                           \
-    ((void)0)
+    }((void)0)
 
 CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
@@ -25,7 +24,7 @@ CGGeometryProperty* cg_default_geo_property;
 #define CG_BUFFERS_QUADRANGLE_VBO 1
 #define CG_BUFFERS_QUADRANGLE_EBO 2
 
-unsigned int cg_buffers[MAX_BUFFER_SIZE] = {0};
+unsigned int cg_buffers[CG_MAX_OPENGL_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
 
 
@@ -682,15 +681,17 @@ float* CGMakeTriangleVertices(CGTriangle* triangle)
         CG_ERROR("Failed to allocate memory for triangle vertexes.");
         return NULL;
     }
+    static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
+    float depth = (triangle->z - CG_RENDER_NEAR) / denom;
     result[0] = triangle->vert_1.x;
     result[1] = triangle->vert_1.y;
-    result[2] = triangle->z;
+    result[2] = depth;
     result[3] = triangle->vert_2.x;
     result[4] = triangle->vert_2.y;
-    result[5] = triangle->z;
+    result[5] = depth;
     result[6] = triangle->vert_3.x;
     result[7] = triangle->vert_3.y;
-    result[8] = triangle->z;
+    result[8] = depth;
     return result;
 }
 
@@ -757,18 +758,20 @@ float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
         CG_ERROR("Failed to allocate vertices memories.");
         return NULL;
     }
+    static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
+    float depth = (quadrangle->z - CG_RENDER_NEAR) / denom;
     vertices[0]  = quadrangle->vert_1.x;
     vertices[1]  = quadrangle->vert_1.y;
-    vertices[2]  = quadrangle->z;
+    vertices[2]  = depth;
     vertices[3]  = quadrangle->vert_2.x;
     vertices[4]  = quadrangle->vert_2.y;
-    vertices[5]  = quadrangle->z;
+    vertices[5]  = depth;
     vertices[6]  = quadrangle->vert_3.x;
     vertices[7]  = quadrangle->vert_3.y;
-    vertices[8]  = quadrangle->z;
+    vertices[8]  = depth;
     vertices[9]  = quadrangle->vert_4.x;
     vertices[10] = quadrangle->vert_4.y;
-    vertices[11] = quadrangle->z;
+    vertices[11] = depth;
     return vertices;
 }
 
