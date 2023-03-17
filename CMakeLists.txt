@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
 
 project(CosGraphics LANGUAGES C)
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-DCG_DEBUG)
+endif()
+
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib)
 
 set (USE_TEST_EXE ON)
@@ -9,8 +14,8 @@ set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 
 add_subdirectory(src/graphics)
-add_subdirectory(src/file_manager)
 add_subdirectory(src/log)
+add_subdirectory(src/resource)
 
 # opengl
 find_package(OpenGL REQUIRED)
@@ -26,7 +31,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/graphics
     ${PROJECT_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/dependencies/glad/include)
+    ${CMAKE_SOURCE_DIR}/dependencies/glad/include
+    ${CMAKE_SOURCE_DIR}/dependencies/stb)
 
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe)
 

@@ -56,7 +56,7 @@ int main()
         (CGVector2){100, -100},
         (CGVector2){-100, 100});
     float rotation = 0.0f;
-    triangle.z = 10;
+    triangle.z = 1;
     quad1.property = CGCreateGeometryProperty(
         CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
@@ -83,9 +83,9 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
+        CGDrawTriangle(&triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
-        CGDrawTriangle(&triangle, window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;

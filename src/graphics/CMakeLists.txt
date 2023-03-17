@@ -1,10 +1,5 @@
 project(cg_graphics)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/dependencies/glad/include
-)
-
 set(SOURCES
     ${CMAKE_SOURCE_DIR}/dependencies/glad/src/glad.c
 

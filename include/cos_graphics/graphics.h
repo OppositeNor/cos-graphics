@@ -1,5 +1,5 @@
-#ifndef _GRAPHICS_H_
-#define _GRAPHICS_H_
+#ifndef _CG_GRAPHICS_H_
+#define _CG_GRAPHICS_H_
 #include "defs.h"
 
 
@@ -467,4 +467,4 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
  * @param window the window to draw on
  */
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
-#endif  //_GRAPHICS_H_
+#endif  //_CG_GRAPHICS_H_

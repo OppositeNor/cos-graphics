@@ -1,5 +1,5 @@
-#ifndef _DEFS_H_
-#define _DEFS_H_
+#ifndef _CG_DEFS_H_
+#define _CG_DEFS_H_
 typedef char CG_BOOL;
 
 #define CG_INFO_LOG_SIZE 512

@@ -1,6 +1,6 @@
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
-#include "cos_graphics/file_manager.h"
+#include "cos_graphics/resource.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -107,11 +107,8 @@ void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 
 void CGInitGLFW()
 {
-    if (!glfwInit())
-    {
-        CG_ERROR("GLFW initialization failed");
-        exit(-1);
-    }
+    int glfw_init_success = glfwInit();
+    CG_DB_ERROR_COND_EXIT(glfw_init_success != GLFW_TRUE, -1, "GLFW initialization failed");
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -140,11 +137,8 @@ void CGTerminateGraphics()
 
 void CGInitGLAD()
 {
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        CG_ERROR("GLAD setup OpenGL loader failed");
-        exit(-1);
-    }
+    int glad_load_proc_success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    CG_DB_ERROR_COND_EXIT(!glad_load_proc_success, -1, "GLAD setup OpenGL loader failed");
 
     //initialize default shader for geometries
     CGShaderSource* shader_source = 
@@ -152,17 +146,9 @@ void CGInitGLAD()
             cg_default_geo_vshader_path,
             cg_default_geo_fshader_path, NULL, CG_FALSE
         );
-    if (shader_source == NULL)
-    {
-        CG_ERROR("Failed to create default shader.");
-        exit(-1);
-    }
+    CG_DB_ERROR_COND_EXIT(shader_source == NULL, -1, "Failed to create default shader source.");
     CGShader* shader = CGCreateShader(shader_source);
-    if (shader == NULL)
-    {
-        CG_ERROR("Failed to create default shader.");
-        exit(-1);
-    }
+    CG_DB_ERROR_COND_EXIT(shader == NULL, -1, "Failed to create default shader.");
     cg_default_geo_shader_program = CGCreateShaderProgram(shader);
     cg_geo_shader_program = cg_default_geo_shader_program;
     CGDeleteShaderSource(shader_source);
@@ -173,7 +159,8 @@ void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
     cg_is_glad_initialized = CG_TRUE;
-
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glGenBuffers(3, cg_buffers);
     cg_buffer_count = 3;
 }
@@ -217,11 +204,7 @@ void CGDestroyWindow(CGWindow* window)
 
 void CGCreateViewport(CGWindow* window)
 {
-    if (window == NULL || window->glfw_window_instance == NULL)
-    {
-        CG_ERROR("Attempting to create a viewport on a NULL window.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to create a viewport on a NULL window.");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
     CGGladInitializeCheck();
@@ -277,11 +260,7 @@ void CGTickRenderEnd()
 {
     //check OpenGL error
     int gl_error_code = glGetError();
-    if (gl_error_code != GL_NO_ERROR)
-    {
-        CG_ERROR("OpenGL Error: Error code: 0x%x.", gl_error_code);
-        exit(-1);
-    }
+    CG_DB_ERROR_COND_EXIT(gl_error_code != GL_NO_ERROR, -1, "OpenGL Error: Error code: 0x%x.", gl_error_code);
 }
 
 CG_BOOL CGShouldWindowClose(CGWindow* window)
@@ -384,11 +363,7 @@ void CGDeleteShaderSource(CGShaderSource* shader_source)
 
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
 {
-    if (shader_source == NULL)
-    {
-        CG_ERROR("Attempting to compile a shader with a NULL source.");
-        return CG_FALSE;
-    }
+    CG_DB_ERROR_COND_RETURN(shader_source == NULL, CG_FALSE, "Attempting to compile a shader with a NULL source.");
     glShaderSource(shader_id, 1, &shader_source, NULL);
     glCompileShader(shader_id);
 
@@ -408,17 +383,9 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
 
 CGShader* CGCreateShader(CGShaderSource* shader_source)
 {
-    if (shader_source == NULL)
-    {
-        CG_ERROR("Attempting to compile a NULL shader source.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(shader_source == NULL, NULL, "Attempting to compile a NULL shader source.");
     CGShader* shader = (CGShader*)malloc(sizeof(CGShader));
-    if (shader == NULL)
-    {
-        CG_ERROR("Construct shader failed.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(shader == NULL, NULL, "Construct shader failed.");
     shader->vertex = glCreateShader(GL_VERTEX_SHADER);
     if (!CGCompileShader(shader->vertex, shader_source->vertex))
     {
@@ -485,11 +452,7 @@ void CGDeleteShaderProgram(CGShaderProgram program)
 
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value)
 {
-    if (uniform_name == NULL)
-    {
-        CG_ERROR("Attempting to set a uniform with a NULL name.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(uniform_name == NULL, "Attempting to set a uniform with a NULL name.");
     CGGladInitializeCheck();
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniform1f(uniform_location, value);
@@ -500,11 +463,7 @@ void CGSetShaderUniformVec4f(
     float val_1, float val_2, float val_3, float val_4)
 {
     CGGladInitializeCheck();
-    if (uniform_name == NULL)
-    {
-        CG_ERROR("Attempting to set a uniform with a NULL name.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(uniform_name == NULL, "Attempting to set a uniform with a NULL name.");
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniform4f(uniform_location, val_1, val_2, val_3, val_4);
 }
@@ -512,11 +471,7 @@ void CGSetShaderUniformVec4f(
 void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data)
 {
     CGGladInitializeCheck();
-    if (uniform_name == NULL)
-    {
-        CG_ERROR("Attempting to set a uniform with a NULL name.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(uniform_name == NULL, "Attempting to set a uniform with a NULL name.");
     GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
 }
@@ -524,11 +479,7 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
 {
     CGGeometryProperty* property = (CGGeometryProperty*)malloc(sizeof(CGGeometryProperty));
-    if (property == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for CGGeometryProperty.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(property == NULL, NULL, "Failed to allocate memory for CGGeometryProperty.");
     property->color = color;
     property->transform = transform;
     property->scale = scale;
@@ -545,11 +496,7 @@ void CGDeleteGeometryProperty(CGGeometryProperty* property)
 float* CGCreateTransformMatrix(CGVector2 transform)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
-    if (result == NULL)
-    {
-        CG_ERROR("failed to allocate memory for transform matrix.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "failed to allocate memory for transform matrix.");
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     result[12] = transform.x;
     result[13] = transform.y;
@@ -560,11 +507,7 @@ float* CGCreateTransformMatrix(CGVector2 transform)
 float* CGCreateScaleMatrix(CGVector2 scale)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
-    if (result == NULL)
-    {
-        CG_ERROR("failed to allocate memory for scale matrix.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for scale matrix.");
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     result[0] = scale.x;
     result[5] = scale.y;
@@ -574,11 +517,7 @@ float* CGCreateScaleMatrix(CGVector2 scale)
 float* CGCreateRotateMatrix(float rotate)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
-    if (result == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for rotation matrix.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for rotation matrix.");
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     if (rotate == 0)
         return result;
@@ -592,11 +531,7 @@ float* CGCreateRotateMatrix(float rotate)
 
 void CGSetMatrixesUniforms(CGGeometryProperty* property)
 {
-    if (property == NULL)
-    {
-        CG_ERROR("Attempting to set uniforms out of a NULL property");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
@@ -645,11 +580,7 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
 {
     CGTriangle* result = (CGTriangle*)malloc(sizeof(CGTriangle));
-    if (result == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for triangle.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for triangle.");
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
@@ -660,27 +591,15 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
 
 void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property)
 {
-    if (triangle == NULL)
-    {
-        CG_ERROR("Attempting to set a property to a NULL triangle object.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(triangle == NULL, "Attempting to set a property to a NULL triangle object.");
     triangle->property = property;
 }
 
 float* CGMakeTriangleVertices(CGTriangle* triangle)
 {
-    if (triangle == NULL)
-    {
-        CG_ERROR("Attempting to set a property to a NULL triangle object.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(triangle == NULL, NULL, "Attempting to make vertices from a NULL triangle object.");
     float* result = (float*)malloc(sizeof(float) * 9);
-    if (result == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for triangle vertexes.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for triangle vertexes.");
     static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (triangle->z - CG_RENDER_NEAR) / denom;
     result[0] = triangle->vert_1.x;
@@ -704,22 +623,10 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
 
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
-    if (window == NULL || window->glfw_window_instance == NULL)
-    {
-        CG_ERROR("Cannot draw triangle on a NULL window.");
-        return;
-    }
-    if (triangle == NULL)
-    {
-        CG_ERROR("Attempting to draw a NULL triangle object.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
+    CG_DB_ERROR_CONDITION(triangle == NULL, "Attempting to draw a NULL triangle object.");
     float* triangle_vertices = CGMakeTriangleVertices(triangle);
-    if (triangle_vertices == NULL)
-    {
-        CG_ERROR("Failed to draw triangle.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(triangle_vertices == NULL, "Failed to draw triangle.");
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
@@ -747,17 +654,9 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 
 float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
 {
-    if (quadrangle == NULL)
-    {
-        CG_ERROR("Attempting to get quadrangle vertices from a NULL CGQuadrangle.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Attempting to get quadrangle vertices from a NULL CGQuadrangle.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
-    if (vertices == NULL)
-    {
-        CG_ERROR("Failed to allocate vertices memories.");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate vertices memories.");
     static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (quadrangle->z - CG_RENDER_NEAR) / denom;
     vertices[0]  = quadrangle->vert_1.x;
@@ -790,11 +689,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
 {
     CGQuadrangle* result = (CGQuadrangle*)malloc(sizeof(CGQuadrangle));
-    if (result == NULL)
-    {
-        CG_ERROR("Failed to allocate memory for CGQuadrangle object");
-        return NULL;
-    }
+    CG_DB_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for CGQuadrangle object");
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
@@ -806,22 +701,10 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
-    if (window == NULL || window->glfw_window_instance == NULL)
-    {
-        CG_ERROR("Cannot draw quadrangle on a NULL window.");
-        return;
-    }
-    if (quadrangle == NULL)
-    {
-        CG_ERROR("Attempting to draw a NULL quadrangle.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
+    CG_DB_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
     float* vertices = CGGetQuadrangleVertices(quadrangle);
-    if (vertices == NULL)
-    {
-        CG_ERROR("Failed to draw quadrangle.");
-        return;
-    }
+    CG_DB_ERROR_CONDITION(vertices == NULL, "Failed to draw quadrangle.");
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
