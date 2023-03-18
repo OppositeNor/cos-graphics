@@ -79,6 +79,8 @@ float* CGCreateScaleMatrix(CGVector2 scale);
 
 // create rotation matrix
 float* CGCreateRotateMatrix(float rotate);
+// multiply matrices
+float* CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -522,41 +524,54 @@ float* CGCreateRotateMatrix(float rotate)
     return result;
 }
 
+float* CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
+{
+    CG_ERROR_COND_RETURN(result == NULL || mat_1 == NULL || mat_2 == NULL, NULL, "Unable to multiply NULL matrix");
+    for (int i = 0; i < demention_y; ++i)
+    {
+        for (int j = 0; j < demention_x; ++j)
+        {
+            float value = 0;
+            for (int k = 0; k < demention_y; ++k)
+            {
+                value += mat_1[i * demention_x + k] * mat_2[k * demention_x + j];
+            }
+            result[i * demention_x + j] = value;
+        }
+    }
+    return result;
+}
+
 void CGSetMatrixesUniforms(CGGeometryProperty* property)
 {
     CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
+    float* result = (float*)malloc(sizeof(float) * 16);
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
-    CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
-        property->color.r, property->color.g, property->color.b, property->color.alpha);
     if (tmp_mat != NULL)
     {
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", tmp_mat);
+        memcpy(result, tmp_mat, sizeof(float) * 16);
         free(tmp_mat);
     }
     else
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "transform_mat", cg_normal_matrix);
+        memcpy(result, cg_normal_matrix, sizeof(float) * 16);
 
     tmp_mat = CGCreateScaleMatrix(property->scale);
     if (tmp_mat != NULL)
     {
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", tmp_mat);
+        CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
     }
-    else
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "scale_mat", cg_normal_matrix);
 
     tmp_mat = CGCreateRotateMatrix(property->rotation);
     if (tmp_mat != NULL)
     {
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", tmp_mat);
+        CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
     }
-    else
-        CGSetShaderUniformMat4f(cg_geo_shader_program, "rotate_mat", cg_normal_matrix);
-    
-    tmp_mat = NULL;
+    CGSetShaderUniformMat4f(cg_geo_shader_program, "model_mat", result);
+    free(result);
 }
 
 CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)

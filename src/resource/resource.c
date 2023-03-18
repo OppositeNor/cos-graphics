@@ -46,17 +46,23 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
     image->height = height;
     image->channels = channels;
     int image_size = width * height * channels;
-    image->data = (unsigned char*)malloc(sizeof(unsigned char) * image_size);
-    if (image->data == NULL)
+    if (data != NULL)
     {
-        CG_ERROR("Failed to allocate memory for image data.");
-        return NULL;
+        image->data = (unsigned char*)malloc(sizeof(unsigned char) * image_size);
+        if (image->data == NULL)
+        {
+            CG_ERROR("Failed to allocate memory for image data.");
+            return NULL;
+        }
+        memcpy(image->data, data, image_size);
     }
-    memcpy(image->data, data, image_size);
+    else
+        image->data = NULL;
     return image;
 }
 
 CGImage* CGLoadImage(const char* file_path)
 {
-    
+    CGImage* image = CGCreateImage(0, 0, 0, NULL);
+    //todo
 }
