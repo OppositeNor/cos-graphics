@@ -79,8 +79,18 @@ float* CGCreateScaleMatrix(CGVector2 scale);
 
 // create rotation matrix
 float* CGCreateRotateMatrix(float rotate);
-// multiply matrices
-float* CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
+
+/**
+ * @brief Multiply two matrices together (A x B)
+ * 
+ * @param result The result matrix (needs to allocate memory manually)
+ * @param mat_1 Matrix A
+ * @param mat_2 Matrix B
+ * @param demention_x The x count of matrix A
+ * @param demention_y The y count of matrix A
+ * @return float* 
+ */
+void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -524,7 +534,7 @@ float* CGCreateRotateMatrix(float rotate)
     return result;
 }
 
-float* CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
+void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
 {
     CG_ERROR_COND_RETURN(result == NULL || mat_1 == NULL || mat_2 == NULL, NULL, "Unable to multiply NULL matrix");
     for (int i = 0; i < demention_y; ++i)
@@ -532,14 +542,13 @@ float* CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int 
         for (int j = 0; j < demention_x; ++j)
         {
             float value = 0;
-            for (int k = 0; k < demention_y; ++k)
+            for (int k = 0; k < demention_x; ++k)
             {
-                value += mat_1[i * demention_x + k] * mat_2[k * demention_x + j];
+                value += mat_1[i * demention_x + k] * mat_2[k * demention_y + j];
             }
             result[i * demention_x + j] = value;
         }
     }
-    return result;
 }
 
 void CGSetMatrixesUniforms(CGGeometryProperty* property)
@@ -547,7 +556,7 @@ void CGSetMatrixesUniforms(CGGeometryProperty* property)
     CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
-    float* result = (float*)malloc(sizeof(float) * 16);
+    float result[16] = {0};
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
     if (tmp_mat != NULL)
     {
@@ -571,7 +580,6 @@ void CGSetMatrixesUniforms(CGGeometryProperty* property)
         free(tmp_mat);
     }
     CGSetShaderUniformMat4f(cg_geo_shader_program, "model_mat", result);
-    free(result);
 }
 
 CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
