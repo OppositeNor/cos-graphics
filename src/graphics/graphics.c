@@ -19,6 +19,7 @@ CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
 CGGeometryProperty* cg_default_geo_property;
+CGSpriteProperty* cg_default_sprite_property;
 
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
@@ -86,8 +87,8 @@ float* CGCreateRotateMatrix(float rotate);
  * @param result The result matrix (needs to allocate memory manually)
  * @param mat_1 Matrix A
  * @param mat_2 Matrix B
- * @param demention_x The x count of matrix A
- * @param demention_y The y count of matrix A
+ * @param demention_x The x count of the result matrix
+ * @param demention_y The y count of the result matrix
  * @return float* 
  */
 void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
@@ -134,7 +135,10 @@ void CGTerminateGraphics()
         glDeleteBuffers(cg_buffer_count, cg_buffers);
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
-        CGDeleteGeometryProperty(cg_default_geo_property);
+        free(cg_default_geo_property);
+        cg_default_geo_property = NULL;
+        free(cg_default_sprite_property);
+        cg_default_sprite_property = NULL;
         CGDeleteShaderProgram(cg_default_geo_shader_program);
         cg_is_glad_initialized = CG_FALSE;
     }
@@ -166,6 +170,10 @@ void CGInitGLAD()
         CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f), 
         CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
+        0.0f);
+    cg_default_sprite_property = CGCreateSpriteProperty(
+        (CGVector2){0.0f, 0.0f},
+        (CGVector2){1.0f, 1.0f},
         0.0f);
     cg_is_glad_initialized = CG_TRUE;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -203,6 +211,7 @@ void CGDestroyWindow(CGWindow* window)
 {
     glDeleteVertexArrays(1, &window->triangle_vao);
     glDeleteVertexArrays(1, &window->quadrangle_vao);
+    glDeleteVertexArrays(1, &window->sprite_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     free(window);
 }
@@ -220,7 +229,7 @@ void CGCreateViewport(CGWindow* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
-    float temp_vertices[12] = {0};
+    float temp_vertices[20] = {0};
     cg_buffer_count = 0;
 
     // set triangle vao properties
@@ -242,6 +251,15 @@ void CGCreateViewport(CGWindow* window)
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // set sprite vao properties
+    glGenVertexArrays(1, &window->sprite_vao);
+    glBindVertexArray(window->sprite_vao);
+    temp_vertices[0] =  -1; temp_vertices[1] =   1;
+    temp_vertices[5] =   1; temp_vertices[6] =   1;
+    temp_vertices[10] =  1; temp_vertices[11] = -1;
+    temp_vertices[15] = -1; temp_vertices[16] = -1;
+    glBindVertexArray(0);
 
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
 }
@@ -492,12 +510,6 @@ CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform,
     return property;
 }
 
-void CGDeleteGeometryProperty(CGGeometryProperty* property)
-{
-    free(property);
-    property = NULL;
-}
-
 float* CGCreateTransformMatrix(CGVector2 transform)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
@@ -536,7 +548,7 @@ float* CGCreateRotateMatrix(float rotate)
 
 void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
 {
-    CG_ERROR_COND_RETURN(result == NULL || mat_1 == NULL || mat_2 == NULL, NULL, "Unable to multiply NULL matrix");
+    CG_ERROR_CONDITION(result == NULL || mat_1 == NULL || mat_2 == NULL, "Unable to multiply NULL matrix");
     for (int i = 0; i < demention_y; ++i)
     {
         for (int j = 0; j < demention_x; ++j)
@@ -744,4 +756,49 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, float rotation)
+{
+    CGSpriteProperty* property = (CGSpriteProperty*)malloc(sizeof(CGSpriteProperty));
+    CG_ERROR_COND_RETURN(property == NULL, NULL, "Failed to allocate memory for sprite property.");
+    property->transform = transform;
+    property->scale = scale;
+    property->rotation = rotation;
+    return property;
+}
+
+CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window)
+{
+    CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
+    CG_ERROR_COND_RETURN(window == NULL, NULL, "Cannot create image with NULL window.");
+    CGSprite* sprite = (CGSprite*)malloc(sizeof(CGSprite));
+    CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Failed to allocate memory for sprite.");
+    sprite->in_window = window;
+    CGImage* image = CGLoadImage(img_path);
+    if (image == NULL)
+    {
+        free(sprite);
+        CG_ERROR_COND_RETURN(true, NULL, "Failed to allocate memory for sprite texture.");
+    }
+    glGenBuffers(1, &sprite->texture_id);
+    glBindVertexArray(window->sprite_vao);
+    glBindBuffer(GL_TEXTURE_2D, sprite->texture_id);
+    switch(image->channels)
+    {
+    case 3:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->width, image->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
+        break;
+    case 4:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->data);
+        break;
+    default:
+        CGDeleteImage(image);
+        free(image);
+        CG_ERROR_COND_RETURN(true, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
+        break;
+    }
+    //todo
+    glGenerateMipmap(GL_TEXTURE_2D);
+    CGDeleteImage(image);
 }

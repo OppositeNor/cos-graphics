@@ -46,6 +46,8 @@ typedef struct {
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
+
+    unsigned int sprite_vao;
 } CGWindow;
 
 /**
@@ -342,13 +344,6 @@ typedef struct{
 CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
 
 /**
- * @brief delete geometry property object. This will be called when the property is binded to a geometry and
- * when the geometry is freed.
- * @param property geometry property
- */
-void CGDeleteGeometryProperty(CGGeometryProperty* property);
-
-/**
  * @brief Triangle
  */
 typedef struct{
@@ -467,4 +462,60 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
  * @param window the window to draw on
  */
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
+
+
+/************SPRITES************/
+
+typedef struct{
+    /**
+     * @brief transform of the geometry
+     */
+    CGVector2 transform;
+    /**
+     * @brief scale of the geometry
+     */
+    CGVector2 scale;
+    /**
+     * @brief rotation of the geometry (in radians)
+     */
+    float rotation;
+}CGSpriteProperty;
+
+/**
+ * @brief Create CGSpriteProperty object
+ * 
+ * @param transform transform
+ * @param scale scale
+ * @param rotation rotation
+ * @return CGSpriteProperty* CGSpriteProperty object
+ */
+CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, float rotation);
+
+typedef struct{
+    unsigned int texture_id;
+    float z;
+    CGSpriteProperty* property;
+    /**
+     * @brief The window that the sprite is created in.
+     */
+    CGWindow* in_window;
+}CGSprite;
+
+/**
+ * @brief Create CGSprite object
+ * 
+ * @param img_path texture image path
+ * @param property sprite property object
+ * @param window the window that the sprite is going to be drawn.
+ * @return CGSprite* The created CGSprite object
+ */
+CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window);
+
+/**
+ * @brief Delete CGSprite object
+ * 
+ * @param sprite sprite object instance to be deleted
+ */
+void CGDeleteSprite(CGSprite* sprite);
+
 #endif  //_CG_GRAPHICS_H_

@@ -35,4 +35,11 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
  */
 CGImage* CGLoadImage(const char* file_path);
 
+/**
+ * @brief Delete image object.
+ * 
+ * @param image Image object to be deleted.
+ */
+void CGDeleteImage(CGImage* image);
+
 #endif  //_CG_RESOURCE_H_

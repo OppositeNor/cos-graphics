@@ -64,5 +64,18 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
 CGImage* CGLoadImage(const char* file_path)
 {
     CGImage* image = CGCreateImage(0, 0, 0, NULL);
-    //todo
+    image->data = stbi_load(file_path, &image->width, &image->height, &image->channels, 0);
+    if (image->data == NULL)
+    {
+        free(image);
+        CG_ERROR("Failed to load image from path: %s", file_path);
+        return NULL;
+    }
+    return image;
+}
+
+void CGDeleteImage(CGImage* image)
+{
+    free(image->data);
+    free(image);
 }
