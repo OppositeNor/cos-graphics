@@ -770,6 +770,8 @@ CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, f
 
 CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window)
 {
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
     CG_ERROR_COND_RETURN(window == NULL, NULL, "Cannot create image with NULL window.");
     CGSprite* sprite = (CGSprite*)malloc(sizeof(CGSprite));
@@ -798,7 +800,8 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         CG_ERROR_COND_RETURN(true, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
         break;
     }
-    //todo
     glGenerateMipmap(GL_TEXTURE_2D);
+    glBindVertexArray(0);
+    glBindBuffer(GL_TEXTURE_2D, 0);
     CGDeleteImage(image);
 }
