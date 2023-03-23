@@ -89,7 +89,7 @@ void CGSetFloatArrayValue(unsigned int count, float* array, float first, ...)
     array[0] = first;
     for (int i = 0; i < count; i ++)
     {
-        array[i] = va_arg(args, float);
+        array[i] = (float)va_arg(args, double);
     }
     va_end(args);
 }
