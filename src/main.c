@@ -93,7 +93,7 @@ int main()
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;
-    CGDeleteGeometryProperty(quad1.property);
+    free(quad1.property);
     return 0;
 }
 #endif

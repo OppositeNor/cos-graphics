@@ -5,6 +5,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+
+// set array value
+void CGSetFloatArrayValue(unsigned int count, float* array, float first, ...);
 
 char* CGLoadFile(const char* file_path)
 {
@@ -37,6 +41,8 @@ char* CGLoadFile(const char* file_path)
 CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
 {
     CGImage* image = (CGImage*)malloc(sizeof(CGImage));
+
+    // this check is required in release mode
     if (image == NULL)
     {
         CG_ERROR("Failed to allocate memory for image object.");
@@ -49,11 +55,7 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
     if (data != NULL)
     {
         image->data = (unsigned char*)malloc(sizeof(unsigned char) * image_size);
-        if (image->data == NULL)
-        {
-            CG_ERROR("Failed to allocate memory for image data.");
-            return NULL;
-        }
+        CG_ERROR_COND_RETURN(image->data == NULL, NULL, "Failed to allocate memory for image data.");
         memcpy(image->data, data, image_size);
     }
     else
@@ -78,4 +80,16 @@ void CGDeleteImage(CGImage* image)
 {
     free(image->data);
     free(image);
+}
+
+void CGSetFloatArrayValue(unsigned int count, float* array, float first, ...)
+{
+    va_list args;
+    va_start(args, first);
+    array[0] = first;
+    for (int i = 0; i < count; i ++)
+    {
+        array[i] = va_arg(args, float);
+    }
+    va_end(args);
 }

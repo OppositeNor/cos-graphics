@@ -499,6 +499,7 @@ typedef struct{
      * @brief The window that the sprite is created in.
      */
     CGWindow* in_window;
+    CGVector2 demention;
 }CGSprite;
 
 /**

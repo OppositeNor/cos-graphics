@@ -24,6 +24,8 @@ CGSpriteProperty* cg_default_sprite_property;
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
 #define CG_BUFFERS_QUADRANGLE_EBO 2
+#define CG_BUFFERS_SPRITE_VBO 3
+#define CG_BUFFERS_SPRITE_EBO 4
 
 unsigned int cg_buffers[CG_MAX_OPENGL_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
@@ -53,11 +55,6 @@ const float cg_normal_matrix[16] = {
     0, 1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1
-};
-
-unsigned int cg_quadrangle_indices[6] = {
-    0, 1, 2,
-    0, 2, 3
 };
 
 // compile one specific shader from source
@@ -178,8 +175,8 @@ void CGInitGLAD()
     cg_is_glad_initialized = CG_TRUE;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glGenBuffers(3, cg_buffers);
-    cg_buffer_count = 3;
+    glGenBuffers(5, cg_buffers);
+    cg_buffer_count = 5;
 }
 
 CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
@@ -229,8 +226,23 @@ void CGCreateViewport(CGWindow* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
-    float temp_vertices[20] = {0};
-    cg_buffer_count = 0;
+    float temp_vertices[12] = 
+    {0, 0, 0,       //3
+     0, 0, 0,       //6
+     0, 0, 0,       //9
+     0, 0, 0};
+
+    unsigned int cg_quadrangle_indices[6] = {
+        0, 1, 2,
+        0, 2, 3
+    };
+    
+    float sprite_temp_vertices[20] = {
+        0, 0, 0, -1,  1,
+        0, 0, 0,  1,  1,
+        0, 0, 0,  1, -1,
+        0, 0, 0, -1, -1,
+    };
 
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
@@ -255,10 +267,12 @@ void CGCreateViewport(CGWindow* window)
     // set sprite vao properties
     glGenVertexArrays(1, &window->sprite_vao);
     glBindVertexArray(window->sprite_vao);
-    temp_vertices[0] =  -1; temp_vertices[1] =   1;
-    temp_vertices[5] =   1; temp_vertices[6] =   1;
-    temp_vertices[10] =  1; temp_vertices[11] = -1;
-    temp_vertices[15] = -1; temp_vertices[16] = -1;
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), sprite_temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
     glfwSetFramebufferSizeCallback(window->glfw_window_instance, CGFrameBufferSizeCallback);
@@ -778,10 +792,12 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Failed to allocate memory for sprite.");
     sprite->in_window = window;
     CGImage* image = CGLoadImage(img_path);
+    sprite->demention.x = image->width;
+    sprite->demention.y = image->height;
     if (image == NULL)
     {
         free(sprite);
-        CG_ERROR_COND_RETURN(true, NULL, "Failed to allocate memory for sprite texture.");
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for sprite texture.");
     }
     glGenBuffers(1, &sprite->texture_id);
     glBindVertexArray(window->sprite_vao);
@@ -796,8 +812,9 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         break;
     default:
         CGDeleteImage(image);
-        free(image);
-        CG_ERROR_COND_RETURN(true, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
+        glBindVertexArray(0);
+        glBindBuffer(GL_TEXTURE_2D, 0);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
         break;
     }
     glGenerateMipmap(GL_TEXTURE_2D);
