@@ -519,4 +519,12 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
  */
 void CGDeleteSprite(CGSprite* sprite);
 
+/**
+ * @brief Draw sprite on window
+ * 
+ * @param sprite sprite to be drawn
+ * @param window window to draw on
+ */
+void CGDrawSprite(CGSprite* sprite, CGWindow* window);
+
 #endif  //_CG_GRAPHICS_H_

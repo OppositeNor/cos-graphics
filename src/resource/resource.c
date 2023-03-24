@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-// set array value
-void CGSetFloatArrayValue(unsigned int count, float* array, float first, ...);
-
 char* CGLoadFile(const char* file_path)
 {
     FILE* file = fopen(file_path, "r");
@@ -82,12 +79,11 @@ void CGDeleteImage(CGImage* image)
     free(image);
 }
 
-void CGSetFloatArrayValue(unsigned int count, float* array, float first, ...)
+void CGSetFloatArrayValue(unsigned int count, float* array, ...)
 {
     va_list args;
-    va_start(args, first);
-    array[0] = first;
-    for (int i = 0; i < count; i ++)
+    va_start(args, array);
+    for (int i = 0; i < count; ++i)
     {
         array[i] = (float)va_arg(args, double);
     }

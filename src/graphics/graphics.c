@@ -60,11 +60,14 @@ const float cg_normal_matrix[16] = {
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 
-// make the triangle vertices array from an triangle
+// make a vertices array out of triangle
 float* CGMakeTriangleVertices(CGTriangle* triangle);
 
-// make the quadrangle vertices array from an quadrangle
-float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle);
+// make a vertices array out of quadrangle
+float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle);
+
+// make a vertices array out of sprite
+float* CGMakeSpriteVertices(CGSprite* sprite);
 
 // set buffer value
 void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
@@ -226,23 +229,19 @@ void CGCreateViewport(CGWindow* window)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glViewport(0, 0, window->width, window->height);
-    float temp_vertices[12] = 
-    {0, 0, 0,       //3
-     0, 0, 0,       //6
-     0, 0, 0,       //9
-     0, 0, 0};
+    float temp_vertices[20] = {0};
 
     unsigned int cg_quadrangle_indices[6] = {
         0, 1, 2,
         0, 2, 3
     };
-    
-    float sprite_temp_vertices[20] = {
+
+    CGSetFloatArrayValue(20, temp_vertices, 
         0, 0, 0, -1,  1,
         0, 0, 0,  1,  1,
         0, 0, 0,  1, -1,
-        0, 0, 0, -1, -1,
-    };
+        0, 0, 0, -1, -1
+    );
 
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
@@ -267,7 +266,7 @@ void CGCreateViewport(CGWindow* window)
     // set sprite vao properties
     glGenVertexArrays(1, &window->sprite_vao);
     glBindVertexArray(window->sprite_vao);
-    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), sprite_temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
     CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -639,20 +638,16 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property)
 
 float* CGMakeTriangleVertices(CGTriangle* triangle)
 {
-    CG_ERROR_COND_RETURN(triangle == NULL, NULL, "Attempting to make vertices from a NULL triangle object.");
+    CG_ERROR_COND_RETURN(triangle == NULL, NULL, "Cannot make vertices array out of a triangle of value NULL.");
     float* result = (float*)malloc(sizeof(float) * 9);
     CG_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for triangle vertexes.");
     static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (triangle->z - CG_RENDER_NEAR) / denom;
-    result[0] = triangle->vert_1.x;
-    result[1] = triangle->vert_1.y;
-    result[2] = depth;
-    result[3] = triangle->vert_2.x;
-    result[4] = triangle->vert_2.y;
-    result[5] = depth;
-    result[6] = triangle->vert_3.x;
-    result[7] = triangle->vert_3.y;
-    result[8] = depth;
+    CGSetFloatArrayValue(9, result,
+        triangle->vert_1.x, triangle->vert_1.y, depth,
+        triangle->vert_2.x, triangle->vert_2.y, depth,
+        triangle->vert_3.x, triangle->vert_3.y, depth
+    );
     return result;
 }
 
@@ -694,26 +689,27 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-float* CGGetQuadrangleVertices(CGQuadrangle* quadrangle)
+float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle)
 {
-    CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Attempting to get quadrangle vertices from a NULL CGQuadrangle.");
+    CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Cannot make vertices array out of a quadrangle of value NULL.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate vertices memories.");
     static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (quadrangle->z - CG_RENDER_NEAR) / denom;
-    vertices[0]  = quadrangle->vert_1.x;
-    vertices[1]  = quadrangle->vert_1.y;
-    vertices[2]  = depth;
-    vertices[3]  = quadrangle->vert_2.x;
-    vertices[4]  = quadrangle->vert_2.y;
-    vertices[5]  = depth;
-    vertices[6]  = quadrangle->vert_3.x;
-    vertices[7]  = quadrangle->vert_3.y;
-    vertices[8]  = depth;
-    vertices[9]  = quadrangle->vert_4.x;
-    vertices[10] = quadrangle->vert_4.y;
-    vertices[11] = depth;
+    
+    CGSetFloatArrayValue(12, vertices, 
+        quadrangle->vert_1.x, quadrangle->vert_1.y, depth,
+        quadrangle->vert_2.x, quadrangle->vert_2.y, depth,
+        quadrangle->vert_3.x, quadrangle->vert_3.y, depth,
+        quadrangle->vert_4.x, quadrangle->vert_4.y, depth
+    );
     return vertices;
+}
+
+float* CGMakeSpriteVertices(CGSprite* sprite)
+{
+    CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Cannot make vertices array out of a sprite of value NULL");
+    float* vertices = (float*)malloc(sizeof(float) * 20);
 }
 
 CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
@@ -745,7 +741,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
-    float* vertices = CGGetQuadrangleVertices(quadrangle);
+    float* vertices = CGMakeQuadrangleVertices(quadrangle);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw quadrangle.");
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
@@ -821,4 +817,17 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     glBindVertexArray(0);
     glBindBuffer(GL_TEXTURE_2D, 0);
     CGDeleteImage(image);
+}
+
+void CGDeleteSprite(CGSprite* sprite)
+{
+    glDeleteBuffers(1, &sprite->texture_id);
+    free(sprite);
+}
+
+void CGDrawSprite(CGSprite* sprite, CGWindow* window)
+{
+    CG_ERROR_CONDITION(sprite == NULL, "Failed to draw sprite: Sprite must be specified to a non-null sprite instance.");
+    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw sprite: Attempting to draw sprite on a NULL window");
+
 }

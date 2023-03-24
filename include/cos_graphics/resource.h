@@ -42,4 +42,13 @@ CGImage* CGLoadImage(const char* file_path);
  */
 void CGDeleteImage(CGImage* image);
 
+/**
+ * @brief Set float value to array
+ * 
+ * @param count count of values of the array
+ * @param array the array to be set
+ * @param ... the values to be set to the array
+ */
+void CGSetFloatArrayValue(unsigned int count, float* array, ...);
+
 #endif  //_CG_RESOURCE_H_
