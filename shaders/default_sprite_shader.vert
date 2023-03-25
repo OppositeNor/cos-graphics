@@ -8,7 +8,7 @@ uniform mat4 model_mat;
 uniform float render_width;
 uniform float render_height;
 
-out tex_coord;
+out vec2 tex_coord;
 
 void main()
 {

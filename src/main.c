@@ -68,6 +68,9 @@ int main()
         (CGVector2){1, 1},
         rotation
     );
+
+    CGSprite* sprite = CGCreateSprite("./test_img.jpg", 
+        CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -86,10 +89,12 @@ int main()
         CGDrawTriangle(&triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
+        CGDrawSprite(sprite, window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+    CGDeleteSprite(sprite);
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;

@@ -206,7 +206,7 @@ void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
     
-    // todo CGInitDefaultShader(cg_default_sprite_vshader_path, cg_default_sprite_fshader_path, &cg_default_sprite_shader_program);
+    CGInitDefaultShader(cg_default_sprite_vshader_path, cg_default_sprite_fshader_path, &cg_default_sprite_shader_program);
     cg_sprite_shader_program = cg_default_sprite_shader_program;
     cg_default_sprite_property = CGCreateSpriteProperty(
         (CGVector2){0.0f, 0.0f},
@@ -864,6 +864,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     CGImage* image = CGLoadImage(img_path);
     sprite->demention.x = image->width;
     sprite->demention.y = image->height;
+    sprite->property = property;
     if (image == NULL)
     {
         free(sprite);
@@ -891,6 +892,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     CGDeleteImage(image);
+    return sprite;
 }
 
 void CGDeleteSprite(CGSprite* sprite)
