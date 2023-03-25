@@ -46,7 +46,6 @@ typedef struct {
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
-
     unsigned int sprite_vao;
 } CGWindow;
 
@@ -492,13 +491,26 @@ typedef struct{
 CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, float rotation);
 
 typedef struct{
+    /**
+     * @brief Texture's OpenGL ID
+     */
     unsigned int texture_id;
+    /**
+     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
+     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     */
     float z;
+    /**
+     * @brief Sprite property.
+     */
     CGSpriteProperty* property;
     /**
      * @brief The window that the sprite is created in.
      */
     CGWindow* in_window;
+    /**
+     * @brief the width and height of the sprite
+     */
     CGVector2 demention;
 }CGSprite;
 

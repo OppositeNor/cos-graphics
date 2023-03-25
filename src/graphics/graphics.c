@@ -39,6 +39,14 @@ const char* cg_default_geo_vshader_path = "./shaders/default_geo_shader.vert";
  * @brief fragment shader path for a geometry
  */
 const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
+/**
+ * @brief vertex shader path for a geometry
+ */
+const char* cg_default_sprite_vshader_path = "./shaders/default_sprite_shader.vert";
+/**
+ * @brief fragment shader path for a geometry
+ */
+const char* cg_default_sprite_fshader_path = "./shaders/default_sprite_shader.frag";
 
 /**
  * @brief default shader for geometry
@@ -50,6 +58,16 @@ CGShaderProgram cg_default_geo_shader_program;
  */
 CGShaderProgram cg_geo_shader_program;
 
+/**
+ * @brief default shader for sprites
+ */
+CGShaderProgram cg_default_sprite_shader_program;
+
+/**
+ * @brief shader program for drawing sprites
+ */
+CGShaderProgram cg_sprite_shader_program;
+
 const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -59,6 +77,9 @@ const float cg_normal_matrix[16] = {
 
 // compile one specific shader from source
 CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
+
+// initialize default shader
+void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
 
 // make a vertices array out of triangle
 float* CGMakeTriangleVertices(CGTriangle* triangle);
@@ -80,6 +101,12 @@ float* CGCreateScaleMatrix(CGVector2 scale);
 
 // create rotation matrix
 float* CGCreateRotateMatrix(float rotate);
+
+// set geometry matrices uniform
+void CGSetGeometryMatricesUniforms(CGGeometryProperty* property);
+
+// set sprite matrices uniform
+void CGSetSpriteMatrixesUniforms(CGSpriteProperty* property);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -135,11 +162,11 @@ void CGTerminateGraphics()
         glDeleteBuffers(cg_buffer_count, cg_buffers);
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
+        glDeleteProgram(cg_default_sprite_shader_program);
         free(cg_default_geo_property);
         cg_default_geo_property = NULL;
         free(cg_default_sprite_property);
         cg_default_sprite_property = NULL;
-        CGDeleteShaderProgram(cg_default_geo_shader_program);
         cg_is_glad_initialized = CG_FALSE;
     }
     if (cg_is_glfw_initialized)
@@ -149,37 +176,47 @@ void CGTerminateGraphics()
     }
 }
 
+void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program)
+{
+    CG_ERROR_COND_EXIT(shader_vpath == NULL || shader_fpath == NULL, -1, "Default shader path cannot be set to NULL.");
+    CG_ERROR_COND_EXIT(shader_program == NULL, -1, "Cannot init a default shader for NULL shader program.");
+    CGShaderSource* shader_source = 
+        CGCreateShaderSourceFromPath(
+            shader_vpath,
+            shader_fpath, NULL, CG_FALSE
+        );
+    CG_ERROR_COND_EXIT(shader_source == NULL, -1, "Failed to create shader source.");
+    CGShader* shader = CGCreateShader(shader_source);
+    CG_ERROR_COND_EXIT(shader == NULL, -1, "Failed to init default shader.");
+    *shader_program = CGCreateShaderProgram(shader);
+    CGDeleteShaderSource(shader_source);
+    CGDeleteShader(shader);
+}
+
 void CGInitGLAD()
 {
     CG_ERROR_EXP_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, "GLAD setup OpenGL loader failed");
 
-    //initialize default shader for geometries
-    CGShaderSource* shader_source = 
-        CGCreateShaderSourceFromPath(
-            cg_default_geo_vshader_path,
-            cg_default_geo_fshader_path, NULL, CG_FALSE
-        );
-    CG_ERROR_COND_EXIT(shader_source == NULL, -1, "Failed to create default shader source.");
-    CGShader* shader = CGCreateShader(shader_source);
-    CG_ERROR_COND_EXIT(shader == NULL, -1, "Failed to create default shader.");
-    cg_default_geo_shader_program = CGCreateShaderProgram(shader);
+    CGInitDefaultShader(cg_default_geo_vshader_path, cg_default_geo_fshader_path, &cg_default_geo_shader_program);
     cg_geo_shader_program = cg_default_geo_shader_program;
-    CGDeleteShaderSource(shader_source);
-    CGDeleteShader(shader);
+
     cg_default_geo_property = CGCreateGeometryProperty(
         CGConstructColor(0.8f, 0.8f, 0.8f, 1.0f), 
         CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
+    
+    // todo CGInitDefaultShader(cg_default_sprite_vshader_path, cg_default_sprite_fshader_path, &cg_default_sprite_shader_program);
+    cg_sprite_shader_program = cg_default_sprite_shader_program;
     cg_default_sprite_property = CGCreateSpriteProperty(
         (CGVector2){0.0f, 0.0f},
         (CGVector2){1.0f, 1.0f},
         0.0f);
-    cg_is_glad_initialized = CG_TRUE;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glGenBuffers(5, cg_buffers);
     cg_buffer_count = 5;
+    cg_is_glad_initialized = CG_TRUE;
 }
 
 CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
@@ -237,10 +274,10 @@ void CGCreateViewport(CGWindow* window)
     };
 
     CGSetFloatArrayValue(20, temp_vertices, 
-        0, 0, 0, -1,  1,
-        0, 0, 0,  1,  1,
-        0, 0, 0,  1, -1,
-        0, 0, 0, -1, -1
+        0, 0, 0, 0, 1,
+        0, 0, 0, 1, 1,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0
     );
 
     // set triangle vao properties
@@ -576,7 +613,7 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
     }
 }
 
-void CGSetMatrixesUniforms(CGGeometryProperty* property)
+void CGSetGeometryMatricesUniforms(CGGeometryProperty* property)
 {
     CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(cg_geo_shader_program, "color", 
@@ -680,7 +717,7 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     glBufferSubData(GL_ARRAY_BUFFER, 0, 9 * sizeof(float), triangle_vertices);
     free(triangle_vertices);
 
-    CGSetMatrixesUniforms(property);
+    CGSetGeometryMatricesUniforms(property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -694,8 +731,7 @@ float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle)
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Cannot make vertices array out of a quadrangle of value NULL.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate vertices memories.");
-    static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
-    float depth = (quadrangle->z - CG_RENDER_NEAR) / denom;
+    float depth = (quadrangle->z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     
     CGSetFloatArrayValue(12, vertices, 
         quadrangle->vert_1.x, quadrangle->vert_1.y, depth,
@@ -710,6 +746,15 @@ float* CGMakeSpriteVertices(CGSprite* sprite)
 {
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Cannot make vertices array out of a sprite of value NULL");
     float* vertices = (float*)malloc(sizeof(float) * 20);
+    CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate memory for vertices");
+    float depth = (sprite->z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
+    CGSetFloatArrayValue(20, vertices,
+        -1 * sprite->demention.x / 2,      sprite->demention.y / 2, depth, 0, 1,
+             sprite->demention.x / 2,      sprite->demention.y / 2, depth, 1, 1,
+             sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 1, 0,
+        -1 * sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 0, 0
+    );
+    return vertices;
 }
 
 CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
@@ -741,9 +786,9 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
+    CGGladInitializeCheck();
     float* vertices = CGMakeQuadrangleVertices(quadrangle);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw quadrangle.");
-    CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     CGGeometryProperty* property;
@@ -759,7 +804,7 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
     free(vertices);
     
-    CGSetMatrixesUniforms(property);
+    CGSetGeometryMatricesUniforms(property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -778,14 +823,43 @@ CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, f
     return property;
 }
 
+void CGSetSpriteMatrixesUniforms(CGSpriteProperty* property)
+{
+    CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
+    float result[16] = {0};
+    float* tmp_mat = CGCreateTransformMatrix(property->transform);
+    if (tmp_mat != NULL)
+    {
+        memcpy(result, tmp_mat, sizeof(float) * 16);
+        free(tmp_mat);
+    }
+    else
+        memcpy(result, cg_normal_matrix, sizeof(float) * 16);
+
+    tmp_mat = CGCreateScaleMatrix(property->scale);
+    if (tmp_mat != NULL)
+    {
+        CGMatMultiply(result, tmp_mat, result, 4, 4);
+        free(tmp_mat);
+    }
+
+    tmp_mat = CGCreateRotateMatrix(property->rotation);
+    if (tmp_mat != NULL)
+    {
+        CGMatMultiply(result, tmp_mat, result, 4, 4);
+        free(tmp_mat);
+    }
+    CGSetShaderUniformMat4f(cg_geo_shader_program, "model_mat", result);
+}
+
 CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window)
 {
-    if (glfwGetCurrentContext() != window->glfw_window_instance)
-        glfwMakeContextCurrent(window->glfw_window_instance);
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
-    CG_ERROR_COND_RETURN(window == NULL, NULL, "Cannot create image with NULL window.");
+    CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, "Cannot create image with NULL window.");
     CGSprite* sprite = (CGSprite*)malloc(sizeof(CGSprite));
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Failed to allocate memory for sprite.");
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
     sprite->in_window = window;
     CGImage* image = CGLoadImage(img_path);
     sprite->demention.x = image->width;
@@ -797,7 +871,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     }
     glGenBuffers(1, &sprite->texture_id);
     glBindVertexArray(window->sprite_vao);
-    glBindBuffer(GL_TEXTURE_2D, sprite->texture_id);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
     switch(image->channels)
     {
     case 3:
@@ -809,13 +883,13 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
     default:
         CGDeleteImage(image);
         glBindVertexArray(0);
-        glBindBuffer(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
         break;
     }
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindVertexArray(0);
-    glBindBuffer(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     CGDeleteImage(image);
 }
 
@@ -829,5 +903,21 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
     CG_ERROR_CONDITION(sprite == NULL, "Failed to draw sprite: Sprite must be specified to a non-null sprite instance.");
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw sprite: Attempting to draw sprite on a NULL window");
-
+    float* vertices = CGMakeSpriteVertices(sprite);
+    CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
+    CGGladInitializeCheck();
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
+    glBindVertexArray(window->sprite_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
+    free(vertices);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
+    CGSetSpriteMatrixesUniforms(sprite->property);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
+    
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
