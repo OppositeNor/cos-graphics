@@ -86,7 +86,7 @@ int main()
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
         CGTickRenderStart(window);
-        CGDrawTriangle(&triangle, window);
+        //CGDrawTriangle(&triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
         CGDrawSprite(sprite, window);

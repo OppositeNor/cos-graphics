@@ -856,6 +856,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
 {
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, "Cannot create image with NULL window.");
+    CGGladInitializeCheck();
     CGSprite* sprite = (CGSprite*)malloc(sizeof(CGSprite));
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Failed to allocate memory for sprite.");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
@@ -870,7 +871,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         free(sprite);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for sprite texture.");
     }
-    glGenBuffers(1, &sprite->texture_id);
+    glGenTextures(1, &sprite->texture_id);
     glBindVertexArray(window->sprite_vao);
     glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
     switch(image->channels)
@@ -883,6 +884,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         break;
     default:
         CGDeleteImage(image);
+        free(sprite);
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
@@ -905,9 +907,9 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
     CG_ERROR_CONDITION(sprite == NULL, "Failed to draw sprite: Sprite must be specified to a non-null sprite instance.");
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw sprite: Attempting to draw sprite on a NULL window");
+    CGGladInitializeCheck();
     float* vertices = CGMakeSpriteVertices(sprite);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
-    CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     glBindVertexArray(window->sprite_vao);
@@ -918,7 +920,7 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window)
     CGSetSpriteMatrixesUniforms(sprite->property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
-    
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
