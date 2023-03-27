@@ -86,8 +86,6 @@ int main()
         quad1.property->transform.x = sin(clock + 1.3) * 300;
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
-        sprite->property->scale.x = quad2.property->scale.x;
-        sprite->property->scale.y = quad2.property->scale.y;
 
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);

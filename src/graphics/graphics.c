@@ -889,7 +889,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
 
 void CGDeleteSprite(CGSprite* sprite)
 {
-    glDeleteBuffers(1, &sprite->texture_id);
+    glDeleteTextures(1, &sprite->texture_id);
     free(sprite);
 }
 
