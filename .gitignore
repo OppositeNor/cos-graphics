@@ -2,3 +2,5 @@ build
 export
 bin
 .vscode
+*.jpg
+*.png

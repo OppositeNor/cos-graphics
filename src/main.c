@@ -58,12 +58,12 @@ int main()
     float rotation = 0.0f;
     triangle.z = 1;
     quad1.property = CGCreateGeometryProperty(
-        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
+        CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation);
     quad2.property = CGCreateGeometryProperty(
-        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
+        CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation

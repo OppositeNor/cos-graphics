@@ -849,7 +849,7 @@ void CGSetSpriteMatrixesUniforms(CGSpriteProperty* property)
         CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
     }
-    CGSetShaderUniformMat4f(cg_geo_shader_program, "model_mat", result);
+    CGSetShaderUniformMat4f(cg_sprite_shader_program, "model_mat", result);
 }
 
 CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window)
@@ -863,6 +863,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         glfwMakeContextCurrent(window->glfw_window_instance);
     sprite->in_window = window;
     CGImage* image = CGLoadImage(img_path);
+    CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create sprite.");
     sprite->demention.x = image->width;
     sprite->demention.y = image->height;
     sprite->property = property;
@@ -912,14 +913,15 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window)
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
+    glUseProgram(cg_sprite_shader_program);
     glBindVertexArray(window->sprite_vao);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
     free(vertices);
     glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
     CGSetSpriteMatrixesUniforms(sprite->property);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
+    CGSetShaderUniform1f(cg_sprite_shader_program, "render_width", (float)window->width);
+    CGSetShaderUniform1f(cg_sprite_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
