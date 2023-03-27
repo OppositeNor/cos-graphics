@@ -69,8 +69,9 @@ int main()
         rotation
     );
 
-    CGSprite* sprite = CGCreateSprite("./test_img.jpg", 
+    CGSprite* sprite = CGCreateSprite("./test2.png", 
         CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+    sprite->z = -2;
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -85,6 +86,9 @@ int main()
         quad1.property->transform.x = sin(clock + 1.3) * 300;
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
+        sprite->property->scale.x = quad2.property->scale.x;
+        sprite->property->scale.y = quad2.property->scale.y;
+
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         CGDrawQuadrangle(&quad2, window);
@@ -94,11 +98,13 @@ int main()
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+    free(sprite->property);
     CGDeleteSprite(sprite);
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;
     free(quad1.property);
+    free(quad2.property);
     return 0;
 }
 #endif

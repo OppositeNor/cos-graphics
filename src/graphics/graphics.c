@@ -180,11 +180,7 @@ void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGS
 {
     CG_ERROR_COND_EXIT(shader_vpath == NULL || shader_fpath == NULL, -1, "Default shader path cannot be set to NULL.");
     CG_ERROR_COND_EXIT(shader_program == NULL, -1, "Cannot init a default shader for NULL shader program.");
-    CGShaderSource* shader_source = 
-        CGCreateShaderSourceFromPath(
-            shader_vpath,
-            shader_fpath, NULL, CG_FALSE
-        );
+    CGShaderSource* shader_source = CGCreateShaderSourceFromPath(shader_vpath, shader_fpath, NULL, CG_FALSE);
     CG_ERROR_COND_EXIT(shader_source == NULL, -1, "Failed to create shader source.");
     CGShader* shader = CGCreateShader(shader_source);
     CG_ERROR_COND_EXIT(shader == NULL, -1, "Failed to init default shader.");
@@ -273,13 +269,6 @@ void CGCreateViewport(CGWindow* window)
         0, 2, 3
     };
 
-    CGSetFloatArrayValue(20, temp_vertices, 
-        0, 0, 0, 0, 1,
-        0, 0, 0, 1, 1,
-        0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0
-    );
-
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
     glBindVertexArray(window->triangle_vao);
@@ -305,9 +294,9 @@ void CGCreateViewport(CGWindow* window)
     glBindVertexArray(window->sprite_vao);
     CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
     CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
@@ -749,10 +738,10 @@ float* CGMakeSpriteVertices(CGSprite* sprite)
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate memory for vertices");
     float depth = (sprite->z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(20, vertices,
-        -1 * sprite->demention.x / 2,      sprite->demention.y / 2, depth, 0, 1,
-             sprite->demention.x / 2,      sprite->demention.y / 2, depth, 1, 1,
-             sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 1, 0,
-        -1 * sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 0, 0
+        -1 * sprite->demention.x / 2,      sprite->demention.y / 2, depth, 0.0, 0.0,
+             sprite->demention.x / 2,      sprite->demention.y / 2, depth, 1.0, 0.0,
+             sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 1.0, 1.0,
+        -1 * sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 0.0, 1.0
     );
     return vertices;
 }
@@ -913,8 +902,8 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window)
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
-    glUseProgram(cg_sprite_shader_program);
     glBindVertexArray(window->sprite_vao);
+    glUseProgram(cg_sprite_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
     free(vertices);
