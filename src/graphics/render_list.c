@@ -29,7 +29,7 @@ float* CGGetDepthPointer(CGRenderNode* node)
     }
 }
 
-CGRenderNode* CGCreateRenderNode(void* render_object, enum CGObjectType type)
+CGRenderNode* CGCreateRenderNode(void* render_object, int type)
 {
     CGRenderNode* node = (CGRenderNode*)malloc(sizeof(CGRenderNode));
     CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for node");

@@ -6,7 +6,7 @@
 
 int main()
 {
-    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
+    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_FALSE);
     if (window == NULL)
         return 0;
     CGTriangle *triangle = CGCreateTriangle( 
@@ -39,7 +39,7 @@ int main()
 
 int main()
 {
-    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE);
+    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_FALSE);
     if (window == NULL)
         return 0;
     CGQuadrangle quad1 = CGConstructQuadrangle(
@@ -119,7 +119,7 @@ int main()
 
 int main()
 {
-    CGWindow* window = CGCreateWindow(1920, 1080, "Graphics test", CG_FALSE);
+    CGWindow* window = CGCreateWindow(1920, 1080, "Graphics test", CG_FALSE, CG_FALSE);
     CGSetClearScreenColor((CGColor){1.0f, 1.0f, 1.0f, 1.0f});
     window->width = 1920;
     window->height = 1080;

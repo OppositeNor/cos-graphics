@@ -106,7 +106,7 @@ CGVector2 CGConstructVector2(float x, float y);
  * will change instead. You will find the window not scalling, but the content inside the window
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
-CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen);
+CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen, CG_BOOL resizable);
 
 /**
  * @brief Destroy the window
@@ -355,7 +355,7 @@ void CGCreateRenderList(CGWindow* window);
  * @param type render object type
  * @return CGRenderNode* the render object instance
  */
-CGRenderNode* CGCreateRenderNode(void* render_object, enum CGObjectType type);
+CGRenderNode* CGCreateRenderNode(void* render_object, int type);
 
 /**
  * @brief Add a render node in the render list. If there is no render list

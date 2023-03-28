@@ -153,12 +153,13 @@ void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void CGInitGLFW()
+void CGInitGLFW(CG_BOOL window_resizable)
 {
     CG_ERROR_EXP_EXIT(glfwInit() != GLFW_TRUE, -1, "GLFW initialization failed");
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, window_resizable);
     glfwSwapInterval(0);
     cg_is_glfw_initialized = CG_TRUE;
 }
@@ -223,10 +224,10 @@ void CGInitGLAD()
     cg_is_glad_initialized = CG_TRUE;
 }
 
-CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen)
+CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_full_screen, CG_BOOL resizable)
 {
     if (!cg_is_glfw_initialized)
-        CGInitGLFW();
+        CGInitGLFW(resizable);
 
     CGWindow* window = (CGWindow*)malloc(sizeof(CGWindow));
     CG_ERROR_COND_RETURN(window == NULL, NULL, "Failed to allocate memory for window.");
@@ -236,6 +237,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     window->use_full_screen = use_full_screen;
     window->glfw_window_instance = glfwCreateWindow(width, height, title, 
         use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
+    
     window->render_list = NULL;
     CGCreateRenderList(window);
     if (window->glfw_window_instance == NULL)
