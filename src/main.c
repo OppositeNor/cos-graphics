@@ -126,10 +126,13 @@ int main()
         CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
     sprite->z = 1;
     CGSprite* sprite2 = CGCreateSprite("./test2.png", 
-        CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+        CGCreateSpriteProperty((CGVector2){600, 0}, (CGVector2){1, 1}, 0), window);
+    CGSprite* sprite3 = CGCreateSprite("./test3.png", 
+        CGCreateSpriteProperty((CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
+    sprite->z = 1;
+    CGSprite* sprite4 = CGCreateSprite("./test2.png", 
+        CGCreateSpriteProperty((CGVector2){-300, -600}, (CGVector2){1, 1}, 0), window);
     sprite2->z = -1;
-    sprite2->property->transform.x += 600;
-    sprite2->property->scale.x = 1;
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -138,8 +141,12 @@ int main()
         tick_start_time = CGGetCurrentTime();
 
         CGTickRenderStart(window);
-        CGDrawSprite(sprite, window);
         CGDrawSprite(sprite2, window);
+        CGDrawSprite(sprite, window);
+        CGDrawSprite(sprite3, window);
+        CGDrawSprite(sprite4, window);
+        CGWindowDraw(window);
+        CG_PRINT("");
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;

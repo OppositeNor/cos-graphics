@@ -5,26 +5,32 @@
 
 #ifndef CG_RENDER_FAR
     /**
-     * @brief The largest "z"(or depth) that this program is capable 
-     * to render. you can set this by defining CG_RENDER_FAR 
-     * before you include this header file
+     * @brief This value is the smallest assigned z index being started. Note that it does not have any
+     * relationship with the z value of each render object. If you have too many objects that needs to 
+     * be rendered, and you found out that part of them are not be rendered, you can try to set this to
+     * a smaller value.
+     * You can modify this by defining CG_RENDER_FAR before including this header file.
      * @example 
-     * #define CG_RENDER_FAR 512
-     * #include "cos_graphics/graphics.h"        // now the largest z value is set to 512
+     * // this is how you can change CG_RENDER_FAR to 8
+     * #define CG_RENDER_FAR 8
+     * #include "cos_graphics/graphics.h"
      */
-    #define CG_RENDER_FAR 256
+    #define CG_RENDER_FAR 16
 #endif
 
 #ifndef CG_RENDER_NEAR
     /**
-     * @brief The smallest "z"(or depth) that this program is capable 
-     * to render. you can set this by defining CG_RENDER_NEAR 
-     * before you include this header file
+     * @brief This value is the smallest assigned z index being started. Note that it does not have any
+     * relationship with the z value of each render object. If you have too many objects that needs to 
+     * be rendered, and you found out that part of them are not be rendered, you can try to set this to
+     * a smaller value.
+     * You can modify this by defining CG_RENDER_FAR before including this header file.
      * @example 
-     * #define CG_RENDER_FAR -512
-     * #include "cos_graphics/graphics.h"        // now the smallest z value is set to -512
+     * // this is how you can change CG_RENDER_NEAR to -8
+     * #define CG_RENDER_NEAR -8
+     * #include "cos_graphics/graphics.h"
      */
-    #define CG_RENDER_NEAR -256
+    #define CG_RENDER_NEAR -16
 #endif
 
 /**
@@ -34,6 +40,8 @@ typedef struct {
     float x;
     float y;
 } CGVector2;
+
+struct CGRenderNode;
 
 /**
  * @brief Window
@@ -47,7 +55,7 @@ typedef struct {
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int sprite_vao;
-    CGRenderNode* render_list;
+    struct CGRenderNode* render_list;
 } CGWindow;
 
 /**
@@ -132,6 +140,13 @@ void CGSetClearScreenColor(const CGColor color);
  * @brief start the tick render. Call this every frame before the render.
  */
 void CGTickRenderStart(CGWindow* window);
+
+/**
+ * @brief Draw the window every frame
+ * 
+ * @param window The window to be drawn
+ */
+void CGWindowDraw(CGWindow* window);
 
 /**
  * @brief end of the tick render. Call this every frame after the render
@@ -316,13 +331,14 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 /***********RENDER LIST***********/
 
 typedef struct CGRenderNode{
+    float assigned_z;
     void* render_object;
     enum CGObjectType{
         CG_RD_TYPE_TRIANGLE = 0,
         CG_RD_TYPE_QUADRANGLE,
         CG_RD_TYPE_SPRITE
     } type;
-    CGRenderNode* next;
+    struct CGRenderNode* next;
 }CGRenderNode;
 
 /**
@@ -333,6 +349,15 @@ typedef struct CGRenderNode{
 void CGCreateRenderList(CGWindow* window);
 
 /**
+ * @brief Create a render node object
+ * 
+ * @param render_object render object
+ * @param type render object type
+ * @return CGRenderNode* the render object instance
+ */
+CGRenderNode* CGCreateRenderNode(void* render_object, enum CGObjectType type);
+
+/**
  * @brief Add a render node in the render list. If there is no render list
  * in the window, the program will not do anything.
  * 
@@ -341,7 +366,19 @@ void CGCreateRenderList(CGWindow* window);
  */
 void CGAddRenderNode(CGWindow* window, CGRenderNode* node);
 
+/**
+ * @brief Delete a render node
+ * 
+ * @param node The node to be deleted
+ */
 void CGDeleteRenderNode(CGRenderNode** node);
+
+/**
+ * @brief Reorganize the render list, and prepare for the render.
+ * 
+ * @param window window that holds the render list.
+ */
+void CGReorganizeRenderList(CGWindow* window);
 
 /************GEOMETRIES************/
 

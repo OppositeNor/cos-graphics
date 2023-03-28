@@ -81,13 +81,13 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
 
 // make a vertices array out of triangle
-float* CGMakeTriangleVertices(CGTriangle* triangle);
+float* CGMakeTriangleVertices(CGTriangle* triangle, float assigned_z);
 
 // make a vertices array out of quadrangle
-float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle);
+float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle, float assigned_z);
 
 // make a vertices array out of sprite
-float* CGMakeSpriteVertices(CGSprite* sprite);
+float* CGMakeSpriteVertices(CGSprite* sprite, float assigned_z);
 
 // set buffer value
 void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
@@ -106,6 +106,15 @@ void CGSetGeometryMatricesUniforms(CGGeometryProperty* property);
 
 // set sprite matrices uniform
 void CGSetSpriteMatrixesUniforms(CGSpriteProperty* property);
+
+// render triangle
+void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z);
+
+// render quadrangle
+void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assigned_z);
+
+// render sprite
+void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -227,6 +236,8 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     window->use_full_screen = use_full_screen;
     window->glfw_window_instance = glfwCreateWindow(width, height, title, 
         use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
+    window->render_list = NULL;
+    CGCreateRenderList(window);
     if (window->glfw_window_instance == NULL)
     {
         CG_ERROR("Failed to create GLFW window.");
@@ -315,6 +326,33 @@ void CGTickRenderStart(CGWindow* window)
     glfwSwapBuffers(window->glfw_window_instance);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void CGWindowDraw(CGWindow* window)
+{
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
+    CGReorganizeRenderList(window);
+    CGRenderNode* draw_obj = window->render_list->next;
+    while (draw_obj != NULL)
+    {
+        switch (draw_obj->type)
+        {
+        case CG_RD_TYPE_TRIANGLE:
+            CGRenderTriangle(draw_obj->render_object, window, draw_obj->assigned_z);
+            break;
+        case CG_RD_TYPE_QUADRANGLE:
+            CGRenderQuadrangle(draw_obj->render_object, window, draw_obj->assigned_z);
+            break;
+        case CG_RD_TYPE_SPRITE:
+            CGRenderSprite(draw_obj->render_object, window, draw_obj->assigned_z);
+            break;
+        default:
+            CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->type);
+        }
+        CGDeleteRenderNode(&draw_obj);
+    }
+    window->render_list->next = NULL;
 }
 
 void CGTickRenderEnd()
@@ -661,13 +699,13 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property)
     triangle->property = property;
 }
 
-float* CGMakeTriangleVertices(CGTriangle* triangle)
+float* CGMakeTriangleVertices(CGTriangle* triangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, "Cannot make vertices array out of a triangle of value NULL.");
     float* result = (float*)malloc(sizeof(float) * 9);
     CG_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for triangle vertexes.");
     static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
-    float depth = (triangle->z - CG_RENDER_NEAR) / denom;
+    float depth = (assigned_z - CG_RENDER_NEAR) / denom;
     CGSetFloatArrayValue(9, result,
         triangle->vert_1.x, triangle->vert_1.y, depth,
         triangle->vert_2.x, triangle->vert_2.y, depth,
@@ -685,9 +723,14 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
 
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
+    CGAddRenderNode(window, CGCreateRenderNode(triangle, CG_RD_TYPE_TRIANGLE));
+}
+
+void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z)
+{
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
     CG_ERROR_CONDITION(triangle == NULL, "Attempting to draw a NULL triangle object.");
-    float* triangle_vertices = CGMakeTriangleVertices(triangle);
+    float* triangle_vertices = CGMakeTriangleVertices(triangle, assigned_z);
     CG_ERROR_CONDITION(triangle_vertices == NULL, "Failed to draw triangle.");
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
@@ -714,13 +757,12 @@ void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle)
+float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Cannot make vertices array out of a quadrangle of value NULL.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate vertices memories.");
-    float depth = (quadrangle->z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
-    
+    float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(12, vertices, 
         quadrangle->vert_1.x, quadrangle->vert_1.y, depth,
         quadrangle->vert_2.x, quadrangle->vert_2.y, depth,
@@ -730,12 +772,12 @@ float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle)
     return vertices;
 }
 
-float* CGMakeSpriteVertices(CGSprite* sprite)
+float* CGMakeSpriteVertices(CGSprite* sprite, float assigned_z)
 {
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Cannot make vertices array out of a sprite of value NULL");
     float* vertices = (float*)malloc(sizeof(float) * 20);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate memory for vertices");
-    float depth = (sprite->z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
+    float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(20, vertices,
         -1 * sprite->demention.x / 2,      sprite->demention.y / 2, depth, 0.0, 0.0,
              sprite->demention.x / 2,      sprite->demention.y / 2, depth, 1.0, 0.0,
@@ -772,13 +814,16 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
+    CGAddRenderNode(window, CGCreateRenderNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
+}
+
+void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assigned_z)
+{
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
     CGGladInitializeCheck();
-    float* vertices = CGMakeQuadrangleVertices(quadrangle);
+    float* vertices = CGMakeQuadrangleVertices(quadrangle, assigned_z);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw quadrangle.");
-    if (glfwGetCurrentContext() != window->glfw_window_instance)
-        glfwMakeContextCurrent(window->glfw_window_instance);
     CGGeometryProperty* property;
     if (quadrangle->property != NULL)
         property = quadrangle->property;
@@ -893,13 +938,16 @@ void CGDeleteSprite(CGSprite* sprite)
 
 void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
+    CGAddRenderNode(window, CGCreateRenderNode(sprite, CG_RD_TYPE_SPRITE));
+}
+
+void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)
+{
     CG_ERROR_CONDITION(sprite == NULL, "Failed to draw sprite: Sprite must be specified to a non-null sprite instance.");
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw sprite: Attempting to draw sprite on a NULL window");
     CGGladInitializeCheck();
-    float* vertices = CGMakeSpriteVertices(sprite);
+    float* vertices = CGMakeSpriteVertices(sprite, assigned_z);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
-    if (glfwGetCurrentContext() != window->glfw_window_instance)
-        glfwMakeContextCurrent(window->glfw_window_instance);
     glBindVertexArray(window->sprite_vao);
     glUseProgram(cg_sprite_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
