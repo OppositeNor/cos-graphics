@@ -30,7 +30,6 @@ CGSpriteProperty* cg_default_sprite_property;
 unsigned int cg_buffers[CG_MAX_OPENGL_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
 
-
 /**
  * @brief vertex shader path for a geometry
  */
@@ -878,7 +877,6 @@ CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWin
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
-        break;
     }
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindVertexArray(0);

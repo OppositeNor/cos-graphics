@@ -29,7 +29,7 @@ int main()
 }
 #endif
 
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -106,3 +106,48 @@ int main()
     return 0;
 }
 #endif
+
+#include "cos_graphics/graphics.h"
+#include "cos_graphics/log.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int main()
+{
+    CGWindow* window = CGCreateWindow(1920, 1080, "Graphics test", CG_FALSE);
+    CGSetClearScreenColor((CGColor){1.0f, 1.0f, 1.0f, 1.0f});
+    window->width = 1920;
+    window->height = 1080;
+    if (window == NULL)
+        return 0;
+    float rotation = 0.0f;
+    CGSprite* sprite = CGCreateSprite("./test3.png", 
+        CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+    sprite->z = 1;
+    CGSprite* sprite2 = CGCreateSprite("./test2.png", 
+        CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+    sprite2->z = -1;
+    sprite2->property->transform.x += 600;
+    sprite2->property->scale.x = 1;
+    double tick_end_time = CGGetCurrentTime();
+    while(!CGShouldWindowClose(window))
+    {
+        static double tick_start_time = 0;
+        static double delta = 0.01;
+        tick_start_time = CGGetCurrentTime();
+
+        CGTickRenderStart(window);
+        CGDrawSprite(sprite, window);
+        CGDrawSprite(sprite2, window);
+        CGTickRenderEnd();
+        tick_end_time = CGGetCurrentTime();
+        delta = tick_end_time - tick_start_time;
+    }
+    free(sprite->property);
+    CGDeleteSprite(sprite);
+    CGDestroyWindow(window);
+    CGTerminateGraphics();
+    window = NULL;
+    return 0;
+}

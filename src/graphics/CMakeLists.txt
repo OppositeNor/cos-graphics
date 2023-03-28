@@ -5,6 +5,7 @@ set(SOURCES
 
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/graphics.h
     ${PROJECT_SOURCE_DIR}/graphics.c
+    ${PROJECT_SOURCE_DIR}/render_list.c
     ${SOURCES}
     PARENT_SCOPE
 )

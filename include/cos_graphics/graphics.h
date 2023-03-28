@@ -6,11 +6,11 @@
 #ifndef CG_RENDER_FAR
     /**
      * @brief The largest "z"(or depth) that this program is capable 
-     * to render. you can set this by defining @ref CG_RENDER_FAR 
+     * to render. you can set this by defining CG_RENDER_FAR 
      * before you include this header file
      * @example 
-     * #define CG_RENDER_FAR 256
-     * #include "graphics.h"        // now the largest z value is set to 256
+     * #define CG_RENDER_FAR 512
+     * #include "cos_graphics/graphics.h"        // now the largest z value is set to 512
      */
     #define CG_RENDER_FAR 256
 #endif
@@ -18,11 +18,11 @@
 #ifndef CG_RENDER_NEAR
     /**
      * @brief The smallest "z"(or depth) that this program is capable 
-     * to render. you can set this by defining @ref CG_RENDER_NEAR 
+     * to render. you can set this by defining CG_RENDER_NEAR 
      * before you include this header file
      * @example 
-     * #define CG_RENDER_FAR -256
-     * #include "graphics.h"        // now the smallest z value is set to -256
+     * #define CG_RENDER_FAR -512
+     * #include "cos_graphics/graphics.h"        // now the smallest z value is set to -512
      */
     #define CG_RENDER_NEAR -256
 #endif
@@ -47,6 +47,7 @@ typedef struct {
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int sprite_vao;
+    CGRenderNode* render_list;
 } CGWindow;
 
 /**
@@ -86,18 +87,23 @@ CGVector2 CGConstructVector2(float x, float y);
 /**
  * @brief Create window object
  * 
- * @param width width of the window
+ * @param width width of the window.
  * @param height height of the window
  * @param title title of the window
  * @param use_full_screen use full screen
- * @return CGWindow* The window instance. Returns NULL if failed to create window.
+ * @return CGWindow* The window instance. Returns NULL if failed to create window. 
+ * The "width" property and "height" property is set to to the paramiter automatically; however
+ * you can set it manually if you don't like the render size of the window. Note that if you 
+ * set this property manually, the size of the window will not change, but the render size
+ * will change instead. You will find the window not scalling, but the content inside the window
+ * scalling. You can change these two properties any time and it will be updated in real-time.
  */
 CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen);
 
 /**
  * @brief Destroy the window
  * 
- * @param window 
+ * @param window The window to be destroyed.
  */
 void CGDestroyWindow(CGWindow* window);
 
@@ -110,7 +116,7 @@ void CGDestroyWindow(CGWindow* window);
 void CGCreateViewport(CGWindow* window);
 
 /**
- * @brief terminate graphics. 
+ * @brief terminate graphics.
  * 
  */
 void CGTerminateGraphics();
@@ -306,6 +312,36 @@ void CGSetShaderUniformVec4f(
  * @param data uniform data
  */
 void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data);
+
+/***********RENDER LIST***********/
+
+typedef struct CGRenderNode{
+    void* render_object;
+    enum CGObjectType{
+        CG_RD_TYPE_TRIANGLE = 0,
+        CG_RD_TYPE_QUADRANGLE,
+        CG_RD_TYPE_SPRITE
+    } type;
+    CGRenderNode* next;
+}CGRenderNode;
+
+/**
+ * @brief Create a render list based on the window.
+ * 
+ * @param window the window to create the render list on.
+ */
+void CGCreateRenderList(CGWindow* window);
+
+/**
+ * @brief Add a render node in the render list. If there is no render list
+ * in the window, the program will not do anything.
+ * 
+ * @param window The window that holds the render list.
+ * @param node The node to be added into the list
+ */
+void CGAddRenderNode(CGWindow* window, CGRenderNode* node);
+
+void CGDeleteRenderNode(CGRenderNode** node);
 
 /************GEOMETRIES************/
 
@@ -525,7 +561,7 @@ typedef struct{
 CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window);
 
 /**
- * @brief Delete CGSprite object
+ * @brief Delete CGSprite object. Note that you have to free the sprite's property manually.
  * 
  * @param sprite sprite object instance to be deleted
  */
