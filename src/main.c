@@ -18,10 +18,11 @@ int main()
     {
         CGTickRenderStart(window);
         CGDrawTriangle(triangle, window);
+        CGWindowDraw(window);
 
         CGTickRenderEnd(window);
     }
-    CGDeleteGeometryProperty(triangle->property);
+    free(triangle->property);
     free(triangle);
     CGTerminateGraphics();
     free(window);
@@ -72,6 +73,7 @@ int main()
     CGSprite* sprite = CGCreateSprite("./test2.png", 
         CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
     sprite->z = -2;
+    quad2.z = -3;
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -86,12 +88,13 @@ int main()
         quad1.property->transform.x = sin(clock + 1.3) * 300;
         quad2.property->scale.x = cos(clock - 2.5);
         quad2.property->scale.y = sin(clock - 2.5);
-
+        quad2.property->color.alpha = quad2.property->scale.x;
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
         CGDrawSprite(sprite, window);
+        CGWindowDraw(window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
@@ -107,6 +110,7 @@ int main()
 }
 #endif
 
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -124,15 +128,8 @@ int main()
     float rotation = 0.0f;
     CGSprite* sprite = CGCreateSprite("./test3.png", 
         CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
-    sprite->z = 1;
-    CGSprite* sprite2 = CGCreateSprite("./test2.png", 
-        CGCreateSpriteProperty((CGVector2){600, 0}, (CGVector2){1, 1}, 0), window);
     CGSprite* sprite3 = CGCreateSprite("./test3.png", 
         CGCreateSpriteProperty((CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
-    sprite->z = 1;
-    CGSprite* sprite4 = CGCreateSprite("./test2.png", 
-        CGCreateSpriteProperty((CGVector2){-300, -600}, (CGVector2){1, 1}, 0), window);
-    sprite2->z = -1;
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
     {
@@ -141,12 +138,9 @@ int main()
         tick_start_time = CGGetCurrentTime();
 
         CGTickRenderStart(window);
-        CGDrawSprite(sprite2, window);
         CGDrawSprite(sprite, window);
         CGDrawSprite(sprite3, window);
-        CGDrawSprite(sprite4, window);
         CGWindowDraw(window);
-        CG_PRINT("");
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
@@ -158,3 +152,4 @@ int main()
     window = NULL;
     return 0;
 }
+#endif
