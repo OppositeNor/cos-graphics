@@ -15,7 +15,7 @@
      * #define CG_RENDER_FAR 8
      * #include "cos_graphics/graphics.h"
      */
-    #define CG_RENDER_FAR 16
+    #define CG_RENDER_FAR 128
 #endif
 
 #ifndef CG_RENDER_NEAR
@@ -30,7 +30,7 @@
      * #define CG_RENDER_NEAR -8
      * #include "cos_graphics/graphics.h"
      */
-    #define CG_RENDER_NEAR -16
+    #define CG_RENDER_NEAR -128
 #endif
 
 /**
@@ -380,7 +380,6 @@ void CGDeleteRenderNode(CGRenderNode** node);
  */
 void CGReorganizeRenderList(CGWindow* window);
 
-/************GEOMETRIES************/
 
 /**
  * @brief Geometry properties for geometry objects.
@@ -402,18 +401,20 @@ typedef struct{
      * @brief rotation of the geometry (in radians)
      */
     float rotation;
-}CGGeometryProperty;
+}CGRenderObjectProperty;
 
 /**
- * @brief Create CGGeometry property object
+ * @brief Create CGRenderObjectProperty object
  * 
  * @param color color
  * @param transform transform
  * @param scale scale
  * @param rotation rotation (clockwise)
- * @return CGGeometryProperty* geometry property object instance
+ * @return CGRenderObjectProperty* property object instance
  */
-CGGeometryProperty* CGCreateGeometryProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
+CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
+
+/************GEOMETRIES************/
 
 /**
  * @brief Triangle
@@ -439,7 +440,7 @@ typedef struct{
     /**
      * @brief Geometry properties of the triangle.
      */
-    CGGeometryProperty* property;
+    CGRenderObjectProperty* property;
 }CGTriangle;
 
 /**
@@ -467,7 +468,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
  * @param triangle triangle to set on
  * @param property triangle property
  */
-void CGSetTriangleProperty(CGTriangle* triangle, CGGeometryProperty* property);
+void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* property);
 
 /**
  * @brief Draw triangle on screen.
@@ -502,7 +503,7 @@ typedef struct{
     /**
      * @brief Geometry property for the quadrangle
      */
-    CGGeometryProperty* property;
+    CGRenderObjectProperty* property;
 }CGQuadrangle;
 
 /**
@@ -540,31 +541,6 @@ void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
 
 typedef struct{
     /**
-     * @brief transform of the geometry
-     */
-    CGVector2 transform;
-    /**
-     * @brief scale of the geometry
-     */
-    CGVector2 scale;
-    /**
-     * @brief rotation of the geometry (in radians)
-     */
-    float rotation;
-}CGSpriteProperty;
-
-/**
- * @brief Create CGSpriteProperty object
- * 
- * @param transform transform
- * @param scale scale
- * @param rotation rotation
- * @return CGSpriteProperty* CGSpriteProperty object
- */
-CGSpriteProperty* CGCreateSpriteProperty(CGVector2 transform, CGVector2 scale, float rotation);
-
-typedef struct{
-    /**
      * @brief Texture's OpenGL ID
      */
     unsigned int texture_id;
@@ -576,7 +552,7 @@ typedef struct{
     /**
      * @brief Sprite property.
      */
-    CGSpriteProperty* property;
+    CGRenderObjectProperty* property;
     /**
      * @brief The window that the sprite is created in.
      */
@@ -595,7 +571,7 @@ typedef struct{
  * @param window the window that the sprite is going to be drawn.
  * @return CGSprite* The created CGSprite object
  */
-CGSprite* CGCreateSprite(const char* img_path, CGSpriteProperty* property, CGWindow* window);
+CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
 
 /**
  * @brief Delete CGSprite object. Note that you have to free the sprite's property manually.
