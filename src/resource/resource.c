@@ -31,6 +31,7 @@ char* CGLoadFile(const char* file_path)
     {
         file_data[i] = fgetc(file);
     }
+    file_data[file_size - 1] = '\0';
     fclose(file);
     return file_data;
 }

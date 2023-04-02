@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdlib.h>
@@ -95,3 +98,7 @@ void CGReorganizeRenderList(CGWindow* window)
         p = p->next;
     }
 }
+
+#ifdef __cplusplus
+}
+#endif

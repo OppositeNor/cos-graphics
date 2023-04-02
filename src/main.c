@@ -126,9 +126,9 @@ int main()
     if (window == NULL)
         return 0;
     float rotation = 0.0f;
-    CGSprite* sprite = CGCreateSprite("./test3.png", 
+    CGSprite* sprite = CGCreateSprite("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
-    CGSprite* sprite3 = CGCreateSprite("./test4.png", 
+    CGSprite* sprite3 = CGCreateSprite("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
