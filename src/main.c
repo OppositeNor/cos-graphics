@@ -30,12 +30,15 @@ int main()
 }
 #endif
 
-#if 0
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifdef CG_TG_WIN
+#include<windows.h>
+#endif
 
 int main()
 {
@@ -58,12 +61,12 @@ int main()
         (CGVector2){-100, 100});
     float rotation = 0.0f;
     triangle.z = 1;
-    quad1.property = CGCreateGeometryProperty(
-        CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
+    quad1.property = CGCreateRenderObjectProperty(
+        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation);
-    quad2.property = CGCreateGeometryProperty(
+    quad2.property = CGCreateRenderObjectProperty(
         CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
@@ -71,10 +74,11 @@ int main()
     );
 
     CGSprite* sprite = CGCreateSprite("./test2.png", 
-        CGCreateSpriteProperty((CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+        CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
     sprite->z = -2;
     quad2.z = -3;
     double tick_end_time = CGGetCurrentTime();
+    const double fixed_delta = 1.0 / 60;
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -83,21 +87,26 @@ int main()
         
         static float clock = 0;
         clock += delta * 3;
-        quad1.property->scale.x = sin(clock);
-        quad1.property->scale.y = cos(clock);
-        quad1.property->transform.x = sin(clock + 1.3) * 300;
-        quad2.property->scale.x = cos(clock - 2.5);
-        quad2.property->scale.y = sin(clock - 2.5);
-        quad2.property->color.alpha = quad2.property->scale.x;
+        quad1.vert_1.x = sin(clock / 0.3) * 10 + 100;
+        quad1.vert_1.y = sin(clock) * 10 - 50;
+        quad1.vert_2.x = sin(clock / 0.5) * 10 + 100;
+        quad1.vert_2.y = sin(clock / 0.7) * 10 + 50;
+        quad1.vert_3.x = sin(clock / 2) * 10 - 100;
+        quad1.vert_3.y = sin(clock / 0.3 - 3) * 10 + 50;
+        quad1.vert_4.x = sin(clock / 0.8) * 10 - 100;
+        quad1.vert_4.y = sin(clock / 0.9 + 5) * 10 - 50;
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
-        CGDrawQuadrangle(&quad2, window);
+        //CGDrawQuadrangle(&quad2, window);
         CGDrawQuadrangle(&quad1, window);
-        CGDrawSprite(sprite, window);
+        //CGDrawSprite(sprite, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
+        //Sleep(fixed_delta * 1000);
+        //while (CGGetCurrentTime() < tick_start_time + fixed_delta);
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
+        //CG_PRINT("%f", delta);
     }
     free(sprite->property);
     CGDeleteSprite(sprite);
@@ -110,7 +119,7 @@ int main()
 }
 #endif
 
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -131,6 +140,7 @@ int main()
     CGSprite* sprite3 = CGCreateSprite("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
     double tick_end_time = CGGetCurrentTime();
+    const double fixed_delta = 1.0 / 60;
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -142,8 +152,10 @@ int main()
         CGDrawSprite(sprite, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
+        while(CGGetCurrentTime() < tick_start_time + fixed_delta);
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
+        CG_PRINT("%f", delta);
     }
     free(sprite->property);
     CGDeleteSprite(sprite);
