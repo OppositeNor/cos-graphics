@@ -1,6 +1,10 @@
 #ifndef _CG_RESOURCE_H_
 #define _CG_RESOURCE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Load file from disk
  * 
@@ -50,5 +54,9 @@ void CGDeleteImage(CGImage* image);
  * @param ... the values to be set to the array
  */
 void CGSetFloatArrayValue(unsigned int count, float* array, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  //_CG_RESOURCE_H_

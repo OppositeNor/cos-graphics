@@ -8,6 +8,7 @@ endif()
 
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib)
 
+# set this to OFF if you only want to export the library
 set (USE_TEST_EXE ON)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
@@ -21,8 +22,6 @@ add_subdirectory(src/resource)
 find_package(OpenGL REQUIRED)
 list(APPEND libs OpenGL::GL)
 
-message("Building for system: ${CMAKE_SYSTEM_NAME}")
-
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/graphics
@@ -30,12 +29,16 @@ set(CG_INCLUDE_DIRECTORIES
     ${CMAKE_SOURCE_DIR}/dependencies/glad/include
     ${CMAKE_SOURCE_DIR}/dependencies/stb)
 
+message("System: ${CMAKE_SYSTEM_NAME}")
+
+#linux
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     # GLFW
     find_package(glfw3 REQUIRED)
     list(APPEND libs glfw)
 
     list(APPEND libs m)
+#windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message("Building for: x64")
@@ -45,6 +48,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
         endif()
     else()
         message("Building for: x86")
+        if (MINGW)
+            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
+            list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/include")
+        endif()
     endif()
 endif()
 

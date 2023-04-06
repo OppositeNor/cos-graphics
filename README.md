@@ -26,7 +26,7 @@ build
 cmake --build build
 ```
 
-build files is in `./export/bin/` and `./export/lib/`
+build files is in `./bin/lib/` and `./bin/exe/`
 
 Currently the shaders are not built within the library, and needs to be loaded while running the program. So please make sure that the shaders are at the same path with your program.
 

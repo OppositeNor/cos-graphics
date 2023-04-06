@@ -43,6 +43,7 @@ int main()
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_FALSE);
+    
     if (window == NULL)
         return 0;
     CGQuadrangle quad1 = CGConstructQuadrangle(
@@ -62,7 +63,7 @@ int main()
     float rotation = 0.0f;
     triangle.z = 1;
     quad1.property = CGCreateRenderObjectProperty(
-        CGConstructColor(1.0f, 0.0f, 0.0f, 0.8f),
+        CGConstructColor(1.0f, 0.0f, 0.0f, 0.5f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation);
@@ -75,10 +76,10 @@ int main()
 
     CGSprite* sprite = CGCreateSprite("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
-    sprite->z = -2;
+    sprite->z = 2;
     quad2.z = -3;
     double tick_end_time = CGGetCurrentTime();
-    const double fixed_delta = 1.0 / 60;
+    const double fixed_delta = 1.0 / 10;
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -87,19 +88,19 @@ int main()
         
         static float clock = 0;
         clock += delta * 3;
-        quad1.vert_1.x = sin(clock / 0.3) * 10 + 100;
-        quad1.vert_1.y = sin(clock) * 10 - 50;
-        quad1.vert_2.x = sin(clock / 0.5) * 10 + 100;
-        quad1.vert_2.y = sin(clock / 0.7) * 10 + 50;
-        quad1.vert_3.x = sin(clock / 2) * 10 - 100;
-        quad1.vert_3.y = sin(clock / 0.3 - 3) * 10 + 50;
-        quad1.vert_4.x = sin(clock / 0.8) * 10 - 100;
-        quad1.vert_4.y = sin(clock / 0.9 + 5) * 10 - 50;
+        quad1.vert_1.x = sin(clock / 0.3) * 30 + 150;
+        quad1.vert_1.y = sin(clock) * 20 - 50;
+        quad1.vert_2.x = sin(clock / 0.5) * 30 + 100;
+        quad1.vert_2.y = sin(clock / 0.7) * 20 + 50;
+        quad1.vert_3.x = sin(clock / 2) * 30 - 150;
+        quad1.vert_3.y = sin(clock / 0.3 - 3) * 20 + 50;
+        quad1.vert_4.x = sin(clock / 0.8) * 30 - 100;
+        quad1.vert_4.y = sin(clock / 0.9 + 5) * 20 - 50;
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         //CGDrawQuadrangle(&quad2, window);
+        CGDrawSprite(sprite, window);
         CGDrawQuadrangle(&quad1, window);
-        //CGDrawSprite(sprite, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         //Sleep(fixed_delta * 1000);

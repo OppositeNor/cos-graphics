@@ -2,6 +2,9 @@
 #define _CG_GRAPHICS_H_
 #include "defs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef CG_RENDER_FAR
     /**
@@ -433,8 +436,7 @@ typedef struct{
      */
     CGVector2 vert_3;
     /**
-     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
-     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     * @brief The depth of the geometry.
      */
     float z;
     /**
@@ -496,8 +498,7 @@ typedef struct{
      */
     CGVector2 vert_4;
     /**
-     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
-     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     * @brief The depth of the geometry.
      */
     float z;
     /**
@@ -545,8 +546,7 @@ typedef struct{
      */
     unsigned int texture_id;
     /**
-     * @brief The depth of the geometry. This value must between @ref CG_RENDER_NEAR 
-     * and @ref CG_RENDER_FAR (-512 to 512 by default)
+     * @brief The depth of the sprite.
      */
     float z;
     /**
@@ -587,5 +587,84 @@ void CGDeleteSprite(CGSprite* sprite);
  * @param window window to draw on
  */
 void CGDrawSprite(CGSprite* sprite, CGWindow* window);
+
+/********ANIMATION SPRITES********/
+
+typedef struct{
+    /**
+     * @brief The texture ids of this animation sprite object.
+     */
+    unsigned int* texture_ids;
+    /**
+     * @brief The number of frames in this animation sprite object.
+     */
+    unsigned int frame_count;
+    /**
+     * @brief The current frame of this animation sprite object.
+     */
+    unsigned int current_frame;
+    /**
+     * @brief frame rate.
+     */
+    float frame_rate;
+    /**
+     * @brief The depth of the animation sprite.
+     */
+    float z;
+    /**
+     * @brief Animation sprite property.
+     */
+    CGRenderObjectProperty* property;
+    /**
+     * @brief The window that the animation sprite is created in.
+     */
+    CGWindow* in_window;
+    /**
+     * @brief the width and height of the animation sprite.
+     */
+    CGVector2 demention;
+    /**
+     * @brief Animation finish callback function. This callback function will be called 
+     * after the animation is finished.
+     */
+    void (*finish_callback)();
+}CGAnimationSprite;
+
+/**
+ * @brief Create CGAnimationSprite object
+ * 
+ * @param img_paths the list of the animation sprite frame image path.
+ * @param frame_count the count of frames of the animated sprite
+ * @param property The animation sprite property
+ * @param window the window that the animation sprite is going to be drawn.
+ * @return CGAnimationSprite* THe created CGAnimationSprite object instance
+ */
+CGAnimationSprite* CGCreateAnimationSprite(
+    const char** img_paths, 
+    unsigned int frame_count, 
+    float frame_rate,
+    CGRenderObjectProperty* property, 
+    CGWindow* window);
+
+/**
+ * @brief Set animation sprite finish callback function.
+ * 
+ * @param anim_sprite The animation sprite object to set on
+ * @param finish_callback The callback function to be set
+ */
+void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)());
+
+/**
+ * @brief Delete animation sprite object. Note that you have to free the animation sprite's property manually.
+ * 
+ * @param anim_sprite The animation sprite object to be deleted
+ */
+void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite);
+
+void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  //_CG_GRAPHICS_H_

@@ -4,9 +4,10 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <math.h>
+#include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define CG_MAX_OPENGL_BUFFER_SIZE 256
 
@@ -112,6 +113,9 @@ void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assign
 
 // render sprite
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z);
+
+// bind texture to vao
+void CGBindTexture(unsigned int texture_id, unsigned int vao, CGImage* texture);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -848,6 +852,32 @@ void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assign
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void CGBindTexture(unsigned int texture_id, unsigned int vao, CGImage* texture)
+{
+    CG_ERROR_CONDITION(texture == NULL, "Cannot bind a NULL texture.");
+    CGGladInitializeCheck();
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    switch(texture->channels)
+    {
+    case 3:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+        break;
+    case 4:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+        break;
+    default:
+        CGDeleteImage(texture);
+        free(texture);
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        CG_ERROR_CONDITION(CG_TRUE, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
+    }
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
+}
+
 CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property, CGWindow* window)
 {
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
@@ -869,26 +899,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property,
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for sprite texture.");
     }
     glGenTextures(1, &sprite->texture_id);
-    glBindVertexArray(window->sprite_vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
-    switch(image->channels)
-    {
-    case 3:
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->width, image->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
-        break;
-    case 4:
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->data);
-        break;
-    default:
-        CGDeleteImage(image);
-        free(sprite);
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
-    }
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    CGBindTexture(sprite->texture_id, window->sprite_vao, image);
     CGDeleteImage(image);
     return sprite;
 }
@@ -924,4 +935,50 @@ void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+CGAnimationSprite* CGCreateAnimationSprite(
+    const char** img_paths, 
+    unsigned int frame_count, 
+    float frame_rate,
+    CGRenderObjectProperty* property, 
+    CGWindow* window)
+{
+    CGAnimationSprite* anim_sprite = (CGAnimationSprite*)malloc(sizeof(CGAnimationSprite));
+    CG_ERROR_COND_RETURN(anim_sprite == NULL, NULL, "Failed to allocate memory for animation sprite.");
+    anim_sprite->frame_count = frame_count;
+    anim_sprite->frame_rate = frame_rate;
+    anim_sprite->property = property;
+    anim_sprite->finish_callback = NULL;
+    if (anim_sprite->texture_ids == NULL)
+    {
+        free(anim_sprite);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for animation sprite texture ids.");
+    }
+    if (frame_count == 0)
+    {
+        anim_sprite->texture_ids = NULL;
+        return anim_sprite;
+    }
+    anim_sprite->texture_ids = (unsigned int*)malloc(sizeof(unsigned int*) * frame_count);
+    const char* img_path_p = *img_paths;
+    while (--frame_count)
+    {
+        ++img_path_p;
+    }
+    return anim_sprite;
+}
+
+void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)())
+{
+    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to set animation sprite finish callback: Animation sprite must be specified to a non-null animation sprite instance.")
+    anim_sprite->finish_callback = finish_callback;
+}
+
+void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite)
+{
+    for (int i = 0; i < anim_sprite->frame_count; ++i)
+        glDeleteTextures(1, &anim_sprite->texture_ids[i]);
+    free(anim_sprite->texture_ids);
+    free(anim_sprite);
 }
