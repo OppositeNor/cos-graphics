@@ -44,7 +44,7 @@ typedef struct {
     float y;
 } CGVector2;
 
-struct CGRenderNode;
+struct CGLinkedListNode;
 
 /**
  * @brief Window
@@ -58,7 +58,7 @@ typedef struct {
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int sprite_vao;
-    struct CGRenderNode* render_list;
+    struct CGLinkedListNode* render_list;
 } CGWindow;
 
 /**
@@ -331,18 +331,29 @@ void CGSetShaderUniformVec4f(
  */
 void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data);
 
+typedef struct CGLinkedListNode{
+    float assigned_z;
+    int identifier;
+    void* data;
+    struct CGLinkedListNode* next;
+}CGRenderNode, CGAnimationNode;
+
+/**
+ * @brief Create a render node object
+ * 
+ * @param data linked list data
+ * @param type object type
+ * @return CGRenderNode* the render object instance
+ */
+CGRenderNode* CGCreateLinkedListNode(void* data, int type);
+
 /***********RENDER LIST***********/
 
-typedef struct CGRenderNode{
-    float assigned_z;
-    void* render_object;
-    enum CGObjectType{
-        CG_RD_TYPE_TRIANGLE = 0,
-        CG_RD_TYPE_QUADRANGLE,
-        CG_RD_TYPE_SPRITE
-    } type;
-    struct CGRenderNode* next;
-}CGRenderNode;
+enum CGRenderIdentifiers{
+    CG_RD_TYPE_TRIANGLE = 0,
+    CG_RD_TYPE_QUADRANGLE,
+    CG_RD_TYPE_SPRITE
+};
 
 /**
  * @brief Create a render list based on the window.
@@ -350,15 +361,6 @@ typedef struct CGRenderNode{
  * @param window the window to create the render list on.
  */
 void CGCreateRenderList(CGWindow* window);
-
-/**
- * @brief Create a render node object
- * 
- * @param render_object render object
- * @param type render object type
- * @return CGRenderNode* the render object instance
- */
-CGRenderNode* CGCreateRenderNode(void* render_object, int type);
 
 /**
  * @brief Add a render node in the render list. If there is no render list
@@ -590,11 +592,7 @@ void CGDrawSprite(CGSprite* sprite, CGWindow* window);
 
 /********ANIMATION SPRITES********/
 
-typedef struct{
-    /**
-     * @brief The texture ids of this animation sprite object.
-     */
-    unsigned int* texture_ids;
+typedef struct CGAnimationSprite{
     /**
      * @brief The number of frames in this animation sprite object.
      */
@@ -612,6 +610,18 @@ typedef struct{
      */
     float z;
     /**
+     * @brief Is animation playing.
+     */
+    CG_BOOL is_playing;
+    /**
+     * @brief The processing id of the thread for playing the animation sprite.
+     */
+    unsigned int animation_process_id;
+    /**
+     * @brief The texture ids of this animation sprite object.
+     */
+    unsigned int* texture_ids;
+    /**
      * @brief Animation sprite property.
      */
     CGRenderObjectProperty* property;
@@ -626,8 +636,9 @@ typedef struct{
     /**
      * @brief Animation finish callback function. This callback function will be called 
      * after the animation is finished.
+     * @param anim_sprite The animation sprite object that the animation is finished.
      */
-    void (*finish_callback)();
+    void (*finish_callback)(struct CGAnimationSprite*);
 }CGAnimationSprite;
 
 /**
@@ -652,7 +663,7 @@ CGAnimationSprite* CGCreateAnimationSprite(
  * @param anim_sprite The animation sprite object to set on
  * @param finish_callback The callback function to be set
  */
-void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)());
+void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)(CGAnimationSprite*));
 
 /**
  * @brief Delete animation sprite object. Note that you have to free the animation sprite's property manually.
@@ -661,6 +672,12 @@ void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*f
  */
 void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite);
 
+/**
+ * @brief Draw animation sprite on window
+ * 
+ * @param anim_sprite The animation sprite object to be drawn
+ * @param window The window to draw on
+ */
 void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite);
 
 #ifdef __cplusplus

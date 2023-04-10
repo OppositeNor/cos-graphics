@@ -19,27 +19,17 @@ void CGCreateRenderList(CGWindow* window)
 
 float* CGGetDepthPointer(CGRenderNode* node)
 {
-    switch (node->type)
+    switch (node->identifier)
     {
     case CG_RD_TYPE_TRIANGLE:
-        return &((CGTriangle*)node->render_object)->z;
+        return &((CGTriangle*)node->data)->z;
     case CG_RD_TYPE_QUADRANGLE:
-        return &((CGQuadrangle*)node->render_object)->z;
+        return &((CGQuadrangle*)node->data)->z;
     case CG_RD_TYPE_SPRITE:
-        return &((CGSprite*)node->render_object)->z;
+        return &((CGSprite*)node->data)->z;
     default:
-        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the z value from node: Cannot find render type: %d.", node->type);
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the z value from node: Cannot find render type: %d.", node->identifier);
     }
-}
-
-CGRenderNode* CGCreateRenderNode(void* render_object, int type)
-{
-    CGRenderNode* node = (CGRenderNode*)malloc(sizeof(CGRenderNode));
-    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for node");
-    node->render_object = render_object;
-    node->type = type;
-    node->next = NULL;
-    return node;
 }
 
 void CGAddRenderNode(CGWindow* window, CGRenderNode* node)
@@ -76,8 +66,8 @@ void CGDeleteRenderNode(CGRenderNode** node)
         return;
     }
     CGRenderNode* p_node = *node;
-    p_node->render_object = p_node->next->render_object;
-    p_node->type = p_node->next->type;
+    p_node->data = p_node->next->data;
+    p_node->identifier = p_node->next->identifier;
     p_node->assigned_z = p_node->next->assigned_z;
     CGRenderNode* temp = p_node->next->next;
     free(p_node->next);

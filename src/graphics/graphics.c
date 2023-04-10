@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define CG_MAX_OPENGL_BUFFER_SIZE 256
+#define CG_MAX_BUFFER_SIZE 256
 
 #define CGGladInitializeCheck()                                 \
     if (!cg_is_glad_initialized) {                              \
@@ -28,7 +28,7 @@ CGRenderObjectProperty* cg_default_sprite_property;
 #define CG_BUFFERS_SPRITE_VBO 3
 #define CG_BUFFERS_SPRITE_EBO 4
 
-unsigned int cg_buffers[CG_MAX_OPENGL_BUFFER_SIZE] = {0};
+unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
 
 /**
@@ -342,19 +342,19 @@ void CGWindowDraw(CGWindow* window)
     CGRenderNode* draw_obj = window->render_list->next;
     while (draw_obj != NULL)
     {
-        switch (draw_obj->type)
+        switch (draw_obj->identifier)
         {
         case CG_RD_TYPE_TRIANGLE:
-            CGRenderTriangle(draw_obj->render_object, window, draw_obj->assigned_z);
+            CGRenderTriangle(draw_obj->data, window, draw_obj->assigned_z);
             break;
         case CG_RD_TYPE_QUADRANGLE:
-            CGRenderQuadrangle(draw_obj->render_object, window, draw_obj->assigned_z);
+            CGRenderQuadrangle(draw_obj->data, window, draw_obj->assigned_z);
             break;
         case CG_RD_TYPE_SPRITE:
-            CGRenderSprite(draw_obj->render_object, window, draw_obj->assigned_z);
+            CGRenderSprite(draw_obj->data, window, draw_obj->assigned_z);
             break;
         default:
-            CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->type);
+            CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->identifier);
         }
         CGDeleteRenderNode(&draw_obj);
     }
@@ -581,6 +581,16 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
 }
 
+CGRenderNode* CGCreateLinkedListNode(void* data, int type)
+{
+    CGRenderNode* node = (CGRenderNode*)malloc(sizeof(CGRenderNode));
+    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for node");
+    node->data = data;
+    node->identifier = type;
+    node->next = NULL;
+    return node;
+}
+
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
 {
     CGRenderObjectProperty* property = (CGRenderObjectProperty*)malloc(sizeof(CGRenderObjectProperty));
@@ -729,7 +739,7 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
 
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateRenderNode(triangle, CG_RD_TYPE_TRIANGLE));
+    CGAddRenderNode(window, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
 }
 
 void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z)
@@ -820,7 +830,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateRenderNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
+    CGAddRenderNode(window, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
 }
 
 void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assigned_z)
@@ -912,7 +922,7 @@ void CGDeleteSprite(CGSprite* sprite)
 
 void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateRenderNode(sprite, CG_RD_TYPE_SPRITE));
+    CGAddRenderNode(window, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
 }
 
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)
@@ -946,6 +956,7 @@ CGAnimationSprite* CGCreateAnimationSprite(
 {
     CGAnimationSprite* anim_sprite = (CGAnimationSprite*)malloc(sizeof(CGAnimationSprite));
     CG_ERROR_COND_RETURN(anim_sprite == NULL, NULL, "Failed to allocate memory for animation sprite.");
+    anim_sprite->is_playing = CG_FALSE;
     anim_sprite->frame_count = frame_count;
     anim_sprite->frame_rate = frame_rate;
     anim_sprite->property = property;
@@ -969,9 +980,9 @@ CGAnimationSprite* CGCreateAnimationSprite(
     return anim_sprite;
 }
 
-void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)())
+void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)(CGAnimationSprite*))
 {
-    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to set animation sprite finish callback: Animation sprite must be specified to a non-null animation sprite instance.")
+    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to set animation sprite finish callback: Animation sprite must be specified to a non-null animation sprite instance.");
     anim_sprite->finish_callback = finish_callback;
 }
 
@@ -981,4 +992,11 @@ void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite)
         glDeleteTextures(1, &anim_sprite->texture_ids[i]);
     free(anim_sprite->texture_ids);
     free(anim_sprite);
+}
+
+void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite)
+{
+    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to play animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
+    anim_sprite->is_playing = CG_TRUE;
+
 }
