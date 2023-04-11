@@ -68,6 +68,9 @@ CGShaderProgram cg_default_sprite_shader_program;
  */
 CGShaderProgram cg_sprite_shader_program;
 
+// get the "z" property of the render node object.
+float* CGGetDepthPointer(const CGRenderNode* node);
+
 const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -584,6 +587,67 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 void CGDraw(void* draw_object, CGWindow* window, int object_type)
 {
     CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(draw_object, object_type));
+}
+
+float* CGGetDepthPointer(const CGRenderNode* node)
+{
+    switch (node->identifier)
+    {
+    case CG_RD_TYPE_TRIANGLE:
+        return &((CGTriangle*)node->data)->z;
+    case CG_RD_TYPE_QUADRANGLE:
+        return &((CGQuadrangle*)node->data)->z;
+    case CG_RD_TYPE_SPRITE:
+        return &((CGSprite*)node->data)->z;
+    default:
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the z value from node: Cannot find render type: %d.", node->identifier);
+    }
+}
+
+void CGCreateRenderList(CGWindow* window)
+{
+    CG_ERROR_CONDITION(window == NULL, "Cannot create render list on a NULL window");
+    if (window->render_list != NULL)
+        free(window->render_list);
+    window->render_list = (CGRenderNode*)malloc(sizeof(CGRenderNode));
+    window->render_list->next = NULL;
+}
+
+void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
+{
+    if (node == NULL || list_head == NULL)
+        return;
+    CGRenderNode* p = list_head;
+    while (p->next != NULL)
+    {
+        if (*CGGetDepthPointer(node) > *CGGetDepthPointer(p->next))
+        {
+            CGRenderNode* temp = p->next;
+            p->next = node;
+            node->next = temp;
+            return;
+        }
+        p = p->next;
+    }
+    CGRenderNode* temp = p->next;
+    p->next = node;
+    node->next = temp;
+    
+}
+
+void CGReorganizeRenderList(CGWindow* window)
+{
+    CG_ERROR_CONDITION(window == NULL, "Cannot reorganize list with a NULL window");
+    if(window->render_list == NULL)
+        return;
+    CGRenderNode* p = window->render_list->next;
+    float assign_z = CG_RENDER_FAR;
+    while(p != NULL)
+    {
+        assign_z -= 0.1;
+        p->assigned_z = assign_z;
+        p = p->next;
+    }
 }
 
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)

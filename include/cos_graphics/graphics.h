@@ -1,6 +1,7 @@
 #ifndef _CG_GRAPHICS_H_
 #define _CG_GRAPHICS_H_
 #include "defs.h"
+#include "linked_list.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +51,8 @@ extern "C" {
  * @brief Draw sprite.
  */
 #define CGDrawSprite(sprite_object, window) CGDraw(sprite_object, window, CG_RD_TYPE_SPRITE)
+
+typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
 /**
  * @brief 2D vector
@@ -346,29 +349,6 @@ void CGSetShaderUniformVec4f(
  */
 void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform_name, const float* data);
 
-typedef struct CGLinkedListNode{
-    float assigned_z;
-    int identifier;
-    void* data;
-    struct CGLinkedListNode* next;
-}CGLinkedListNode, CGRenderNode, CGAnimationNode;
-
-/**
- * @brief Create a linked list node object
- * 
- * @param data linked list data
- * @param type object type
- * @return CGRenderNode* the render object instance
- */
-CGLinkedListNode* CGCreateLinkedListNode(void* data, int type);
-
-/**
- * @brief Delete a linked list node
- * 
- * @param node The node to be deleted
- */
-void CGRemoveLinkedListNode(CGLinkedListNode** node);
-
 /***********RENDER LIST***********/
 
 enum CGRenderIdentifiers{
@@ -390,7 +370,7 @@ void CGCreateRenderList(CGWindow* window);
  * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
  * @param node The node to be added into the list
  */
-void CGAddRenderListNode(CGLinkedListNode* list_head, CGLinkedListNode* node);
+void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
 
 /**
  * @brief Reorganize the render list, and prepare for the render.
