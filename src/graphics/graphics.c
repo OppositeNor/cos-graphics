@@ -82,13 +82,13 @@ CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
 
 // make a vertices array out of triangle
-float* CGMakeTriangleVertices(CGTriangle* triangle, float assigned_z);
+float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z);
 
 // make a vertices array out of quadrangle
-float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle, float assigned_z);
+float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z);
 
 // make a vertices array out of sprite
-float* CGMakeSpriteVertices(CGSprite* sprite, float assigned_z);
+float* CGMakeSpriteVertices(const CGSprite* sprite, float assigned_z);
 
 // set buffer value
 void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
@@ -103,13 +103,13 @@ float* CGCreateScaleMatrix(CGVector2 scale);
 float* CGCreateRotateMatrix(float rotate);
 
 // set geometry matrices uniform
-void CGSetPropertyUniforms(CGShaderProgram shader_program, CGRenderObjectProperty* property);
+void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property);
 
 // render triangle
-void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z);
+void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z);
 
 // render quadrangle
-void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assigned_z);
+void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z);
 
 // render sprite
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z);
@@ -581,10 +581,10 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
 }
 
-CGRenderNode* CGCreateLinkedListNode(void* data, int type)
+CGLinkedListNode* CGCreateLinkedListNode(void* data, int type)
 {
-    CGRenderNode* node = (CGRenderNode*)malloc(sizeof(CGRenderNode));
-    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for node");
+    CGLinkedListNode* node = (CGLinkedListNode*)malloc(sizeof(CGLinkedListNode));
+    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for linked list node");
     node->data = data;
     node->identifier = type;
     node->next = NULL;
@@ -655,7 +655,7 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
     }
 }
 
-void CGSetPropertyUniforms(CGShaderProgram shader_program, CGRenderObjectProperty* property)
+void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property)
 {
     CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(shader_program, "color", 
@@ -715,7 +715,7 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* propert
     triangle->property = property;
 }
 
-float* CGMakeTriangleVertices(CGTriangle* triangle, float assigned_z)
+float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, "Cannot make vertices array out of a triangle of value NULL.");
     float* result = (float*)malloc(sizeof(float) * 9);
@@ -739,10 +739,10 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
 
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
+    CGAddLinkedListNode(window, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
 }
 
-void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z)
+void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
     CG_ERROR_CONDITION(triangle == NULL, "Attempting to draw a NULL triangle object.");
@@ -773,7 +773,7 @@ void CGRenderTriangle(CGTriangle* triangle, CGWindow* window, float assigned_z)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle, float assigned_z)
+float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Cannot make vertices array out of a quadrangle of value NULL.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
@@ -788,7 +788,7 @@ float* CGMakeQuadrangleVertices(CGQuadrangle* quadrangle, float assigned_z)
     return vertices;
 }
 
-float* CGMakeSpriteVertices(CGSprite* sprite, float assigned_z)
+float* CGMakeSpriteVertices(const CGSprite* sprite, float assigned_z)
 {
     CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Cannot make vertices array out of a sprite of value NULL");
     float* vertices = (float*)malloc(sizeof(float) * 20);
@@ -830,10 +830,10 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
+    CGAddLinkedListNode(window, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
 }
 
-void CGRenderQuadrangle(CGQuadrangle* quadrangle, CGWindow* window, float assigned_z)
+void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
@@ -922,7 +922,7 @@ void CGDeleteSprite(CGSprite* sprite)
 
 void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
-    CGAddRenderNode(window, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
+    CGAddLinkedListNode(window, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
 }
 
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)

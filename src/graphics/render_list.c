@@ -6,7 +6,7 @@ extern "C" {
 #include <stdlib.h>
 
 // get the "z" property of the render node object.
-float* CGGetDepthPointer(CGRenderNode* node);
+float* CGGetDepthPointer(const CGRenderNode* node);
 
 void CGCreateRenderList(CGWindow* window)
 {
@@ -17,7 +17,7 @@ void CGCreateRenderList(CGWindow* window)
     window->render_list->next = NULL;
 }
 
-float* CGGetDepthPointer(CGRenderNode* node)
+float* CGGetDepthPointer(const CGRenderNode* node)
 {
     switch (node->identifier)
     {
@@ -32,12 +32,11 @@ float* CGGetDepthPointer(CGRenderNode* node)
     }
 }
 
-void CGAddRenderNode(CGWindow* window, CGRenderNode* node)
+void CGAddLinkedListNode(CGRenderNode* list_head, CGRenderNode* node)
 {
-    CG_ERROR_CONDITION(window == NULL, "Cannot create render list on a NULL window");
-    if (node == NULL || window->render_list == NULL)
+    if (node == NULL || list_head == NULL)
         return;
-    CGRenderNode* p = window->render_list;
+    CGRenderNode* p = list_head;
     while (p->next != NULL)
     {
         if (*CGGetDepthPointer(node) > *CGGetDepthPointer(p->next))

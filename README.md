@@ -9,10 +9,10 @@ This is a simple 2D graphics library that can be used in simple 2D rendering
 Clone repository
 
 ```
-git clone https://github.com/OppositeNor/cos-graphics.git
+git clone https://github.com/OppositeNor/cos-graphics.git --recursive
 ```
 
-For Linux Debian you have to install dependencies.
+For Linux Debian you have to install dependencies:
 
 
 ```

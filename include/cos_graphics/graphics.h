@@ -336,16 +336,31 @@ typedef struct CGLinkedListNode{
     int identifier;
     void* data;
     struct CGLinkedListNode* next;
-}CGRenderNode, CGAnimationNode;
+}CGLinkedListNode, CGRenderNode, CGAnimationNode;
 
 /**
- * @brief Create a render node object
+ * @brief Create a linked list node object
  * 
  * @param data linked list data
  * @param type object type
  * @return CGRenderNode* the render object instance
  */
-CGRenderNode* CGCreateLinkedListNode(void* data, int type);
+CGLinkedListNode* CGCreateLinkedListNode(void* data, int type);
+
+/**
+ * @brief Add a linked list node in the list.
+ * 
+ * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
+ * @param node The node to be added into the list
+ */
+void CGAddLinkedListNode(CGLinkedListNode* list_head, CGLinkedListNode* node);
+
+/**
+ * @brief Delete a linked list node
+ * 
+ * @param node The node to be deleted
+ */
+void CGDeleteLinkedListNode(CGLinkedListNode** node);
 
 /***********RENDER LIST***********/
 
@@ -361,22 +376,6 @@ enum CGRenderIdentifiers{
  * @param window the window to create the render list on.
  */
 void CGCreateRenderList(CGWindow* window);
-
-/**
- * @brief Add a render node in the render list. If there is no render list
- * in the window, the program will not do anything.
- * 
- * @param window The window that holds the render list.
- * @param node The node to be added into the list
- */
-void CGAddRenderNode(CGWindow* window, CGRenderNode* node);
-
-/**
- * @brief Delete a render node
- * 
- * @param node The node to be deleted
- */
-void CGDeleteRenderNode(CGRenderNode** node);
 
 /**
  * @brief Reorganize the render list, and prepare for the render.
