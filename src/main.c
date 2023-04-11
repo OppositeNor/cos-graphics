@@ -38,6 +38,8 @@ int main()
 #include <math.h>
 #ifdef CG_TG_WIN
 #include<windows.h>
+#elif defined CG_TG_LINUX
+#include <unistd.h>
 #endif
 
 int main()
@@ -79,7 +81,7 @@ int main()
     sprite->z = 2;
     quad2.z = -3;
     double tick_end_time = CGGetCurrentTime();
-    const double fixed_delta = 1.0 / 10;
+    const double fixed_delta = 1.0 / 60;
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -88,14 +90,10 @@ int main()
         
         static float clock = 0;
         clock += delta * 3;
-        quad1.vert_1.x = sin(clock / 0.3) * 30 + 150;
-        quad1.vert_1.y = sin(clock) * 20 - 50;
-        quad1.vert_2.x = sin(clock / 0.5) * 30 + 100;
-        quad1.vert_2.y = sin(clock / 0.7) * 20 + 50;
-        quad1.vert_3.x = sin(clock / 2) * 30 - 150;
-        quad1.vert_3.y = sin(clock / 0.3 - 3) * 20 + 50;
-        quad1.vert_4.x = sin(clock / 0.8) * 30 - 100;
-        quad1.vert_4.y = sin(clock / 0.9 + 5) * 20 - 50;
+        quad1.vert_1 = CGConstructVector2(sin(clock / 0.3) * 30 + 150, sin(clock) * 20 - 50);
+        quad1.vert_2 = CGConstructVector2(sin(clock / 0.5) * 30 + 100, sin(clock / 0.7) * 20 + 50);
+        quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
+        quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         //CGDrawQuadrangle(&quad2, window);
@@ -104,7 +102,9 @@ int main()
         CGWindowDraw(window);
         CGTickRenderEnd();
         //Sleep(fixed_delta * 1000);
-        //while (CGGetCurrentTime() < tick_start_time + fixed_delta);
+        //while (CGGetCurrentTime() < tick_start_time + fixed_delta)
+            //usleep(50);
+        ;
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
         //CG_PRINT("%f", delta);

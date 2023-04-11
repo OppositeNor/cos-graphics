@@ -8,6 +8,16 @@ extern "C" {
 // get the "z" property of the render node object.
 float* CGGetDepthPointer(const CGRenderNode* node);
 
+CGLinkedListNode* CGCreateLinkedListNode(void* data, int type)
+{
+    CGLinkedListNode* node = (CGLinkedListNode*)malloc(sizeof(CGLinkedListNode));
+    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for linked list node");
+    node->data = data;
+    node->identifier = type;
+    node->next = NULL;
+    return node;
+}
+
 void CGCreateRenderList(CGWindow* window)
 {
     CG_ERROR_CONDITION(window == NULL, "Cannot create render list on a NULL window");
@@ -32,7 +42,7 @@ float* CGGetDepthPointer(const CGRenderNode* node)
     }
 }
 
-void CGAddLinkedListNode(CGLinkedListNode* list_head, CGLinkedListNode* node)
+void CGAddRenderListNode(CGLinkedListNode* list_head, CGLinkedListNode* node)
 {
     if (node == NULL || list_head == NULL)
         return;

@@ -581,14 +581,9 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
 }
 
-CGLinkedListNode* CGCreateLinkedListNode(void* data, int type)
+void CGDraw(void* draw_object, CGWindow* window, int object_type)
 {
-    CGLinkedListNode* node = (CGLinkedListNode*)malloc(sizeof(CGLinkedListNode));
-    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for linked list node");
-    node->data = data;
-    node->identifier = type;
-    node->next = NULL;
-    return node;
+    CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(draw_object, object_type));
 }
 
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
@@ -737,11 +732,6 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
     glBufferData(buffer_type, buffer_size, buffer_data, usage);
 }
 
-void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
-{
-    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
-}
-
 void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
@@ -826,11 +816,6 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->z = 0.0f;
     result->property = NULL;
     return result;
-}
-
-void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
-{
-    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
 }
 
 void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z)
@@ -918,11 +903,6 @@ void CGDeleteSprite(CGSprite* sprite)
 {
     glDeleteTextures(1, &sprite->texture_id);
     free(sprite);
-}
-
-void CGDrawSprite(CGSprite* sprite, CGWindow* window)
-{
-    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
 }
 
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)

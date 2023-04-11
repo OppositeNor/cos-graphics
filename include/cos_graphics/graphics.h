@@ -37,6 +37,21 @@ extern "C" {
 #endif
 
 /**
+ * @brief Draw triangle.
+ */
+#define CGDrawTriangle(triangle_object, window) CGDraw(triangle_object, window, CG_RD_TYPE_TRIANGLE)
+
+/**
+ * @brief Draw quadrangle.
+ */
+#define CGDrawQuadrangle(quadrangle_object, window) CGDraw(quadrangle_object, window, CG_RD_TYPE_QUADRANGLE)
+
+/**
+ * @brief Draw sprite.
+ */
+#define CGDrawSprite(sprite_object, window) CGDraw(sprite_object, window, CG_RD_TYPE_SPRITE)
+
+/**
  * @brief 2D vector
  */
 typedef struct {
@@ -348,14 +363,6 @@ typedef struct CGLinkedListNode{
 CGLinkedListNode* CGCreateLinkedListNode(void* data, int type);
 
 /**
- * @brief Add a linked list node in the list.
- * 
- * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
- * @param node The node to be added into the list
- */
-void CGAddLinkedListNode(CGLinkedListNode* list_head, CGLinkedListNode* node);
-
-/**
  * @brief Delete a linked list node
  * 
  * @param node The node to be deleted
@@ -378,12 +385,21 @@ enum CGRenderIdentifiers{
 void CGCreateRenderList(CGWindow* window);
 
 /**
+ * @brief Add a render list node in the list.
+ * 
+ * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
+ * @param node The node to be added into the list
+ */
+void CGAddRenderListNode(CGLinkedListNode* list_head, CGLinkedListNode* node);
+
+/**
  * @brief Reorganize the render list, and prepare for the render.
  * 
  * @param window window that holds the render list.
  */
 void CGReorganizeRenderList(CGWindow* window);
 
+/************GEOMETRIES************/
 
 /**
  * @brief Geometry properties for geometry objects.
@@ -418,7 +434,14 @@ typedef struct{
  */
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
 
-/************GEOMETRIES************/
+/**
+ * @brief Register a object to the render list.
+ * 
+ * @param draw_object the object to be drawn.
+ * @param window the window to be draw on.
+ * @param object_type the type of the object
+ */
+void CGDraw(void* draw_object, CGWindow* window, int object_type);
 
 /**
  * @brief Triangle
@@ -473,14 +496,6 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
  */
 void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* property);
 
-/**
- * @brief Draw triangle on screen.
- * 
- * @param triangle triangle to draw on screen
- * @param window window to draw on
- */
-void CGDrawTriangle(CGTriangle* triangle, CGWindow* window);
-
 typedef struct{
     /**
      * @brief first vertex position
@@ -530,14 +545,6 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
  */
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
-/**
- * @brief Draw a quadrangle on window
- * 
- * @param quadrangle the quadrangle to draw
- * @param window the window to draw on
- */
-void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window);
-
 
 /************SPRITES************/
 
@@ -580,14 +587,6 @@ CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property,
  * @param sprite sprite object instance to be deleted
  */
 void CGDeleteSprite(CGSprite* sprite);
-
-/**
- * @brief Draw sprite on window
- * 
- * @param sprite sprite to be drawn
- * @param window window to draw on
- */
-void CGDrawSprite(CGSprite* sprite, CGWindow* window);
 
 /********ANIMATION SPRITES********/
 
