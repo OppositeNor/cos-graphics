@@ -360,7 +360,7 @@ void CGAddLinkedListNode(CGLinkedListNode* list_head, CGLinkedListNode* node);
  * 
  * @param node The node to be deleted
  */
-void CGDeleteLinkedListNode(CGLinkedListNode** node);
+void CGRemoveLinkedListNode(CGLinkedListNode** node);
 
 /***********RENDER LIST***********/
 

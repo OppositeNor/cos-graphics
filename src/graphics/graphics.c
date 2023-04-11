@@ -356,7 +356,7 @@ void CGWindowDraw(CGWindow* window)
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->identifier);
         }
-        CGDeleteRenderNode(&draw_obj);
+        CGRemoveLinkedListNode(&draw_obj);
     }
     window->render_list->next = NULL;
 }
@@ -739,7 +739,7 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
 
 void CGDrawTriangle(CGTriangle* triangle, CGWindow* window)
 {
-    CGAddLinkedListNode(window, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
+    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(triangle, CG_RD_TYPE_TRIANGLE));
 }
 
 void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z)
@@ -830,7 +830,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGDrawQuadrangle(CGQuadrangle* quadrangle, CGWindow* window)
 {
-    CGAddLinkedListNode(window, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
+    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(quadrangle, CG_RD_TYPE_QUADRANGLE));
 }
 
 void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z)
@@ -922,7 +922,7 @@ void CGDeleteSprite(CGSprite* sprite)
 
 void CGDrawSprite(CGSprite* sprite, CGWindow* window)
 {
-    CGAddLinkedListNode(window, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
+    CGAddLinkedListNode(window->render_list, CGCreateLinkedListNode(sprite, CG_RD_TYPE_SPRITE));
 }
 
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)

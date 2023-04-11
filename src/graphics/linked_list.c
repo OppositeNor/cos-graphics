@@ -32,29 +32,29 @@ float* CGGetDepthPointer(const CGRenderNode* node)
     }
 }
 
-void CGAddLinkedListNode(CGRenderNode* list_head, CGRenderNode* node)
+void CGAddLinkedListNode(CGLinkedListNode* list_head, CGLinkedListNode* node)
 {
     if (node == NULL || list_head == NULL)
         return;
-    CGRenderNode* p = list_head;
+    CGLinkedListNode* p = list_head;
     while (p->next != NULL)
     {
         if (*CGGetDepthPointer(node) > *CGGetDepthPointer(p->next))
         {
-            CGRenderNode* temp = p->next;
+            CGLinkedListNode* temp = p->next;
             p->next = node;
             node->next = temp;
             return;
         }
         p = p->next;
     }
-    CGRenderNode* temp = p->next;
+    CGLinkedListNode* temp = p->next;
     p->next = node;
     node->next = temp;
     
 }
 
-void CGDeleteRenderNode(CGRenderNode** node)
+void CGRemoveLinkedListNode(CGLinkedListNode** node)
 {
     if (node == NULL || *node == NULL)
         return;
@@ -64,11 +64,11 @@ void CGDeleteRenderNode(CGRenderNode** node)
         *node = NULL;
         return;
     }
-    CGRenderNode* p_node = *node;
+    CGLinkedListNode* p_node = *node;
     p_node->data = p_node->next->data;
     p_node->identifier = p_node->next->identifier;
     p_node->assigned_z = p_node->next->assigned_z;
-    CGRenderNode* temp = p_node->next->next;
+    CGLinkedListNode* temp = p_node->next->next;
     free(p_node->next);
     p_node->next = temp;
 }
