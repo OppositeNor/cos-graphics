@@ -62,8 +62,6 @@ typedef struct {
     float y;
 } CGVector2;
 
-struct CGLinkedListNode;
-
 /**
  * @brief Window
  */
@@ -76,7 +74,8 @@ typedef struct {
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int sprite_vao;
-    struct CGLinkedListNode* render_list;
+    CGRenderNode* render_list;
+    CGAnimationNode* animation_list;
 } CGWindow;
 
 /**
@@ -428,6 +427,14 @@ void CGDraw(void* draw_object, CGWindow* window, int object_type);
  */
 typedef struct{
     /**
+     * @brief The depth of the geometry.
+     */
+    float z;
+    /**
+     * @brief The assigned z for rendering sortting.
+     */
+    float assigned_z;
+    /**
      * @brief first vertex position
      */
     CGVector2 vert_1;
@@ -439,10 +446,6 @@ typedef struct{
      * @brief third vertex position
      */
     CGVector2 vert_3;
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
     /**
      * @brief Geometry properties of the triangle.
      */
@@ -478,6 +481,14 @@ void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* propert
 
 typedef struct{
     /**
+     * @brief The depth of the geometry.
+     */
+    float z;
+    /**
+     * @brief The assigned z for rendering sortting.
+     */
+    float assigned_z;
+    /**
      * @brief first vertex position
      */
     CGVector2 vert_1;
@@ -493,10 +504,6 @@ typedef struct{
      * @brief forth vertex position
      */
     CGVector2 vert_4;
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
     /**
      * @brief Geometry property for the quadrangle
      */
@@ -534,9 +541,13 @@ typedef struct{
      */
     unsigned int texture_id;
     /**
-     * @brief The depth of the sprite.
+     * @brief The depth of the geometry.
      */
     float z;
+    /**
+     * @brief The assigned z for rendering sortting.
+     */
+    float assigned_z;
     /**
      * @brief Sprite property.
      */
@@ -584,9 +595,13 @@ typedef struct CGAnimationSprite{
      */
     float frame_rate;
     /**
-     * @brief The depth of the animation sprite.
+     * @brief The depth of the geometry.
      */
     float z;
+    /**
+     * @brief The assigned z for rendering sortting.
+     */
+    float assigned_z;
     /**
      * @brief Is animation playing.
      */

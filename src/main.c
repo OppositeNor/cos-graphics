@@ -44,7 +44,7 @@ int main()
 
 int main()
 {
-    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_FALSE);
+    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
     
     if (window == NULL)
         return 0;
@@ -101,13 +101,8 @@ int main()
         CGDrawQuadrangle(&quad1, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
-        //Sleep(fixed_delta * 1000);
-        //while (CGGetCurrentTime() < tick_start_time + fixed_delta)
-            //usleep(50);
-        ;
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        //CG_PRINT("%f", delta);
     }
     free(sprite->property);
     CGDeleteSprite(sprite);

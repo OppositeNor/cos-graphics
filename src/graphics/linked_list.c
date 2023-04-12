@@ -28,7 +28,6 @@ void CGRemoveLinkedListNode(CGLinkedListNode** node)
     CGLinkedListNode* p_node = *node;
     p_node->data = p_node->next->data;
     p_node->identifier = p_node->next->identifier;
-    p_node->assigned_z = p_node->next->assigned_z;
     CGLinkedListNode* temp = p_node->next->next;
     free(p_node->next);
     p_node->next = temp;

@@ -1,6 +1,5 @@
 
 typedef struct CGLinkedListNode{
-    float assigned_z;
     int identifier;
     void* data;
     struct CGLinkedListNode* next;

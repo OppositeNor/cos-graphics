@@ -68,8 +68,24 @@ CGShaderProgram cg_default_sprite_shader_program;
  */
 CGShaderProgram cg_sprite_shader_program;
 
+#define CG_RETURN_RENDER_PROPERTY(node, property_name)      \
+    switch (node->identifier)                               \
+    {                                                       \
+    case CG_RD_TYPE_TRIANGLE:                               \
+        return &((CGTriangle*)node->data)->property_name;   \
+    case CG_RD_TYPE_QUADRANGLE:                             \
+        return &((CGQuadrangle*)node->data)->property_name; \
+    case CG_RD_TYPE_SPRITE:                                 \
+        return &((CGSprite*)node->data)->property_name;     \
+    default:                                                \
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the \"%s\" property from node: Cannot find render type: %d.", #property_name, node->identifier);    \
+    }((void)0)
+
 // get the "z" property of the render node object.
-float* CGGetDepthPointer(const CGRenderNode* node);
+float* CGGetDepthPointer(CGRenderNode* node);
+
+// get assigned z property of the render node object
+float* CGGetAssignedZPointer(CGRenderNode* node);
 
 const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
@@ -348,13 +364,13 @@ void CGWindowDraw(CGWindow* window)
         switch (draw_obj->identifier)
         {
         case CG_RD_TYPE_TRIANGLE:
-            CGRenderTriangle(draw_obj->data, window, draw_obj->assigned_z);
+            CGRenderTriangle(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
             break;
         case CG_RD_TYPE_QUADRANGLE:
-            CGRenderQuadrangle(draw_obj->data, window, draw_obj->assigned_z);
+            CGRenderQuadrangle(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
             break;
         case CG_RD_TYPE_SPRITE:
-            CGRenderSprite(draw_obj->data, window, draw_obj->assigned_z);
+            CGRenderSprite(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->identifier);
@@ -589,19 +605,14 @@ void CGDraw(void* draw_object, CGWindow* window, int object_type)
     CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(draw_object, object_type));
 }
 
-float* CGGetDepthPointer(const CGRenderNode* node)
+float* CGGetDepthPointer(CGRenderNode* node)
 {
-    switch (node->identifier)
-    {
-    case CG_RD_TYPE_TRIANGLE:
-        return &((CGTriangle*)node->data)->z;
-    case CG_RD_TYPE_QUADRANGLE:
-        return &((CGQuadrangle*)node->data)->z;
-    case CG_RD_TYPE_SPRITE:
-        return &((CGSprite*)node->data)->z;
-    default:
-        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the z value from node: Cannot find render type: %d.", node->identifier);
-    }
+    CG_RETURN_RENDER_PROPERTY(node, z);
+}
+
+float* CGGetAssignedZPointer(CGRenderNode* node)
+{
+    CG_RETURN_RENDER_PROPERTY(node, assigned_z);
 }
 
 void CGCreateRenderList(CGWindow* window)
@@ -617,20 +628,20 @@ void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
 {
     if (node == NULL || list_head == NULL)
         return;
-    CGRenderNode* p = list_head;
-    while (p->next != NULL)
+    // using list_head as an temperary variable
+    while (list_head->next != NULL)
     {
-        if (*CGGetDepthPointer(node) > *CGGetDepthPointer(p->next))
+        if (*CGGetDepthPointer(node) > *CGGetDepthPointer(list_head->next))
         {
-            CGRenderNode* temp = p->next;
-            p->next = node;
+            CGRenderNode* temp = list_head->next;
+            list_head->next = node;
             node->next = temp;
             return;
         }
-        p = p->next;
+        list_head = list_head->next;
     }
-    CGRenderNode* temp = p->next;
-    p->next = node;
+    CGRenderNode* temp = list_head->next;
+    list_head->next = node;
     node->next = temp;
     
 }
@@ -645,7 +656,7 @@ void CGReorganizeRenderList(CGWindow* window)
     while(p != NULL)
     {
         assign_z -= 0.1;
-        p->assigned_z = assign_z;
+        *CGGetAssignedZPointer(p) = assign_z;
         p = p->next;
     }
 }
@@ -1043,4 +1054,13 @@ void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite)
     CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to play animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
     anim_sprite->is_playing = CG_TRUE;
 
+}
+
+void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node)
+{
+    if (node == NULL || list_head == NULL)
+        return;
+    while (list_head->next != NULL) list_head = list_head->next;
+    list_head->next = node;
+    node->next = NULL;
 }
