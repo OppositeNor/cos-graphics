@@ -350,33 +350,13 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 
 /***********RENDER LIST***********/
 
-enum CGRenderIdentifiers{
+enum CGIdentifiers{
     CG_RD_TYPE_TRIANGLE = 0,
     CG_RD_TYPE_QUADRANGLE,
-    CG_RD_TYPE_SPRITE
+    CG_RD_TYPE_SPRITE,
+
+    CG_AN_TYPE_ANIMATION_SPRITE
 };
-
-/**
- * @brief Create a render list based on the window.
- * 
- * @param window the window to create the render list on.
- */
-void CGCreateRenderList(CGWindow* window);
-
-/**
- * @brief Add a render list node in the list.
- * 
- * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
- * @param node The node to be added into the list
- */
-void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
-
-/**
- * @brief Reorganize the render list, and prepare for the render.
- * 
- * @param window window that holds the render list.
- */
-void CGReorganizeRenderList(CGWindow* window);
 
 /************GEOMETRIES************/
 
@@ -606,6 +586,10 @@ typedef struct CGAnimationSprite{
      * @brief Is animation playing.
      */
     CG_BOOL is_playing;
+    /**
+     * @brief The node of the animation sprite in the animation sprite list.
+     */
+    CGAnimationNode* node;
     /**
      * @brief The processing id of the thread for playing the animation sprite.
      */

@@ -13,6 +13,7 @@
 
 #define CGGladInitializeCheck()                                 \
     if (!cg_is_glad_initialized) {                              \
+        CGPrint("CosGraphics", "Warning", "GLAD not initialized yet. Initializing GLAD...");    \
         CGInitGLAD();                                           \
     }((void)0)
 
@@ -147,6 +148,37 @@ void CGBindTexture(unsigned int texture_id, unsigned int vao, CGImage* texture);
  * @return float* 
  */
 void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
+
+
+/**
+ * @brief Create a render list based on the window.
+ * 
+ * @param window the window to create the render list on.
+ */
+void CGCreateRenderList(CGWindow* window);
+
+/**
+ * @brief Add a render list node in the list.
+ * 
+ * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
+ * @param node The node to be added into the list
+ */
+void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
+
+/**
+ * @brief Reorganize the render list, and prepare for the render.
+ * 
+ * @param window window that holds the render list.
+ */
+void CGReorganizeRenderList(CGWindow* window);
+
+/**
+ * @brief Add an animation node into the animation list.
+ * 
+ * @param list_head the head of the animation list. If this parameter is NULL, the program will not do anything.
+ * @param node The node to be added into the list. If this parameter is NULL, the program will not do anything.
+ */
+void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -1030,8 +1062,12 @@ CGAnimationSprite* CGCreateAnimationSprite(
     const char* img_path_p = *img_paths;
     while (--frame_count)
     {
+        // todo: set image
         ++img_path_p;
     }
+    CGAnimationNode* linked_list_node = CGCreateLinkedListNode(anim_sprite, CG_AN_TYPE_ANIMATION_SPRITE);
+    CGAddAnimationNode(window->animation_list, linked_list_node);
+    anim_sprite->node = linked_list_node;
     return anim_sprite;
 }
 
@@ -1043,8 +1079,10 @@ void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*f
 
 void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite)
 {
+    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to delete animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
     for (int i = 0; i < anim_sprite->frame_count; ++i)
         glDeleteTextures(1, &anim_sprite->texture_ids[i]);
+    CGRemoveLinkedListNode(&(anim_sprite->node));
     free(anim_sprite->texture_ids);
     free(anim_sprite);
 }
@@ -1053,7 +1091,6 @@ void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite)
 {
     CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to play animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
     anim_sprite->is_playing = CG_TRUE;
-
 }
 
 void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node)
@@ -1062,5 +1099,4 @@ void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node)
         return;
     while (list_head->next != NULL) list_head = list_head->next;
     list_head->next = node;
-    node->next = NULL;
 }
