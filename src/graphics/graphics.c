@@ -13,7 +13,7 @@
 
 #define CGGladInitializeCheck()                                 \
     if (!cg_is_glad_initialized) {                              \
-        CGPrint("CosGraphics", "Warning", "GLAD not initialized yet. Initializing GLAD...");    \
+        CG_WARNING("In function: %s, GLAD not initialized yet. Initializing GLAD...", __func__);    \
         CGInitGLAD();                                           \
     }((void)0)
 
@@ -301,6 +301,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
     
     window->render_list = NULL;
+    window->animation_list = NULL;
     CGCreateRenderList(window);
     CGCreatAnimationList(window);
     if (window->glfw_window_instance == NULL)
@@ -332,7 +333,8 @@ void CGCreateViewport(CGWindow* window)
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to create a viewport on a NULL window.");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)(window->glfw_window_instance));
-    CGGladInitializeCheck();
+    if (!cg_is_glad_initialized)
+        CGInitGLAD();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -664,7 +666,6 @@ void CGCreateRenderList(CGWindow* window)
     if (window->render_list != NULL)
         free(window->render_list);
     window->render_list = CGCreateLinkedListNode(NULL, CG_LIST_HEAD);
-    window->render_list->next = NULL;
 }
 
 void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)

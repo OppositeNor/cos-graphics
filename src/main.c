@@ -87,7 +87,6 @@ int main()
         static double tick_start_time = 0;
         static double delta = 0.01;
         tick_start_time = CGGetCurrentTime();
-        
         static float clock = 0;
         clock += delta * 3;
         quad1.vert_1 = CGConstructVector2(sin(clock / 0.3) * 30 + 150, sin(clock) * 20 - 50);
