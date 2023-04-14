@@ -20,3 +20,10 @@ CGLinkedListNode* CGCreateLinkedListNode(void* data, int type);
  * @param node The node to be deleted
  */
 void CGRemoveLinkedListNode(CGLinkedListNode** node);
+
+/**
+ * @brief Delete list.
+ * 
+ * @param head The head of the list.
+ */
+void CGDeleteList(CGLinkedListNode* head);

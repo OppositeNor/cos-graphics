@@ -158,6 +158,13 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
 void CGCreateRenderList(CGWindow* window);
 
 /**
+ * @brief Create an animation list based on the window.
+ * 
+ * @param window The window to create animation list on.
+ */
+void CGCreatAnimationList(CGWindow* window);
+
+/**
  * @brief Add a render list node in the list.
  * 
  * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
@@ -314,8 +321,8 @@ void CGDestroyWindow(CGWindow* window)
     glDeleteVertexArrays(1, &window->quadrangle_vao);
     glDeleteVertexArrays(1, &window->sprite_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
-    CGDeleteRenderList(window->render_list);
-    CGDeleteAnimationList(window->animation_list);
+    CGDeleteList(window->render_list);
+    CGDeleteList(window->animation_list);
     
     free(window);
 }
