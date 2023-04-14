@@ -135,7 +135,7 @@ void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, 
 void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z);
 
 // bind texture to vao
-void CGBindTexture(unsigned int texture_id, unsigned int vao, CGImage* texture);
+void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -295,6 +295,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     
     window->render_list = NULL;
     CGCreateRenderList(window);
+    CGCreatAnimationList(window);
     if (window->glfw_window_instance == NULL)
     {
         CG_ERROR("Failed to create GLFW window.");
@@ -313,6 +314,9 @@ void CGDestroyWindow(CGWindow* window)
     glDeleteVertexArrays(1, &window->quadrangle_vao);
     glDeleteVertexArrays(1, &window->sprite_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
+    CGDeleteRenderList(window->render_list);
+    CGDeleteAnimationList(window->animation_list);
+    
     free(window);
 }
 
@@ -649,10 +653,10 @@ float* CGGetAssignedZPointer(CGRenderNode* node)
 
 void CGCreateRenderList(CGWindow* window)
 {
-    CG_ERROR_CONDITION(window == NULL, "Cannot create render list on a NULL window");
+    CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create render list: Window must be specified to a non-null window instance.");
     if (window->render_list != NULL)
         free(window->render_list);
-    window->render_list = (CGRenderNode*)malloc(sizeof(CGRenderNode));
+    window->render_list = CGCreateLinkedListNode(NULL, CG_LIST_HEAD);
     window->render_list->next = NULL;
 }
 
@@ -954,7 +958,7 @@ void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CGBindTexture(unsigned int texture_id, unsigned int vao, CGImage* texture)
+void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture)
 {
     CG_ERROR_CONDITION(texture == NULL, "Cannot bind a NULL texture.");
     CGGladInitializeCheck();
@@ -1001,7 +1005,7 @@ CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property,
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for sprite texture.");
     }
     glGenTextures(1, &sprite->texture_id);
-    CGBindTexture(sprite->texture_id, window->sprite_vao, image);
+    CGSetTextureValue(sprite->texture_id, window->sprite_vao, image);
     CGDeleteImage(image);
     return sprite;
 }
@@ -1060,11 +1064,24 @@ CGAnimationSprite* CGCreateAnimationSprite(
     }
     anim_sprite->texture_ids = (unsigned int*)malloc(sizeof(unsigned int*) * frame_count);
     const char* img_path_p = *img_paths;
-    while (--frame_count)
+    glBindVertexArray(window->sprite_vao);
+    for (int i = 0; i < frame_count; ++i)
     {
-        // todo: set image
+        CGImage* img = CGLoadImage(img_path_p);
+        if (img == NULL)
+        {
+            free(anim_sprite->texture_ids);
+            free(anim_sprite);
+            CGDeleteImage(img);
+            glBindVertexArray(0);
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to create animation sprite.");
+        }
+        glGenTextures(1, &anim_sprite->texture_ids[i]);
+        CGSetTextureValue(anim_sprite->texture_ids[i], window->sprite_vao, img);
+        CGDeleteImage(img);
         ++img_path_p;
     }
+    glBindVertexArray(0);
     CGAnimationNode* linked_list_node = CGCreateLinkedListNode(anim_sprite, CG_AN_TYPE_ANIMATION_SPRITE);
     CGAddAnimationNode(window->animation_list, linked_list_node);
     anim_sprite->node = linked_list_node;
@@ -1099,4 +1116,13 @@ void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node)
         return;
     while (list_head->next != NULL) list_head = list_head->next;
     list_head->next = node;
+    node->next = NULL;
+}
+
+void CGCreatAnimationList(CGWindow* window)
+{
+    CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create animation list: Window must be specified to a non-null window instance.");
+    if (window->animation_list != NULL)
+        free(window->animation_list);
+    window->animation_list = CGCreateLinkedListNode(NULL, CG_LIST_HEAD);
 }

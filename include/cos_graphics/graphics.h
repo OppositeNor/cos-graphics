@@ -351,7 +351,9 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
 /***********RENDER LIST***********/
 
 enum CGIdentifiers{
-    CG_RD_TYPE_TRIANGLE = 0,
+    CG_LIST_HEAD = 0,
+
+    CG_RD_TYPE_TRIANGLE,
     CG_RD_TYPE_QUADRANGLE,
     CG_RD_TYPE_SPRITE,
 

@@ -33,6 +33,19 @@ void CGRemoveLinkedListNode(CGLinkedListNode** node)
     p_node->next = temp;
 }
 
+void CGDeleteList(CGLinkedListNode* head)
+{
+    if (head == NULL)
+        return;
+    CGLinkedListNode* p_node = head;
+    while (p_node != NULL)
+    {
+        CGLinkedListNode* temp = p_node->next;
+        free(p_node);
+        p_node = temp;
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif
