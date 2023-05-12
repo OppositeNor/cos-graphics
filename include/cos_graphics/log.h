@@ -12,6 +12,8 @@ extern "C" {
 void CGPrint(const char* sender, const char* type, const char* fmt, ...);
 
 #if CG_DEBUG
+#include <stdlib.h>
+
 /**
  * @brief Should print out error in Debug. If condition is true, then print out error and exit the function. 
  * NOTE: The condition will be ignored in release mode, so please DONOT put functions that you wish

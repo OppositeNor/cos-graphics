@@ -1,9 +1,24 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(CosGraphics LANGUAGES C)
+project(CosGraphics LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
+endif()
+
+set(CG_TEST_MAIN_SOURCE src/main)
+
+set(CG_CPP_TEST ON)
+
+
+
+if(CG_CPP_TEST MATCHES ON)
+    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.cpp)
+else()
+    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.c)
 endif()
 
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib)
@@ -17,14 +32,14 @@ set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 add_subdirectory(src/graphics)
 add_subdirectory(src/log)
 add_subdirectory(src/resource)
+add_subdirectory(src/component)
+add_subdirectory(src/game)
 
 # opengl
 find_package(OpenGL REQUIRED)
 list(APPEND libs OpenGL::GL)
 
 set(CG_INCLUDE_DIRECTORIES 
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/src/graphics
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/dependencies/glad/include
     ${CMAKE_SOURCE_DIR}/dependencies/stb)
@@ -69,8 +84,10 @@ target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
     ${libs}
 )
 if (USE_TEST_EXE)
+
+    
     add_executable(${EXE_OUTPUT_NAME}
-        src/main.c
+        ${CG_TEST_MAIN_SOURCE}
     )
     target_link_libraries(${EXE_OUTPUT_NAME}
         ${LIB_OUTPUT_NAME}

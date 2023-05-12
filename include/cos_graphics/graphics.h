@@ -75,7 +75,6 @@ typedef struct {
     unsigned int quadrangle_vao;
     unsigned int sprite_vao;
     CGRenderNode* render_list;
-    CGAnimationNode* animation_list;
 } CGWindow;
 
 /**
@@ -560,104 +559,6 @@ CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property,
  * @param sprite sprite object instance to be deleted
  */
 void CGDeleteSprite(CGSprite* sprite);
-
-/********ANIMATION SPRITES********/
-
-typedef struct CGAnimationSprite{
-    /**
-     * @brief The number of frames in this animation sprite object.
-     */
-    unsigned int frame_count;
-    /**
-     * @brief The current frame of this animation sprite object.
-     */
-    unsigned int current_frame;
-    /**
-     * @brief frame rate.
-     */
-    float frame_rate;
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
-    /**
-     * @brief Is animation playing.
-     */
-    CG_BOOL is_playing;
-    /**
-     * @brief The node of the animation sprite in the animation sprite list.
-     */
-    CGAnimationNode* node;
-    /**
-     * @brief The processing id of the thread for playing the animation sprite.
-     */
-    unsigned int animation_process_id;
-    /**
-     * @brief The texture ids of this animation sprite object.
-     */
-    unsigned int* texture_ids;
-    /**
-     * @brief Animation sprite property.
-     */
-    CGRenderObjectProperty* property;
-    /**
-     * @brief The window that the animation sprite is created in.
-     */
-    CGWindow* in_window;
-    /**
-     * @brief the width and height of the animation sprite.
-     */
-    CGVector2 demention;
-    /**
-     * @brief Animation finish callback function. This callback function will be called 
-     * after the animation is finished.
-     * @param anim_sprite The animation sprite object that the animation is finished.
-     */
-    void (*finish_callback)(struct CGAnimationSprite*);
-}CGAnimationSprite;
-
-/**
- * @brief Create CGAnimationSprite object
- * 
- * @param img_paths the list of the animation sprite frame image path.
- * @param frame_count the count of frames of the animated sprite
- * @param property The animation sprite property
- * @param window the window that the animation sprite is going to be drawn.
- * @return CGAnimationSprite* THe created CGAnimationSprite object instance
- */
-CGAnimationSprite* CGCreateAnimationSprite(
-    const char** img_paths, 
-    unsigned int frame_count, 
-    float frame_rate,
-    CGRenderObjectProperty* property, 
-    CGWindow* window);
-
-/**
- * @brief Set animation sprite finish callback function.
- * 
- * @param anim_sprite The animation sprite object to set on
- * @param finish_callback The callback function to be set
- */
-void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)(CGAnimationSprite*));
-
-/**
- * @brief Delete animation sprite object. Note that you have to free the animation sprite's property manually.
- * 
- * @param anim_sprite The animation sprite object to be deleted
- */
-void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite);
-
-/**
- * @brief Draw animation sprite on window
- * 
- * @param anim_sprite The animation sprite object to be drawn
- * @param window The window to draw on
- */
-void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite);
 
 #ifdef __cplusplus
 }

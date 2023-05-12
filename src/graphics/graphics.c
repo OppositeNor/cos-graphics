@@ -158,13 +158,6 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
 void CGCreateRenderList(CGWindow* window);
 
 /**
- * @brief Create an animation list based on the window.
- * 
- * @param window The window to create animation list on.
- */
-void CGCreatAnimationList(CGWindow* window);
-
-/**
  * @brief Add a render list node in the list.
  * 
  * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
@@ -301,9 +294,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
     
     window->render_list = NULL;
-    window->animation_list = NULL;
     CGCreateRenderList(window);
-    CGCreatAnimationList(window);
     if (window->glfw_window_instance == NULL)
     {
         CG_ERROR("Failed to create GLFW window.");
@@ -323,7 +314,6 @@ void CGDestroyWindow(CGWindow* window)
     glDeleteVertexArrays(1, &window->sprite_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     CGDeleteList(window->render_list);
-    CGDeleteList(window->animation_list);
     
     free(window);
 }
@@ -939,7 +929,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 
 void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z)
 {
-    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
+    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
     CGGladInitializeCheck();
     float* vertices = CGMakeQuadrangleVertices(quadrangle, assigned_z);
@@ -1044,93 +1034,4 @@ void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-CGAnimationSprite* CGCreateAnimationSprite(
-    const char** img_paths, 
-    unsigned int frame_count, 
-    float frame_rate,
-    CGRenderObjectProperty* property, 
-    CGWindow* window)
-{
-    CGAnimationSprite* anim_sprite = (CGAnimationSprite*)malloc(sizeof(CGAnimationSprite));
-    CG_ERROR_COND_RETURN(anim_sprite == NULL, NULL, "Failed to allocate memory for animation sprite.");
-    anim_sprite->is_playing = CG_FALSE;
-    anim_sprite->frame_count = frame_count;
-    anim_sprite->frame_rate = frame_rate;
-    anim_sprite->property = property;
-    anim_sprite->finish_callback = NULL;
-    if (anim_sprite->texture_ids == NULL)
-    {
-        free(anim_sprite);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for animation sprite texture ids.");
-    }
-    if (frame_count == 0)
-    {
-        anim_sprite->texture_ids = NULL;
-        return anim_sprite;
-    }
-    anim_sprite->texture_ids = (unsigned int*)malloc(sizeof(unsigned int*) * frame_count);
-    const char* img_path_p = *img_paths;
-    glBindVertexArray(window->sprite_vao);
-    for (int i = 0; i < frame_count; ++i)
-    {
-        CGImage* img = CGLoadImage(img_path_p);
-        if (img == NULL)
-        {
-            free(anim_sprite->texture_ids);
-            free(anim_sprite);
-            CGDeleteImage(img);
-            glBindVertexArray(0);
-            CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to create animation sprite.");
-        }
-        glGenTextures(1, &anim_sprite->texture_ids[i]);
-        CGSetTextureValue(anim_sprite->texture_ids[i], window->sprite_vao, img);
-        CGDeleteImage(img);
-        ++img_path_p;
-    }
-    glBindVertexArray(0);
-    CGAnimationNode* linked_list_node = CGCreateLinkedListNode(anim_sprite, CG_AN_TYPE_ANIMATION_SPRITE);
-    CGAddAnimationNode(window->animation_list, linked_list_node);
-    anim_sprite->node = linked_list_node;
-    return anim_sprite;
-}
-
-void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)(CGAnimationSprite*))
-{
-    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to set animation sprite finish callback: Animation sprite must be specified to a non-null animation sprite instance.");
-    anim_sprite->finish_callback = finish_callback;
-}
-
-void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite)
-{
-    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to delete animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
-    for (int i = 0; i < anim_sprite->frame_count; ++i)
-        glDeleteTextures(1, &anim_sprite->texture_ids[i]);
-    CGRemoveLinkedListNode(&(anim_sprite->node));
-    free(anim_sprite->texture_ids);
-    free(anim_sprite);
-}
-
-void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite)
-{
-    CG_ERROR_CONDITION(anim_sprite == NULL, "Failed to play animation sprite: Animation sprite must be specified to a non-null animation sprite instance.");
-    anim_sprite->is_playing = CG_TRUE;
-}
-
-void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node)
-{
-    if (node == NULL || list_head == NULL)
-        return;
-    while (list_head->next != NULL) list_head = list_head->next;
-    list_head->next = node;
-    node->next = NULL;
-}
-
-void CGCreatAnimationList(CGWindow* window)
-{
-    CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create animation list: Window must be specified to a non-null window instance.");
-    if (window->animation_list != NULL)
-        free(window->animation_list);
-    window->animation_list = CGCreateLinkedListNode(NULL, CG_LIST_HEAD);
 }
