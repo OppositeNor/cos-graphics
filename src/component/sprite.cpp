@@ -24,6 +24,12 @@ CGSprite::~CGSprite()
 
 void CGSprite::Draw()
 {
+    if (has_transform_set)
+    {
+        image->property->transform = transform.position;
+        image->property->rotation = transform.rotation;
+        image->property->scale = transform.scale;
+    }
     if (image == nullptr || !visual)
         return;
     CGDrawVisualImage(image, CGGame::GetInstance()->GetGameWindow());

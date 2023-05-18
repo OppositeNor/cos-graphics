@@ -13,6 +13,7 @@ void CGVisualComponent::Tick(double p_delta_time)
 {
     Update(p_delta_time);
     Draw();
+    has_transform_set = false;
 }
 
 void CGVisualComponent::SetVisual(bool p_visual)
