@@ -9,10 +9,11 @@
 class CGVisualComponent : public CGComponent
 {
 protected:
+
     /**
-     * @brief The window that the component will be drawn on.
+     * @brief Is the component visual in the game.
      */
-    CGWindow* window;
+    bool visual = true;
     
     /**
      * @brief The position on the window that the component will be drawn.
@@ -25,12 +26,27 @@ protected:
     virtual void Draw() = 0;
 public:
     CGVisualComponent(const CGVector2& p_position = {0, 0});
-    virtual ~CGVisualComponent();
+    virtual ~CGVisualComponent() override;
 
     /**
      * @brief Called every frame by the engine
      * 
      * @param p_delta_time The time difference between frames
      */
-    virtual void Tick(double p_delta_time) override;
+    void Tick(double p_delta_time) override;
+
+    /**
+     * @brief Set the Visual object
+     * 
+     * @param p_visual The new value of visual
+     */
+    void SetVisual(bool p_visual);
+
+    /**
+     * @brief Is the component visual in the game
+     * 
+     * @return true The component is visual in the game
+     * @return false The component is not visual in the game
+     */
+    bool IsVisual();
 };

@@ -2,6 +2,11 @@
 #include "cos_graphics/graphics.h"
 #include <vector>
 
+class CGComponent;
+
+/**
+ * @brief The game class.
+ */
 class CGGame
 {
     /**
@@ -36,6 +41,8 @@ class CGGame
      */
     std::vector<CGComponent*> component_list;
 
+    bool game_initialized = false;
+
     /**
      * @brief Constructor
      */
@@ -54,15 +61,17 @@ public:
      */
     static CGGame* GetInstance();
 
-    /**
-     * @brief Start the game.
-     */
-    static void StartGame(
+    static void InitGame(
         unsigned int p_width = 640, 
         unsigned int p_height = 480, 
         const char* p_title = "", 
         CG_BOOL p_fullscreen = false, 
         CG_BOOL p_resizable = true);
+
+    /**
+     * @brief Start the game.
+     */
+    static void StartGame();
     
     CGWindow* GetGameWindow();
 
@@ -72,7 +81,14 @@ public:
      * @param p_component The component to be added.
      * @return unsigned int The component's identifier.
      */
-    unsigned int AddComponent(class CGComponent* p_component);
+    void AddComponent(class CGComponent* p_component);
+    
+    /**
+     * @brief Remove component from the component list.
+     * 
+     * @param p_component The component to be removed.
+     */
+    void RemoveComponent(CGComponent* p_component);
     
 private:
     /**

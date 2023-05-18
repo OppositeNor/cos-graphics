@@ -3,14 +3,17 @@
 #include "cos_graphics/component/component.h"
 
 CGGame::CGGame() : window_properties(WindowProperties(640, 480, ""))
-{}
+{
+    
+}
 
 CGGame::~CGGame()
 {
     if (game_window != nullptr)
         CGDestroyWindow(game_window);
     for (auto i = component_list.begin(); i < component_list.end() + 1; ++i)
-        delete *i;
+        delete (*i);
+    game_initialized = false;
 }
 
 CGGame* CGGame::GetInstance()
@@ -19,7 +22,7 @@ CGGame* CGGame::GetInstance()
     return game_instance;
 }
 
-void CGGame::StartGame(unsigned int p_width, unsigned int p_height, const char* p_title, CG_BOOL p_fullscreen, CG_BOOL p_resizable)
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p_title, CG_BOOL p_fullscreen, CG_BOOL p_resizable)
 {
     CG_PRINT("Start game called, starting game...");
     if (CGGame::game_instance != nullptr)
@@ -37,24 +40,40 @@ void CGGame::StartGame(unsigned int p_width, unsigned int p_height, const char* 
         CGGame::game_instance->window_properties.resizable);
     CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, "Failed to create window");
     CG_PRINT("Window created.");
+    CG_PRINT("Game initialized.");
+    game_instance->game_initialized = true;
+}
+
+void CGGame::StartGame()
+{
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before starting the game.");
     game_instance->Ready();
     game_instance->GameLoop();
     CG_PRINT("Game exited.");
 }
 
-unsigned int CGGame::AddComponent(CGComponent* p_component)
+void CGGame::AddComponent(CGComponent* p_component)
 {
     auto iter = component_list.begin();
-    for (; iter <= component_list.end(); ++iter)
+    for (; iter < component_list.end(); ++iter)
     {
         if (*iter == nullptr)
-        {
             *iter = p_component;
-            return iter - component_list.begin();
-        }
     }
     component_list.insert(component_list.end(), p_component);
-    return component_list.size();
+}
+
+void CGGame::RemoveComponent(CGComponent* p_component)
+{
+    auto iter = component_list.begin();
+    for (; iter < component_list.end(); ++iter)
+    {
+        if (*iter == p_component)
+        {
+            *iter = nullptr;
+            return;
+        }
+    }
 }
 
 CGWindow* CGGame::GetGameWindow()

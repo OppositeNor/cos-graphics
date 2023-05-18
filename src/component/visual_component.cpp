@@ -3,11 +3,24 @@
 
 CGVisualComponent::CGVisualComponent(const CGVector2& p_position) : CGComponent(), position(p_position)
 {
-    window = CGGame::GetInstance()->GetGameWindow();
+}
+
+CGVisualComponent::~CGVisualComponent()
+{
 }
 
 void CGVisualComponent::Tick(double p_delta_time)
 {
     Update(p_delta_time);
     Draw();
+}
+
+void CGVisualComponent::SetVisual(bool p_visual)
+{
+    visual = p_visual;
+}
+
+bool CGVisualComponent::IsVisual()
+{
+    return visual;
 }

@@ -9,9 +9,13 @@ CGComponent::CGTransform::CGTransform(const CGVector2& p_position, float p_rotat
 
 CGComponent::CGComponent()
 {
-    game_instance = CGGame::GetInstance();
-    
+    CGGame::GetInstance()->AddComponent(this);
     Ready();
+}
+
+CGComponent::~CGComponent()
+{
+    CGGame::GetInstance()->RemoveComponent(this);
 }
 
 void CGComponent::Tick(double p_delta_time)

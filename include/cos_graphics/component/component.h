@@ -6,11 +6,6 @@
 #include "cos_graphics/graphics.h"
 class CGComponent
 {
-
-    /**
-     * @brief The game instance that this component is created in.
-     */
-    class CGGame* game_instance;
 protected:
 
     /**
@@ -40,7 +35,7 @@ protected:
          * @param p_scale The scale of the component 
          */
         CGTransform(const CGVector2& p_position = {0.0f, 0.0f}, float p_rotation = 0.0f, const CGVector2& p_scale = {1.0f, 1.0f});
-        virtual ~CGTransform();
+        virtual ~CGTransform() {}
     }transform;
 
     /**
@@ -63,7 +58,7 @@ public:
      */
     CGComponent();
 
-    virtual ~CGComponent() {}
+    virtual ~CGComponent();
 
     /**
      * @brief Called every frame by the engine.
