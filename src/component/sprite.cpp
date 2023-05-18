@@ -29,6 +29,8 @@ void CGSprite::Draw()
         image->property->transform = transform.position;
         image->property->rotation = transform.rotation;
         image->property->scale = transform.scale;
+        image->z = transform.depth;
+        has_transform_set = false;
     }
     if (image == nullptr || !visual)
         return;

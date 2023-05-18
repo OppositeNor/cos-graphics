@@ -27,6 +27,11 @@ public:
         CGVector2 scale;
 
         /**
+         * @brief The depth of the component. The higher the depth, the more in behind the component is.
+         */
+        float depth = 0.0f;
+
+        /**
          * @brief Construct a new Transform object
          * 
          * @param p_position The position of the component
@@ -109,4 +114,10 @@ public:
      */
     void SetScale(const CGVector2& p_scale);
 
+    /**
+     * @brief Set the Depth object
+     * 
+     * @param p_depth The new depth to be set to
+     */
+    void SetDepth(float p_depth);
 };

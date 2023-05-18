@@ -2,7 +2,7 @@
 #include "cos_graphics/log.h"
 #include "cos_graphics/component/component.h"
 
-CGGame::CGGame() : window_properties(WindowProperties(640, 480, ""))
+CGGame::CGGame()
 {
     
 }
@@ -31,6 +31,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p
         return;
     }
     CGGame::game_instance = new CGGame();
+    CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, p_resizable);
     CG_PRINT("Creating window...");
     CGGame::game_instance->game_window = CGCreateWindow(
         CGGame::game_instance->window_properties.width, 
@@ -54,12 +55,6 @@ void CGGame::StartGame()
 
 void CGGame::AddComponent(CGComponent* p_component)
 {
-    auto iter = component_list.begin();
-    for (; iter < component_list.end(); ++iter)
-    {
-        if (*iter == nullptr)
-            *iter = p_component;
-    }
     component_list.insert(component_list.end(), p_component);
 }
 
@@ -70,10 +65,16 @@ void CGGame::RemoveComponent(CGComponent* p_component)
     {
         if (*iter == p_component)
         {
-            *iter = nullptr;
+            component_list.erase(iter);
             return;
         }
     }
+}
+
+void CGGame::SetWindowClearColor(const CGColor& p_color)
+{
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before setting the window clear color.");
+    CGSetClearScreenColor(p_color);
 }
 
 CGWindow* CGGame::GetGameWindow()

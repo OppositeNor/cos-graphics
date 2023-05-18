@@ -30,7 +30,7 @@ class CGGame
         CG_BOOL resizable;
         CG_BOOL fullscreen;
 
-        WindowProperties(unsigned int p_width, unsigned int p_height, const char* p_title, 
+        WindowProperties(unsigned int p_width = 640, unsigned int p_height = 480, const char* p_title = "", 
                 CG_BOOL p_fullscreen = CG_FALSE, CG_BOOL p_resizable = CG_TRUE) 
             : width(p_width), height(p_height), title(p_title), resizable(p_resizable), fullscreen(p_fullscreen)
         {}
@@ -89,6 +89,13 @@ public:
      * @param p_component The component to be removed.
      */
     void RemoveComponent(CGComponent* p_component);
+
+    /**
+     * @brief Set the clear color of the window
+     * 
+     * @param p_color The color to be set to
+     */
+    void SetWindowClearColor(const CGColor& p_color);
     
 private:
     /**

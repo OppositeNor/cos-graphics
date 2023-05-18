@@ -13,7 +13,6 @@ void CGVisualComponent::Tick(double p_delta_time)
 {
     Update(p_delta_time);
     Draw();
-    has_transform_set = false;
 }
 
 void CGVisualComponent::SetVisual(bool p_visual)
@@ -24,4 +23,11 @@ void CGVisualComponent::SetVisual(bool p_visual)
 bool CGVisualComponent::IsVisual()
 {
     return visual;
+}
+
+
+void CGVisualComponent::SetDepth(float p_depth)
+{
+    transform.depth = p_depth;
+    has_transform_set = true;
 }
