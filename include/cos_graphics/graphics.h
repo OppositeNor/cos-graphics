@@ -48,9 +48,9 @@ extern "C" {
 #define CGDrawQuadrangle(quadrangle_object, window) CGDraw(quadrangle_object, window, CG_RD_TYPE_QUADRANGLE)
 
 /**
- * @brief Draw sprite.
+ * @brief Draw visual_image.
  */
-#define CGDrawSprite(sprite_object, window) CGDraw(sprite_object, window, CG_RD_TYPE_SPRITE)
+#define CGDrawVisualImage(visual_image_object, window) CGDraw(visual_image_object, window, CG_RD_TYPE_SPRITE)
 
 typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
@@ -73,7 +73,7 @@ typedef struct {
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
-    unsigned int sprite_vao;
+    unsigned int visual_image_vao;
     CGRenderNode* render_list;
 } CGWindow;
 
@@ -530,35 +530,35 @@ typedef struct{
      */
     float assigned_z;
     /**
-     * @brief Sprite property.
+     * @brief VisualImage property.
      */
     CGRenderObjectProperty* property;
     /**
-     * @brief The window that the sprite is created in.
+     * @brief The window that the visual_image is created in.
      */
     CGWindow* in_window;
     /**
-     * @brief the width and height of the sprite
+     * @brief the width and height of the visual_image
      */
     CGVector2 demention;
-}CGSprite;
+}CGVisualImage;
 
 /**
- * @brief Create CGSprite object
+ * @brief Create CGVisualImage object
  * 
  * @param img_path texture image path
- * @param property sprite property object
- * @param window the window that the sprite is going to be drawn.
- * @return CGSprite* The created CGSprite object
+ * @param property visual_image property object
+ * @param window the window that the visual_image is going to be drawn.
+ * @return CGVisualImage* The created CGVisualImage object
  */
-CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
 
 /**
- * @brief Delete CGSprite object. Note that you have to free the sprite's property manually.
+ * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
  * 
- * @param sprite sprite object instance to be deleted
+ * @param visual_image visual_image object instance to be deleted
  */
-void CGDeleteSprite(CGSprite* sprite);
+void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 #ifdef __cplusplus
 }

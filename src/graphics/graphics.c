@@ -21,7 +21,7 @@ CG_BOOL cg_is_glfw_initialized = CG_FALSE;
 CG_BOOL cg_is_glad_initialized = CG_FALSE;
 
 CGRenderObjectProperty* cg_default_geo_property;
-CGRenderObjectProperty* cg_default_sprite_property;
+CGRenderObjectProperty* cg_default_visual_image_property;
 
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
@@ -43,11 +43,11 @@ const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
 /**
  * @brief vertex shader path for a geometry
  */
-const char* cg_default_sprite_vshader_path = "./shaders/default_sprite_shader.vert";
+const char* cg_default_visual_image_vshader_path = "./shaders/default_visual_image_shader.vert";
 /**
  * @brief fragment shader path for a geometry
  */
-const char* cg_default_sprite_fshader_path = "./shaders/default_sprite_shader.frag";
+const char* cg_default_visual_image_fshader_path = "./shaders/default_visual_image_shader.frag";
 
 /**
  * @brief default shader for geometry
@@ -60,14 +60,14 @@ CGShaderProgram cg_default_geo_shader_program;
 CGShaderProgram cg_geo_shader_program;
 
 /**
- * @brief default shader for sprites
+ * @brief default shader for visual_images
  */
-CGShaderProgram cg_default_sprite_shader_program;
+CGShaderProgram cg_default_visual_image_shader_program;
 
 /**
- * @brief shader program for drawing sprites
+ * @brief shader program for drawing visual_images
  */
-CGShaderProgram cg_sprite_shader_program;
+CGShaderProgram cg_visual_image_shader_program;
 
 #define CG_RETURN_RENDER_PROPERTY(node, property_name)      \
     switch (node->identifier)                               \
@@ -77,7 +77,7 @@ CGShaderProgram cg_sprite_shader_program;
     case CG_RD_TYPE_QUADRANGLE:                             \
         return &((CGQuadrangle*)node->data)->property_name; \
     case CG_RD_TYPE_SPRITE:                                 \
-        return &((CGSprite*)node->data)->property_name;     \
+        return &((CGVisualImage*)node->data)->property_name;     \
     default:                                                \
         CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the \"%s\" property from node: Cannot find render type: %d.", #property_name, node->identifier);    \
     }((void)0)
@@ -107,8 +107,8 @@ float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z);
 // make a vertices array out of quadrangle
 float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z);
 
-// make a vertices array out of sprite
-float* CGMakeSpriteVertices(const CGSprite* sprite, float assigned_z);
+// make a vertices array out of visual_image
+float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z);
 
 // set buffer value
 void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
@@ -131,8 +131,8 @@ void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float 
 // render quadrangle
 void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z);
 
-// render sprite
-void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z);
+// render visual_image
+void CGRenderVisualImage(CGVisualImage* visual_image, CGWindow* window, float assigned_z);
 
 // bind texture to vao
 void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
@@ -223,11 +223,11 @@ void CGTerminateGraphics()
         glDeleteBuffers(cg_buffer_count, cg_buffers);
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
-        glDeleteProgram(cg_default_sprite_shader_program);
+        glDeleteProgram(cg_default_visual_image_shader_program);
         free(cg_default_geo_property);
         cg_default_geo_property = NULL;
-        free(cg_default_sprite_property);
-        cg_default_sprite_property = NULL;
+        free(cg_default_visual_image_property);
+        cg_default_visual_image_property = NULL;
         cg_is_glad_initialized = CG_FALSE;
     }
     if (cg_is_glfw_initialized)
@@ -263,10 +263,10 @@ void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
 
-    CGInitDefaultShader(cg_default_sprite_vshader_path, cg_default_sprite_fshader_path, &cg_default_sprite_shader_program);
-    cg_sprite_shader_program = cg_default_sprite_shader_program;
+    CGInitDefaultShader(cg_default_visual_image_vshader_path, cg_default_visual_image_fshader_path, &cg_default_visual_image_shader_program);
+    cg_visual_image_shader_program = cg_default_visual_image_shader_program;
     
-    cg_default_sprite_property = CGCreateRenderObjectProperty(
+    cg_default_visual_image_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f), 
         CGConstructVector2(0.0f, 0.0f),
         CGConstructVector2(1.0f, 1.0f),
@@ -311,7 +311,7 @@ void CGDestroyWindow(CGWindow* window)
 {
     glDeleteVertexArrays(1, &window->triangle_vao);
     glDeleteVertexArrays(1, &window->quadrangle_vao);
-    glDeleteVertexArrays(1, &window->sprite_vao);
+    glDeleteVertexArrays(1, &window->visual_image_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     CGDeleteList(window->render_list);
     
@@ -359,9 +359,9 @@ void CGCreateViewport(CGWindow* window)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    // set sprite vao properties
-    glGenVertexArrays(1, &window->sprite_vao);
-    glBindVertexArray(window->sprite_vao);
+    // set visual_image vao properties
+    glGenVertexArrays(1, &window->visual_image_vao);
+    glBindVertexArray(window->visual_image_vao);
     CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
     CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -405,7 +405,7 @@ void CGWindowDraw(CGWindow* window)
             CGRenderQuadrangle(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
             break;
         case CG_RD_TYPE_SPRITE:
-            CGRenderSprite(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
+            CGRenderVisualImage(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->identifier);
@@ -887,17 +887,17 @@ float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z
     return vertices;
 }
 
-float* CGMakeSpriteVertices(const CGSprite* sprite, float assigned_z)
+float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z)
 {
-    CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Cannot make vertices array out of a sprite of value NULL");
+    CG_ERROR_COND_RETURN(visual_image == NULL, NULL, "Cannot make vertices array out of a visual_image of value NULL");
     float* vertices = (float*)malloc(sizeof(float) * 20);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate memory for vertices");
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(20, vertices,
-        -1 * sprite->demention.x / 2,      sprite->demention.y / 2, depth, 0.0, 0.0,
-             sprite->demention.x / 2,      sprite->demention.y / 2, depth, 1.0, 0.0,
-             sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 1.0, 1.0,
-        -1 * sprite->demention.x / 2, -1 * sprite->demention.y / 2, depth, 0.0, 1.0
+        -1 * visual_image->demention.x / 2,      visual_image->demention.y / 2, depth, 0.0, 0.0,
+             visual_image->demention.x / 2,      visual_image->demention.y / 2, depth, 1.0, 0.0,
+             visual_image->demention.x / 2, -1 * visual_image->demention.y / 2, depth, 1.0, 1.0,
+        -1 * visual_image->demention.x / 2, -1 * visual_image->demention.y / 2, depth, 0.0, 1.0
     );
     return vertices;
 }
@@ -982,54 +982,54 @@ void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* textu
     glBindVertexArray(0);
 }
 
-CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property, CGWindow* window)
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window)
 {
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, "Cannot create image with NULL window.");
     CGGladInitializeCheck();
-    CGSprite* sprite = (CGSprite*)malloc(sizeof(CGSprite));
-    CG_ERROR_COND_RETURN(sprite == NULL, NULL, "Failed to allocate memory for sprite.");
+    CGVisualImage* visual_image = (CGVisualImage*)malloc(sizeof(CGVisualImage));
+    CG_ERROR_COND_RETURN(visual_image == NULL, NULL, "Failed to allocate memory for visual_image.");
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
-    sprite->in_window = window;
+    visual_image->in_window = window;
     CGImage* image = CGLoadImage(img_path);
-    CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create sprite.");
-    sprite->demention.x = image->width;
-    sprite->demention.y = image->height;
-    sprite->property = property;
+    CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
+    visual_image->demention.x = image->width;
+    visual_image->demention.y = image->height;
+    visual_image->property = property;
     if (image == NULL)
     {
-        free(sprite);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for sprite texture.");
+        free(visual_image);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for visual_image texture.");
     }
-    glGenTextures(1, &sprite->texture_id);
-    CGSetTextureValue(sprite->texture_id, window->sprite_vao, image);
+    glGenTextures(1, &visual_image->texture_id);
+    CGSetTextureValue(visual_image->texture_id, window->visual_image_vao, image);
     CGDeleteImage(image);
-    return sprite;
+    return visual_image;
 }
 
-void CGDeleteSprite(CGSprite* sprite)
+void CGDeleteVisualImage(CGVisualImage* visual_image)
 {
-    glDeleteTextures(1, &sprite->texture_id);
-    free(sprite);
+    glDeleteTextures(1, &visual_image->texture_id);
+    free(visual_image);
 }
 
-void CGRenderSprite(CGSprite* sprite, CGWindow* window, float assigned_z)
+void CGRenderVisualImage(CGVisualImage* visual_image, CGWindow* window, float assigned_z)
 {
-    CG_ERROR_CONDITION(sprite == NULL, "Failed to draw sprite: Sprite must be specified to a non-null sprite instance.");
-    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw sprite: Attempting to draw sprite on a NULL window");
+    CG_ERROR_CONDITION(visual_image == NULL, "Failed to draw visual_image: VisualImage must be specified to a non-null visual_image instance.");
+    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw visual_image: Attempting to draw visual_image on a NULL window");
     CGGladInitializeCheck();
-    float* vertices = CGMakeSpriteVertices(sprite, assigned_z);
-    CG_ERROR_CONDITION(vertices == NULL, "Failed to draw sprite");
-    glBindVertexArray(window->sprite_vao);
-    glUseProgram(cg_sprite_shader_program);
+    float* vertices = CGMakeVisualImageVertices(visual_image, assigned_z);
+    CG_ERROR_CONDITION(vertices == NULL, "Failed to draw visual_image");
+    glBindVertexArray(window->visual_image_vao);
+    glUseProgram(cg_visual_image_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
     free(vertices);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture_id);
-    CGSetPropertyUniforms(cg_sprite_shader_program, sprite->property);
-    CGSetShaderUniform1f(cg_sprite_shader_program, "render_width", (float)window->width);
-    CGSetShaderUniform1f(cg_sprite_shader_program, "render_height", (float)window->height);
+    glBindTexture(GL_TEXTURE_2D, visual_image->texture_id);
+    CGSetPropertyUniforms(cg_visual_image_shader_program, visual_image->property);
+    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width);
+    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

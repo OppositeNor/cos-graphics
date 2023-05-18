@@ -77,7 +77,7 @@ int main()
         rotation
     );
 
-    CGSprite* sprite = CGCreateSprite("./test2.png", 
+    CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
     sprite->z = 2;
     quad2.z = -3;
@@ -97,7 +97,7 @@ int main()
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         //CGDrawQuadrangle(&quad2, window);
-        CGDrawSprite(sprite, window);
+        CGDrawVisualImage(sprite, window);
         CGDrawQuadrangle(&quad1, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
@@ -105,7 +105,7 @@ int main()
         delta = tick_end_time - tick_start_time;
     }
     free(sprite->property);
-    CGDeleteSprite(sprite);
+    CGDeleteVisualImage(sprite);
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;
@@ -131,9 +131,9 @@ int main()
     if (window == NULL)
         return 0;
     float rotation = 0.0f;
-    CGSprite* sprite = CGCreateSprite("./test2.png", 
+    CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
-    CGSprite* sprite3 = CGCreateSprite("./test2.png", 
+    CGVisualImage* sprite3 = CGCreateVisualImage("./test2.png", 
         CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
     double tick_end_time = CGGetCurrentTime();
     const double fixed_delta = 1.0 / 60;
@@ -144,8 +144,8 @@ int main()
         tick_start_time = CGGetCurrentTime();
 
         CGTickRenderStart(window);
-        CGDrawSprite(sprite3, window);
-        CGDrawSprite(sprite, window);
+        CGDrawVisualImage(sprite3, window);
+        CGDrawVisualImage(sprite, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         while(CGGetCurrentTime() < tick_start_time + fixed_delta);
@@ -154,7 +154,7 @@ int main()
         CG_PRINT("%f", delta);
     }
     free(sprite->property);
-    CGDeleteSprite(sprite);
+    CGDeleteVisualImage(sprite);
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;
