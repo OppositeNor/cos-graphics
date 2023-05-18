@@ -1,5 +1,6 @@
 #pragma once
 #include "cos_graphics/graphics.h"
+#include <vector>
 
 class CGGame
 {
@@ -31,10 +32,21 @@ class CGGame
     } window_properties;
 
     /**
-     * @brief Construct a new CGGame object
+     * @brief List of components that's in the game.
+     */
+    std::vector<CGComponent*> component_list;
+
+    /**
+     * @brief Constructor
      */
     CGGame();
 public:
+
+    /**
+     * @brief Destroy the CGGame object
+     */
+    virtual ~CGGame();
+
     /**
      * @brief Get the instance of the game. If the game is not started, this will return nullptr.
      * 
@@ -51,11 +63,16 @@ public:
         const char* p_title = "", 
         CG_BOOL p_fullscreen = false, 
         CG_BOOL p_resizable = true);
+    
+    CGWindow* GetGameWindow();
 
     /**
-     * @brief Destroy the CGGame object
+     * @brief Add component to the component list, and return the component's identifier.
+     * 
+     * @param p_component The component to be added.
+     * @return unsigned int The component's identifier.
      */
-    virtual ~CGGame();
+    unsigned int AddComponent(class CGComponent* p_component);
     
 private:
     /**
@@ -71,10 +88,5 @@ private:
     /**
      * @brief Update, called every frame.
      */
-    void Update(float delta);
-
-    /**
-     * @brief Render loop
-     */
-    void Render();
+    void Update(float p_delta);
 };

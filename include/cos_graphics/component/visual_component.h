@@ -18,17 +18,19 @@ protected:
      * @brief The position on the window that the component will be drawn.
      */
     CGVector2 position;
-public:
-    CGVisualComponent(CGWindow* p_window, CGVector2 p_position = {0, 0});
-    virtual ~CGVisualComponent();
 
     /**
      * @brief Draw component on the window.
      */
     virtual void Draw() = 0;
+public:
+    CGVisualComponent(const CGVector2& p_position = {0, 0});
+    virtual ~CGVisualComponent();
 
     /**
-     * @brief Resize the component.
+     * @brief Called every frame by the engine
+     * 
+     * @param p_delta_time The time difference between frames
      */
-    virtual void Resize() = 0;
+    virtual void Tick(double p_delta_time) override;
 };

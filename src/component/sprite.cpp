@@ -1,0 +1,1 @@
+#include "cos_graphics/component/sprite.h"
