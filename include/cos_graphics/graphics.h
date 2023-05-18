@@ -48,9 +48,9 @@ extern "C" {
 #define CGDrawQuadrangle(quadrangle_object, window) CGDraw(quadrangle_object, window, CG_RD_TYPE_QUADRANGLE)
 
 /**
- * @brief Draw sprite.
+ * @brief Draw visual_image.
  */
-#define CGDrawSprite(sprite_object, window) CGDraw(sprite_object, window, CG_RD_TYPE_SPRITE)
+#define CGDrawVisualImage(visual_image_object, window) CGDraw(visual_image_object, window, CG_RD_TYPE_SPRITE)
 
 typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
@@ -73,7 +73,7 @@ typedef struct {
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
-    unsigned int sprite_vao;
+    unsigned int visual_image_vao;
     CGRenderNode* render_list;
     CGAnimationNode* animation_list;
 } CGWindow;
@@ -531,45 +531,45 @@ typedef struct{
      */
     float assigned_z;
     /**
-     * @brief Sprite property.
+     * @brief VisualImage property.
      */
     CGRenderObjectProperty* property;
     /**
-     * @brief The window that the sprite is created in.
+     * @brief The window that the visual_image is created in.
      */
     CGWindow* in_window;
     /**
-     * @brief the width and height of the sprite
+     * @brief the width and height of the visual_image
      */
     CGVector2 demention;
-}CGSprite;
+}CGVisualImage;
 
 /**
- * @brief Create CGSprite object
+ * @brief Create CGVisualImage object
  * 
  * @param img_path texture image path
- * @param property sprite property object
- * @param window the window that the sprite is going to be drawn.
- * @return CGSprite* The created CGSprite object
+ * @param property visual_image property object
+ * @param window the window that the visual_image is going to be drawn.
+ * @return CGVisualImage* The created CGVisualImage object
  */
-CGSprite* CGCreateSprite(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
 
 /**
- * @brief Delete CGSprite object. Note that you have to free the sprite's property manually.
+ * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
  * 
- * @param sprite sprite object instance to be deleted
+ * @param visual_image visual_image object instance to be deleted
  */
-void CGDeleteSprite(CGSprite* sprite);
+void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 /********ANIMATION SPRITES********/
 
-typedef struct CGAnimationSprite{
+typedef struct CGAnimationVisualImage{
     /**
-     * @brief The number of frames in this animation sprite object.
+     * @brief The number of frames in this animation visual_image object.
      */
     unsigned int frame_count;
     /**
-     * @brief The current frame of this animation sprite object.
+     * @brief The current frame of this animation visual_image object.
      */
     unsigned int current_frame;
     /**
@@ -589,47 +589,47 @@ typedef struct CGAnimationSprite{
      */
     CG_BOOL is_playing;
     /**
-     * @brief The node of the animation sprite in the animation sprite list.
+     * @brief The node of the animation visual_image in the animation visual_image list.
      */
     CGAnimationNode* node;
     /**
-     * @brief The processing id of the thread for playing the animation sprite.
+     * @brief The processing id of the thread for playing the animation visual_image.
      */
     unsigned int animation_process_id;
     /**
-     * @brief The texture ids of this animation sprite object.
+     * @brief The texture ids of this animation visual_image object.
      */
     unsigned int* texture_ids;
     /**
-     * @brief Animation sprite property.
+     * @brief Animation visual_image property.
      */
     CGRenderObjectProperty* property;
     /**
-     * @brief The window that the animation sprite is created in.
+     * @brief The window that the animation visual_image is created in.
      */
     CGWindow* in_window;
     /**
-     * @brief the width and height of the animation sprite.
+     * @brief the width and height of the animation visual_image.
      */
     CGVector2 demention;
     /**
      * @brief Animation finish callback function. This callback function will be called 
      * after the animation is finished.
-     * @param anim_sprite The animation sprite object that the animation is finished.
+     * @param anim_visual_image The animation visual_image object that the animation is finished.
      */
-    void (*finish_callback)(struct CGAnimationSprite*);
-}CGAnimationSprite;
+    void (*finish_callback)(struct CGAnimationVisualImage*);
+}CGAnimationVisualImage;
 
 /**
- * @brief Create CGAnimationSprite object
+ * @brief Create CGAnimationVisualImage object
  * 
- * @param img_paths the list of the animation sprite frame image path.
- * @param frame_count the count of frames of the animated sprite
- * @param property The animation sprite property
- * @param window the window that the animation sprite is going to be drawn.
- * @return CGAnimationSprite* THe created CGAnimationSprite object instance
+ * @param img_paths the list of the animation visual_image frame image path.
+ * @param frame_count the count of frames of the animated visual_image
+ * @param property The animation visual_image property
+ * @param window the window that the animation visual_image is going to be drawn.
+ * @return CGAnimationVisualImage* THe created CGAnimationVisualImage object instance
  */
-CGAnimationSprite* CGCreateAnimationSprite(
+CGAnimationVisualImage* CGCreateAnimationVisualImage(
     const char** img_paths, 
     unsigned int frame_count, 
     float frame_rate,
@@ -637,27 +637,27 @@ CGAnimationSprite* CGCreateAnimationSprite(
     CGWindow* window);
 
 /**
- * @brief Set animation sprite finish callback function.
+ * @brief Set animation visual_image finish callback function.
  * 
- * @param anim_sprite The animation sprite object to set on
+ * @param anim_visual_image The animation visual_image object to set on
  * @param finish_callback The callback function to be set
  */
-void CGSetAnimationSpriteFinishCallback(CGAnimationSprite* anim_sprite, void (*finish_callback)(CGAnimationSprite*));
+void CGSetAnimationVisualImageFinishCallback(CGAnimationVisualImage* anim_visual_image, void (*finish_callback)(CGAnimationVisualImage*));
 
 /**
- * @brief Delete animation sprite object. Note that you have to free the animation sprite's property manually.
+ * @brief Delete animation visual_image object. Note that you have to free the animation visual_image's property manually.
  * 
- * @param anim_sprite The animation sprite object to be deleted
+ * @param anim_visual_image The animation visual_image object to be deleted
  */
-void CGDeleteAnimationSprite(CGAnimationSprite* anim_sprite);
+void CGDeleteAnimationVisualImage(CGAnimationVisualImage* anim_visual_image);
 
 /**
- * @brief Draw animation sprite on window
+ * @brief Draw animation visual_image on window
  * 
- * @param anim_sprite The animation sprite object to be drawn
+ * @param anim_visual_image The animation visual_image object to be drawn
  * @param window The window to draw on
  */
-void CGPlayAnimationSprite(CGAnimationSprite* anim_sprite);
+void CGPlayAnimationVisualImage(CGAnimationVisualImage* anim_visual_image);
 
 #ifdef __cplusplus
 }
