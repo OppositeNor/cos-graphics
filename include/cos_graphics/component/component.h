@@ -44,11 +44,6 @@ public:
 protected:
 
     /**
-     * @brief Has the component's transform property been set
-     */
-    bool has_transform_set = false;
-
-    /**
      * @brief Called once when the component is created.
      */
     virtual void Ready() {}

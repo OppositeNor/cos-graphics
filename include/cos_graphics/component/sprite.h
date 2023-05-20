@@ -12,6 +12,8 @@ protected:
      */
     std::shared_ptr<CGVisualImage> image;
 
+    CGRenderObjectProperty* render_property;
+
     void Draw() override;
 public:
     /**
