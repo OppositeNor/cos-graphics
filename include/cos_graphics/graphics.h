@@ -40,17 +40,17 @@ extern "C" {
 /**
  * @brief Draw triangle.
  */
-#define CGDrawTriangle(triangle_object, window) CGDraw(triangle_object, window, CG_RD_TYPE_TRIANGLE)
+#define CGDrawTriangle(triangle_object, property, window) CGDraw(triangle_object, property, window, CG_RD_TYPE_TRIANGLE)
 
 /**
  * @brief Draw quadrangle.
  */
-#define CGDrawQuadrangle(quadrangle_object, window) CGDraw(quadrangle_object, window, CG_RD_TYPE_QUADRANGLE)
+#define CGDrawQuadrangle(quadrangle_object, property, window) CGDraw(quadrangle_object, property, window, CG_RD_TYPE_QUADRANGLE)
 
 /**
  * @brief Draw visual_image.
  */
-#define CGDrawVisualImage(visual_image_object, window) CGDraw(visual_image_object, window, CG_RD_TYPE_SPRITE)
+#define CGDrawVisualImage(visual_image_object, property, window) CGDraw(visual_image_object, property, window, CG_RD_TYPE_VISUAL_IMAGE)
 
 typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
@@ -75,7 +75,6 @@ typedef struct {
     unsigned int quadrangle_vao;
     unsigned int visual_image_vao;
     CGRenderNode* render_list;
-    CGAnimationNode* animation_list;
 } CGWindow;
 
 /**
@@ -355,9 +354,7 @@ enum CGIdentifiers{
 
     CG_RD_TYPE_TRIANGLE,
     CG_RD_TYPE_QUADRANGLE,
-    CG_RD_TYPE_SPRITE,
-
-    CG_AN_TYPE_ANIMATION_SPRITE
+    CG_RD_TYPE_VISUAL_IMAGE
 };
 
 /************GEOMETRIES************/
@@ -402,7 +399,7 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
  * @param window the window to be draw on.
  * @param object_type the type of the object
  */
-void CGDraw(void* draw_object, CGWindow* window, int object_type);
+void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* window, int object_type);
 
 /**
  * @brief Triangle
@@ -428,10 +425,6 @@ typedef struct{
      * @brief third vertex position
      */
     CGVector2 vert_3;
-    /**
-     * @brief Geometry properties of the triangle.
-     */
-    CGRenderObjectProperty* property;
 }CGTriangle;
 
 /**
@@ -452,14 +445,6 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
  * @return CGTriangle* triangle instance
  */
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
-
-/**
- * @brief Set property to a triangle
- * 
- * @param triangle triangle to set on
- * @param property triangle property
- */
-void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* property);
 
 typedef struct{
     /**
@@ -486,10 +471,6 @@ typedef struct{
      * @brief forth vertex position
      */
     CGVector2 vert_4;
-    /**
-     * @brief Geometry property for the quadrangle
-     */
-    CGRenderObjectProperty* property;
 }CGQuadrangle;
 
 /**
@@ -515,7 +496,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 
-/************SPRITES************/
+/************VISUAL_IMAGES************/
 
 typedef struct{
     /**
@@ -530,10 +511,6 @@ typedef struct{
      * @brief The assigned z for rendering sortting.
      */
     float assigned_z;
-    /**
-     * @brief VisualImage property.
-     */
-    CGRenderObjectProperty* property;
     /**
      * @brief The window that the visual_image is created in.
      */
@@ -552,7 +529,7 @@ typedef struct{
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window);
 
 /**
  * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
@@ -560,104 +537,6 @@ CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty*
  * @param visual_image visual_image object instance to be deleted
  */
 void CGDeleteVisualImage(CGVisualImage* visual_image);
-
-/********ANIMATION SPRITES********/
-
-typedef struct CGAnimationVisualImage{
-    /**
-     * @brief The number of frames in this animation visual_image object.
-     */
-    unsigned int frame_count;
-    /**
-     * @brief The current frame of this animation visual_image object.
-     */
-    unsigned int current_frame;
-    /**
-     * @brief frame rate.
-     */
-    float frame_rate;
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
-    /**
-     * @brief Is animation playing.
-     */
-    CG_BOOL is_playing;
-    /**
-     * @brief The node of the animation visual_image in the animation visual_image list.
-     */
-    CGAnimationNode* node;
-    /**
-     * @brief The processing id of the thread for playing the animation visual_image.
-     */
-    unsigned int animation_process_id;
-    /**
-     * @brief The texture ids of this animation visual_image object.
-     */
-    unsigned int* texture_ids;
-    /**
-     * @brief Animation visual_image property.
-     */
-    CGRenderObjectProperty* property;
-    /**
-     * @brief The window that the animation visual_image is created in.
-     */
-    CGWindow* in_window;
-    /**
-     * @brief the width and height of the animation visual_image.
-     */
-    CGVector2 demention;
-    /**
-     * @brief Animation finish callback function. This callback function will be called 
-     * after the animation is finished.
-     * @param anim_visual_image The animation visual_image object that the animation is finished.
-     */
-    void (*finish_callback)(struct CGAnimationVisualImage*);
-}CGAnimationVisualImage;
-
-/**
- * @brief Create CGAnimationVisualImage object
- * 
- * @param img_paths the list of the animation visual_image frame image path.
- * @param frame_count the count of frames of the animated visual_image
- * @param property The animation visual_image property
- * @param window the window that the animation visual_image is going to be drawn.
- * @return CGAnimationVisualImage* THe created CGAnimationVisualImage object instance
- */
-CGAnimationVisualImage* CGCreateAnimationVisualImage(
-    const char** img_paths, 
-    unsigned int frame_count, 
-    float frame_rate,
-    CGRenderObjectProperty* property, 
-    CGWindow* window);
-
-/**
- * @brief Set animation visual_image finish callback function.
- * 
- * @param anim_visual_image The animation visual_image object to set on
- * @param finish_callback The callback function to be set
- */
-void CGSetAnimationVisualImageFinishCallback(CGAnimationVisualImage* anim_visual_image, void (*finish_callback)(CGAnimationVisualImage*));
-
-/**
- * @brief Delete animation visual_image object. Note that you have to free the animation visual_image's property manually.
- * 
- * @param anim_visual_image The animation visual_image object to be deleted
- */
-void CGDeleteAnimationVisualImage(CGAnimationVisualImage* anim_visual_image);
-
-/**
- * @brief Draw animation visual_image on window
- * 
- * @param anim_visual_image The animation visual_image object to be drawn
- * @param window The window to draw on
- */
-void CGPlayAnimationVisualImage(CGAnimationVisualImage* anim_visual_image);
 
 #ifdef __cplusplus
 }

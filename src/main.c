@@ -1,3 +1,4 @@
+
 #if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
@@ -64,20 +65,20 @@ int main()
         (CGVector2){-100, 100});
     float rotation = 0.0f;
     triangle.z = 1;
-    quad1.property = CGCreateRenderObjectProperty(
+    CGRenderObjectProperty* quad1_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 0.0f, 0.0f, 0.5f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation);
-    quad2.property = CGCreateRenderObjectProperty(
+    CGRenderObjectProperty* quad2_property = CGCreateRenderObjectProperty(
         CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
         (CGVector2){-50, 0},
         (CGVector2){1, 1},
         rotation
     );
-
+    
     CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
-        CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
+        window);
     sprite->z = 2;
     quad2.z = -3;
     double tick_end_time = CGGetCurrentTime();
@@ -96,20 +97,23 @@ int main()
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, window);
         //CGDrawQuadrangle(&quad2, window);
-        CGDrawVisualImage(sprite, window);
-        CGDrawQuadrangle(&quad1, window);
+        CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0);
+        CGDrawVisualImage(sprite, 
+            prop, 
+            window);
+        //CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
+        free(prop);
     }
-    free(sprite->property);
     CGDeleteVisualImage(sprite);
     CGDestroyWindow(window);
     CGTerminateGraphics();
     window = NULL;
-    free(quad1.property);
-    free(quad2.property);
+    free(quad1_property);
+    free(quad2_property);
     return 0;
 }
 #endif
