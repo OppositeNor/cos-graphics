@@ -643,11 +643,6 @@ float* CGGetDepthPointer(void* object, int identifier)
     CG_RETURN_RENDER_PROPERTY(object, identifier, z);
 }
 
-float* CGGetAssignedZPointer(void* object, int identifier)
-{
-    CG_RETURN_RENDER_PROPERTY(object, identifier, assigned_z);
-}
-
 void CGCreateRenderList(CGWindow* window)
 {
     CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create render list: Window must be specified to a non-null window instance.");

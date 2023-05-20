@@ -410,10 +410,6 @@ typedef struct{
      */
     float z;
     /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
-    /**
      * @brief first vertex position
      */
     CGVector2 vert_1;
@@ -451,10 +447,6 @@ typedef struct{
      * @brief The depth of the geometry.
      */
     float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
     /**
      * @brief first vertex position
      */
@@ -507,10 +499,6 @@ typedef struct{
      * @brief The depth of the geometry.
      */
     float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
     /**
      * @brief The window that the visual_image is created in.
      */
