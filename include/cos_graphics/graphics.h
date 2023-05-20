@@ -40,17 +40,17 @@ extern "C" {
 /**
  * @brief Draw triangle.
  */
-#define CGDrawTriangle(triangle_object, window) CGDraw(triangle_object, window, CG_RD_TYPE_TRIANGLE)
+#define CGDrawTriangle(triangle_object, property, window) CGDraw(triangle_object, property, window, CG_RD_TYPE_TRIANGLE)
 
 /**
  * @brief Draw quadrangle.
  */
-#define CGDrawQuadrangle(quadrangle_object, window) CGDraw(quadrangle_object, window, CG_RD_TYPE_QUADRANGLE)
+#define CGDrawQuadrangle(quadrangle_object, property, window) CGDraw(quadrangle_object, property, window, CG_RD_TYPE_QUADRANGLE)
 
 /**
  * @brief Draw visual_image.
  */
-#define CGDrawVisualImage(visual_image_object, window) CGDraw(visual_image_object, window, CG_RD_TYPE_SPRITE)
+#define CGDrawVisualImage(visual_image_object, property, window) CGDraw(visual_image_object, property, window, CG_RD_TYPE_VISUAL_IMAGE)
 
 typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
@@ -354,9 +354,7 @@ enum CGIdentifiers{
 
     CG_RD_TYPE_TRIANGLE,
     CG_RD_TYPE_QUADRANGLE,
-    CG_RD_TYPE_SPRITE,
-
-    CG_AN_TYPE_ANIMATION_SPRITE
+    CG_RD_TYPE_VISUAL_IMAGE
 };
 
 /************GEOMETRIES************/
@@ -401,7 +399,7 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
  * @param window the window to be draw on.
  * @param object_type the type of the object
  */
-void CGDraw(void* draw_object, CGWindow* window, int object_type);
+void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* window, int object_type);
 
 /**
  * @brief Triangle
@@ -427,10 +425,6 @@ typedef struct{
      * @brief third vertex position
      */
     CGVector2 vert_3;
-    /**
-     * @brief Geometry properties of the triangle.
-     */
-    CGRenderObjectProperty* property;
 }CGTriangle;
 
 /**
@@ -451,14 +445,6 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
  * @return CGTriangle* triangle instance
  */
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
-
-/**
- * @brief Set property to a triangle
- * 
- * @param triangle triangle to set on
- * @param property triangle property
- */
-void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* property);
 
 typedef struct{
     /**
@@ -485,10 +471,6 @@ typedef struct{
      * @brief forth vertex position
      */
     CGVector2 vert_4;
-    /**
-     * @brief Geometry property for the quadrangle
-     */
-    CGRenderObjectProperty* property;
 }CGQuadrangle;
 
 /**
@@ -514,7 +496,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
 
-/************SPRITES************/
+/************VISUAL_IMAGES************/
 
 typedef struct{
     /**
@@ -529,10 +511,6 @@ typedef struct{
      * @brief The assigned z for rendering sortting.
      */
     float assigned_z;
-    /**
-     * @brief VisualImage property.
-     */
-    CGRenderObjectProperty* property;
     /**
      * @brief The window that the visual_image is created in.
      */
@@ -551,7 +529,7 @@ typedef struct{
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window);
 
 /**
  * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.

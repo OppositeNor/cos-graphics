@@ -5,7 +5,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <math.h>
-#include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -26,8 +25,8 @@ CGRenderObjectProperty* cg_default_visual_image_property;
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
 #define CG_BUFFERS_QUADRANGLE_EBO 2
-#define CG_BUFFERS_SPRITE_VBO 3
-#define CG_BUFFERS_SPRITE_EBO 4
+#define CG_BUFFERS_VISUAL_IMAGE_VBO 3
+#define CG_BUFFERS_VISUAL_IMAGE_EBO 4
 
 unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
 unsigned int cg_buffer_count;
@@ -69,24 +68,31 @@ CGShaderProgram cg_default_visual_image_shader_program;
  */
 CGShaderProgram cg_visual_image_shader_program;
 
-#define CG_RETURN_RENDER_PROPERTY(node, property_name)      \
-    switch (node->identifier)                               \
+#define CG_RETURN_RENDER_PROPERTY(object, identifier, property_name)      \
+    switch (identifier)                               \
     {                                                       \
     case CG_RD_TYPE_TRIANGLE:                               \
-        return &((CGTriangle*)node->data)->property_name;   \
+        return &((CGTriangle*)object)->property_name;   \
     case CG_RD_TYPE_QUADRANGLE:                             \
-        return &((CGQuadrangle*)node->data)->property_name; \
-    case CG_RD_TYPE_SPRITE:                                 \
-        return &((CGVisualImage*)node->data)->property_name;     \
+        return &((CGQuadrangle*)object)->property_name; \
+    case CG_RD_TYPE_VISUAL_IMAGE:                                 \
+        return &((CGVisualImage*)object)->property_name;     \
     default:                                                \
-        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the \"%s\" property from node: Cannot find render type: %d.", #property_name, node->identifier);    \
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the \"%s\" property from node: Cannot find render identifier: %d.", #property_name, identifier);    \
     }((void)0)
 
+#define CG_EXTRACT_RENDER_NODE_DATA(node) ((CGRenderNodeData*)node->data)
+typedef struct
+{
+    void* object;
+    CGRenderObjectProperty* property;
+}CGRenderNodeData;
+
 // get the "z" property of the render node object.
-float* CGGetDepthPointer(CGRenderNode* node);
+float* CGGetDepthPointer(void* object, int identifier);
 
 // get assigned z property of the render node object
-float* CGGetAssignedZPointer(CGRenderNode* node);
+float* CGGetAssignedZPointer(void* object, int identifier);
 
 const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
@@ -126,13 +132,13 @@ float* CGCreateRotateMatrix(float rotate);
 void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property);
 
 // render triangle
-void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z);
+void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
 
 // render quadrangle
-void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z);
+void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
 
 // render visual_image
-void CGRenderVisualImage(CGVisualImage* visual_image, CGWindow* window, float assigned_z);
+void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
 
 // bind texture to vao
 void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
@@ -171,14 +177,6 @@ void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
  * @param window window that holds the render list.
  */
 void CGReorganizeRenderList(CGWindow* window);
-
-/**
- * @brief Add an animation node into the animation list.
- * 
- * @param list_head the head of the animation list. If this parameter is NULL, the program will not do anything.
- * @param node The node to be added into the list. If this parameter is NULL, the program will not do anything.
- */
-void CGAddAnimationNode(CGAnimationNode* list_head, CGAnimationNode* node);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -362,8 +360,8 @@ void CGCreateViewport(CGWindow* window)
     // set visual_image vao properties
     glGenVertexArrays(1, &window->visual_image_vao);
     glBindVertexArray(window->visual_image_vao);
-    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
-    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -394,22 +392,26 @@ void CGWindowDraw(CGWindow* window)
         glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
     CGReorganizeRenderList(window);
     CGRenderNode* draw_obj = window->render_list->next;
+    CGRenderNodeData *data;
+    CG_ERROR_CONDITION(data == NULL, "Failed to allocate memory for drawing window.");
     while (draw_obj != NULL)
     {
+        data = (CGRenderNodeData*)(draw_obj->data);
         switch (draw_obj->identifier)
         {
         case CG_RD_TYPE_TRIANGLE:
-            CGRenderTriangle(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
+            CGRenderTriangle(data->object, data->property, window, *CGGetAssignedZPointer(draw_obj, draw_obj->identifier));
             break;
         case CG_RD_TYPE_QUADRANGLE:
-            CGRenderQuadrangle(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
+            CGRenderQuadrangle(data->object, data->property, window, *CGGetAssignedZPointer(draw_obj, draw_obj->identifier));
             break;
-        case CG_RD_TYPE_SPRITE:
-            CGRenderVisualImage(draw_obj->data, window, *CGGetAssignedZPointer(draw_obj));
+        case CG_RD_TYPE_VISUAL_IMAGE:
+            CGRenderVisualImage(data->object, data->property, window, *CGGetAssignedZPointer(data->object, draw_obj->identifier));
             break;
         default:
-            CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object type with type: %d", draw_obj->identifier);
+            CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object identifier: %d", draw_obj->identifier);
         }
+        free(draw_obj->data);
         CGRemoveLinkedListNode(&draw_obj);
     }
     window->render_list->next = NULL;
@@ -635,19 +637,22 @@ void CGSetShaderUniformMat4f(CGShaderProgram shader_program, const char* uniform
     glUniformMatrix4fv(uniform_location, 1, GL_FALSE, data);
 }
 
-void CGDraw(void* draw_object, CGWindow* window, int object_type)
+void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* window, int object_type)
 {
-    CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(draw_object, object_type));
+    CGRenderNodeData* data = (CGRenderNodeData*)malloc(sizeof(CGRenderNodeData));
+    data->object = draw_object;
+    data->property = draw_property;
+    CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(data, object_type));
 }
 
-float* CGGetDepthPointer(CGRenderNode* node)
+float* CGGetDepthPointer(void* object, int identifier)
 {
-    CG_RETURN_RENDER_PROPERTY(node, z);
+    CG_RETURN_RENDER_PROPERTY(object, identifier, z);
 }
 
-float* CGGetAssignedZPointer(CGRenderNode* node)
+float* CGGetAssignedZPointer(void* object, int identifier)
 {
-    CG_RETURN_RENDER_PROPERTY(node, assigned_z);
+    CG_RETURN_RENDER_PROPERTY(object, identifier, assigned_z);
 }
 
 void CGCreateRenderList(CGWindow* window)
@@ -665,7 +670,8 @@ void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
     // using list_head as an temperary variable
     while (list_head->next != NULL)
     {
-        if (*CGGetDepthPointer(node) > *CGGetDepthPointer(list_head->next))
+        if (*CGGetDepthPointer(CG_EXTRACT_RENDER_NODE_DATA(node)->object, node->identifier) > 
+            *CGGetDepthPointer(CG_EXTRACT_RENDER_NODE_DATA(list_head->next)->object, node->identifier))
         {
             CGRenderNode* temp = list_head->next;
             list_head->next = node;
@@ -690,7 +696,7 @@ void CGReorganizeRenderList(CGWindow* window)
     while(p != NULL)
     {
         assign_z -= 0.1;
-        *CGGetAssignedZPointer(p) = assign_z;
+        *CGGetAssignedZPointer(CG_EXTRACT_RENDER_NODE_DATA(p)->object, p->identifier) = assign_z;
         p = p->next;
     }
 }
@@ -797,7 +803,6 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
     result.z = 0;
-    result.property = NULL;
     return result;
 }
 
@@ -809,14 +814,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->z = 0;
-    result->property = NULL;
     return result;
-}
-
-void CGSetTriangleProperty(CGTriangle* triangle, CGRenderObjectProperty* property)
-{
-    CG_ERROR_CONDITION(triangle == NULL, "Attempting to set a property to a NULL triangle object.");
-    triangle->property = property;
 }
 
 float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
@@ -841,7 +839,7 @@ void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_s
     glBufferData(buffer_type, buffer_size, buffer_data, usage);
 }
 
-void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float assigned_z)
+void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
     CG_ERROR_CONDITION(triangle == NULL, "Attempting to draw a NULL triangle object.");
@@ -850,10 +848,7 @@ void CGRenderTriangle(const CGTriangle* triangle, const CGWindow* window, float 
     CGGladInitializeCheck();
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
-    CGRenderObjectProperty* property;
-    if (triangle->property != NULL)
-        property = triangle->property;
-    else
+    if (property == NULL)
         property = cg_default_geo_property;
 
     //draw
@@ -910,7 +905,6 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     result.vert_3 = vert_3;
     result.vert_4 = vert_4;
     result.z = 0.0f;
-    result.property = NULL;
     return result;
 }
 
@@ -923,21 +917,17 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
     result->z = 0.0f;
-    result->property = NULL;
     return result;
 }
 
-void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGWindow* window, float assigned_z)
+void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
     CGGladInitializeCheck();
     float* vertices = CGMakeQuadrangleVertices(quadrangle, assigned_z);
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw quadrangle.");
-    CGRenderObjectProperty* property;
-    if (quadrangle->property != NULL)
-        property = quadrangle->property;
-    else
+    if (property == NULL)
         property = cg_default_geo_property;
     
     //draw
@@ -982,7 +972,7 @@ void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* textu
     glBindVertexArray(0);
 }
 
-CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty* property, CGWindow* window)
+CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window)
 {
     CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, "Cannot create image with NULL window.");
@@ -996,7 +986,6 @@ CGVisualImage* CGCreateVisualImage(const char* img_path, CGRenderObjectProperty*
     CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
     visual_image->demention.x = image->width;
     visual_image->demention.y = image->height;
-    visual_image->property = property;
     if (image == NULL)
     {
         free(visual_image);
@@ -1014,7 +1003,7 @@ void CGDeleteVisualImage(CGVisualImage* visual_image)
     free(visual_image);
 }
 
-void CGRenderVisualImage(CGVisualImage* visual_image, CGWindow* window, float assigned_z)
+void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(visual_image == NULL, "Failed to draw visual_image: VisualImage must be specified to a non-null visual_image instance.");
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw visual_image: Attempting to draw visual_image on a NULL window");
@@ -1023,11 +1012,11 @@ void CGRenderVisualImage(CGVisualImage* visual_image, CGWindow* window, float as
     CG_ERROR_CONDITION(vertices == NULL, "Failed to draw visual_image");
     glBindVertexArray(window->visual_image_vao);
     glUseProgram(cg_visual_image_shader_program);
-    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_SPRITE_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
     free(vertices);
     glBindTexture(GL_TEXTURE_2D, visual_image->texture_id);
-    CGSetPropertyUniforms(cg_visual_image_shader_program, visual_image->property);
+    CGSetPropertyUniforms(cg_visual_image_shader_program, property);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
