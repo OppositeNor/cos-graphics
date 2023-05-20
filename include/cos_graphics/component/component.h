@@ -87,32 +87,11 @@ public:
     const CGTransform& GetTransform() const;
 
     /**
-     * @brief Set the Transform object
+     * @brief Get the reference of the Transform object
      * 
-     * @param p_transform The new transform of the component
+     * @return CGComponent::CGTransform& The reference of the transform object
      */
-    void SetTransform(const CGTransform& p_transform);
-
-    /**
-     * @brief Set the Position of the component
-     * 
-     * @param p_position The new position to be set to
-     */
-    void SetPosition(const CGVector2& p_position);
-
-    /**
-     * @brief Set the Rotation of the component
-     * 
-     * @param p_rotation The new rotation to be set to
-     */
-    void SetRotation(float p_rotation);
-
-    /**
-     * @brief Set the Scale of the component
-     * 
-     * @param p_scale The new scale to be set to
-     */
-    void SetScale(const CGVector2& p_scale);
+    CGTransform& GetTransform();
 
     /**
      * @brief Set the Depth object

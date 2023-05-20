@@ -29,26 +29,7 @@ const CGComponent::CGTransform& CGComponent::GetTransform() const
     return transform;
 }
 
-void CGComponent::SetTransform(const CGTransform& p_transform)
+CGComponent::CGTransform& CGComponent::GetTransform()
 {
-    transform = p_transform;
-    has_transform_set = true;
-}
-
-void CGComponent::SetPosition(const CGVector2& p_position)
-{
-    transform.position = p_position;
-    has_transform_set = true;
-}
-
-void CGComponent::SetRotation(float p_rotation)
-{
-    transform.rotation = p_rotation;
-    has_transform_set = true;
-}
-
-void CGComponent::SetScale(const CGVector2& p_scale)
-{
-    transform.scale = p_scale;
-    has_transform_set = true;
+    return transform;
 }

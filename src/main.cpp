@@ -4,11 +4,17 @@
 int main()
 {
     CGGame::InitGame(640, 480, "Test");
-    CGSprite* sprite = new CGSprite("./test2.png");
-    CGSprite* sprite2 = new CGSprite("./test2.png");
-    sprite2->SetPosition(CGConstructVector2(100.0f, 100.0f));
+    CGVisualImage* image = CGCreateVisualImage("./test2.png", 
+        CGCreateRenderObjectProperty(
+            CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f), 
+            CGConstructVector2(0.0f, 0.0f), 
+            CGConstructVector2(1.0f, 1.0f), 
+            0.0f), CGGame::GetInstance()->GetGameWindow());
+    CGSprite* sprite = new CGSprite(image);
+    CGSprite* sprite2 = new CGSprite(image);
+    sprite2->GetTransform().position = CGConstructVector2(100.0f, 100.0f);
     sprite2->SetDepth(-0.5f);
-    CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f));
+    CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
     CGGame::StartGame();
     return 0;
 }
