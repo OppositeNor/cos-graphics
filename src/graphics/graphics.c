@@ -171,13 +171,6 @@ void CGCreateRenderList(CGWindow* window);
  */
 void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
 
-/**
- * @brief Reorganize the render list, and prepare for the render.
- * 
- * @param window window that holds the render list.
- */
-void CGReorganizeRenderList(CGWindow* window);
-
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
     CGColor color;
@@ -390,23 +383,23 @@ void CGWindowDraw(CGWindow* window)
 {
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent((GLFWwindow*)window->glfw_window_instance);
-    CGReorganizeRenderList(window);
     CGRenderNode* draw_obj = window->render_list->next;
     CGRenderNodeData *data;
-    CG_ERROR_CONDITION(data == NULL, "Failed to allocate memory for drawing window.");
+    float assign_z = CG_RENDER_FAR;
     while (draw_obj != NULL)
     {
+        assign_z -= 0.1;
         data = (CGRenderNodeData*)(draw_obj->data);
         switch (draw_obj->identifier)
         {
         case CG_RD_TYPE_TRIANGLE:
-            CGRenderTriangle(data->object, data->property, window, *CGGetAssignedZPointer(draw_obj, draw_obj->identifier));
+            CGRenderTriangle(data->object, data->property, window, assign_z);
             break;
         case CG_RD_TYPE_QUADRANGLE:
-            CGRenderQuadrangle(data->object, data->property, window, *CGGetAssignedZPointer(draw_obj, draw_obj->identifier));
+            CGRenderQuadrangle(data->object, data->property, window, assign_z);
             break;
         case CG_RD_TYPE_VISUAL_IMAGE:
-            CGRenderVisualImage(data->object, data->property, window, *CGGetAssignedZPointer(data->object, draw_obj->identifier));
+            CGRenderVisualImage(data->object, data->property, window, assign_z);
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object identifier: %d", draw_obj->identifier);
@@ -684,21 +677,6 @@ void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
     list_head->next = node;
     node->next = temp;
     
-}
-
-void CGReorganizeRenderList(CGWindow* window)
-{
-    CG_ERROR_CONDITION(window == NULL, "Cannot reorganize list with a NULL window");
-    if(window->render_list == NULL)
-        return;
-    CGRenderNode* p = window->render_list->next;
-    float assign_z = CG_RENDER_FAR;
-    while(p != NULL)
-    {
-        assign_z -= 0.1;
-        *CGGetAssignedZPointer(CG_EXTRACT_RENDER_NODE_DATA(p)->object, p->identifier) = assign_z;
-        p = p->next;
-    }
 }
 
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation)
