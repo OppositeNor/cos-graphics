@@ -2,7 +2,7 @@
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
 
-CGSprite::CGSprite(std::string p_img_path, const CGVector2& p_position) : CGVisualComponent(p_position)
+CGSprite::CGSprite(const std::string& p_img_path, const CGVector2& p_position) : CGVisualComponent(p_position)
 {
     if (p_img_path == std::string(""))
         return;
@@ -25,6 +25,17 @@ CGSprite::CGSprite(CGVisualImage* p_image, const CGVector2& p_position) : image(
         transform.scale,
         transform.rotation
     );
+}
+
+void CGSprite::SetImage(CGVisualImage* p_image)
+{
+    image = std::shared_ptr<CGVisualImage>(p_image);
+}
+
+void CGSprite::SetImage(const std::string& p_img_path)
+{
+    image = std::shared_ptr<CGVisualImage>(CGCreateVisualImage(p_img_path.c_str(), 
+        CGGame::GetInstance()->GetGameWindow()), CGDeleteVisualImage);
 }
 
 CGSprite::~CGSprite()

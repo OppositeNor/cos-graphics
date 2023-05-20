@@ -22,7 +22,7 @@ public:
      * @param p_img_path The path of the image for the sprite
      * @param p_position The position that the sprite is going to be on.
      */
-    CGSprite(std::string p_img_path = std::string(""), const CGVector2& p_position = {0, 0});
+    CGSprite(const std::string& p_img_path = std::string(""), const CGVector2& p_position = {0, 0});
 
     /**
      * @brief Construct a new CGSprite object
@@ -45,5 +45,5 @@ public:
      * 
      * @param p_img_path The path of the image file that the sprite is going to be set to.
      */
-    void SetImage(std::string p_img_path);
+    void SetImage(const std::string& p_img_path);
 };
