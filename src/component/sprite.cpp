@@ -50,7 +50,7 @@ void CGSprite::Draw()
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;
     
-    if (texture == nullptr || !visual)
+    if (texture == nullptr)
         return;
     CGDrawVisualImage(texture.get(), render_property, CGGame::GetInstance()->GetGameWindow());
 }

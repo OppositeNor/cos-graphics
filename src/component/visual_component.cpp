@@ -12,7 +12,8 @@ CGVisualComponent::~CGVisualComponent()
 void CGVisualComponent::Tick(double p_delta_time)
 {
     Update(p_delta_time);
-    Draw();
+    if (visual)
+        Draw();
 }
 
 void CGVisualComponent::SetVisual(bool p_visual)
