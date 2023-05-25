@@ -43,14 +43,15 @@ CGSprite::~CGSprite()
     free(render_property);
 }
 
-void CGSprite::Draw()
+void CGSprite::Draw(float p_delta)
 {
+    if (texture == nullptr)
+        return;
+    
     texture->z = transform.depth;
     render_property->transform = transform.position;
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;
     
-    if (texture == nullptr)
-        return;
     CGDrawVisualImage(texture.get(), render_property, CGGame::GetInstance()->GetGameWindow());
 }

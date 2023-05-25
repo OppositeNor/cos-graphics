@@ -6,15 +6,15 @@
 
 class CGSprite : public CGVisualComponent
 {
+
+    CGRenderObjectProperty* render_property;
 protected:
     /**
      * @brief The texture of the sprite.
      */
     std::shared_ptr<CGVisualImage> texture;
 
-    CGRenderObjectProperty* render_property;
-
-    void Draw() override;
+    void Draw(float p_delta) override;
 public:
     /**
      * @brief Construct a new CGSprite object

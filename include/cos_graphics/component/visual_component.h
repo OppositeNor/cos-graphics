@@ -23,7 +23,7 @@ protected:
     /**
      * @brief Draw component on the window.
      */
-    virtual void Draw() = 0;
+    virtual void Draw(float p_delta) = 0;
 public:
     CGVisualComponent(const CGVector2& p_position = {0, 0});
     virtual ~CGVisualComponent() override;
