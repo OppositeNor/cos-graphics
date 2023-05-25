@@ -1,5 +1,6 @@
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
+#include <cos_graphics/log.h>
 
 int main()
 {
@@ -14,8 +15,6 @@ int main()
     sprite3->GetTransform().position = CGConstructVector2(-100.0f, -100.0f);
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
     CGGame::StartGame();
-    delete sprite;
-    delete sprite2;
-    delete sprite3;
+    CGGame::ExitGame();
     return 0;
 }

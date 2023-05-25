@@ -72,6 +72,11 @@ public:
      * @brief Start the game.
      */
     static void StartGame();
+
+    /**
+     * @brief Exit the game.
+     */
+    static void ExitGame();
     
     CGWindow* GetGameWindow();
 

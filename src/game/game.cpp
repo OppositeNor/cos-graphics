@@ -53,6 +53,15 @@ void CGGame::StartGame()
     CG_PRINT("Game exited.");
 }
 
+void CGGame::ExitGame()
+{
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before exiting the game.");
+    CGTerminateGraphics();
+    delete game_instance;
+    game_instance = nullptr;
+    CG_PRINT("Game exited.");
+}
+
 void CGGame::AddComponent(CGComponent* p_component)
 {
     component_list.insert(component_list.end(), p_component);
@@ -109,5 +118,4 @@ void CGGame::GameLoop()
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
-    CGTerminateGraphics();
 }

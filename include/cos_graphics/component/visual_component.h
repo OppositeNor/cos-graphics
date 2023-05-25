@@ -25,7 +25,7 @@ protected:
      */
     virtual void Draw(float p_delta) = 0;
 public:
-    CGVisualComponent(const CGVector2& p_position = {0, 0});
+    explicit CGVisualComponent(const CGVector2& p_position = {0, 0});
     virtual ~CGVisualComponent() override;
 
     /**
