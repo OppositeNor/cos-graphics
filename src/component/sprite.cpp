@@ -2,11 +2,11 @@
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
 
-CGSprite::CGSprite(const std::string& p_img_path, const CGVector2& p_position) : CGVisualComponent(p_position)
+CGSprite::CGSprite(const std::string& p_texture_path, const CGVector2& p_position) : CGVisualComponent(p_position)
 {
-    if (p_img_path == std::string(""))
+    if (p_texture_path == std::string(""))
         return;
-    image = std::shared_ptr<CGVisualImage>(CGCreateVisualImage(p_img_path.c_str(), 
+    texture = std::shared_ptr<CGVisualImage>(CGCreateVisualImage(p_texture_path.c_str(), 
         CGGame::GetInstance()->GetGameWindow()), CGDeleteVisualImage);
     
     render_property = CGCreateRenderObjectProperty(
@@ -17,7 +17,7 @@ CGSprite::CGSprite(const std::string& p_img_path, const CGVector2& p_position) :
     );
 }
 
-CGSprite::CGSprite(CGVisualImage* p_image, const CGVector2& p_position) : image(p_image), CGVisualComponent(p_position)
+CGSprite::CGSprite(CGVisualImage* p_texture, const CGVector2& p_position) : texture(p_texture), CGVisualComponent(p_position)
 {
     render_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
@@ -27,14 +27,14 @@ CGSprite::CGSprite(CGVisualImage* p_image, const CGVector2& p_position) : image(
     );
 }
 
-void CGSprite::SetImage(CGVisualImage* p_image)
+void CGSprite::SetImage(CGVisualImage* p_texture)
 {
-    image = std::shared_ptr<CGVisualImage>(p_image);
+    texture = std::shared_ptr<CGVisualImage>(p_texture);
 }
 
-void CGSprite::SetImage(const std::string& p_img_path)
+void CGSprite::SetImage(const std::string& p_texture_path)
 {
-    image = std::shared_ptr<CGVisualImage>(CGCreateVisualImage(p_img_path.c_str(), 
+    texture = std::shared_ptr<CGVisualImage>(CGCreateVisualImage(p_texture_path.c_str(), 
         CGGame::GetInstance()->GetGameWindow()), CGDeleteVisualImage);
 }
 
@@ -45,12 +45,12 @@ CGSprite::~CGSprite()
 
 void CGSprite::Draw()
 {
-    image->z = transform.depth;
+    texture->z = transform.depth;
     render_property->transform = transform.position;
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;
     
-    if (image == nullptr || !visual)
+    if (texture == nullptr || !visual)
         return;
-    CGDrawVisualImage(image.get(), render_property, CGGame::GetInstance()->GetGameWindow());
+    CGDrawVisualImage(texture.get(), render_property, CGGame::GetInstance()->GetGameWindow());
 }

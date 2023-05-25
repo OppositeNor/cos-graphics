@@ -8,9 +8,9 @@ class CGSprite : public CGVisualComponent
 {
 protected:
     /**
-     * @brief The image of the sprite.
+     * @brief The texture of the sprite.
      */
-    std::shared_ptr<CGVisualImage> image;
+    std::shared_ptr<CGVisualImage> texture;
 
     CGRenderObjectProperty* render_property;
 
@@ -19,31 +19,31 @@ public:
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @param p_img_path The path of the image for the sprite
+     * @param p_texture_path The path of the texture for the sprite
      * @param p_position The position that the sprite is going to be on.
      */
-    CGSprite(const std::string& p_img_path = std::string(""), const CGVector2& p_position = {0, 0});
+    CGSprite(const std::string& p_texture_path = std::string(""), const CGVector2& p_position = {0, 0});
 
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @param p_image The image for the sprite.
+     * @param p_texture The texture for the sprite.
      * @param p_position The position that the sprite is going to be on.
      */
-    CGSprite(CGVisualImage* p_image, const CGVector2& p_position = {0, 0});
+    CGSprite(CGVisualImage* p_texture, const CGVector2& p_position = {0, 0});
     virtual ~CGSprite() override;
 
     /**
-     * @brief Set the image of the sprite
+     * @brief Set the texture of the sprite
      * 
-     * @param p_image The image that the sprite is going to be set to.
+     * @param p_texture The texture that the sprite is going to be set to.
      */
-    void SetImage(CGVisualImage* p_image);
+    void SetImage(CGVisualImage* p_texture);
 
     /**
-     * @brief Set the image of the sprite
+     * @brief Set the texture of the sprite
      * 
-     * @param p_img_path The path of the image file that the sprite is going to be set to.
+     * @param p_texture_path The path of the texture file that the sprite is going to be set to.
      */
-    void SetImage(const std::string& p_img_path);
+    void SetImage(const std::string& p_texture_path);
 };

@@ -109,4 +109,5 @@ void CGGame::GameLoop()
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+    CGTerminateGraphics();
 }
