@@ -12,7 +12,7 @@ extern "C" {
      * @brief This value is the smallest assigned z index being started. Note that it does not have any
      * relationship with the z value of each render object. If you have too many objects that needs to 
      * be rendered, and you found out that part of them are not be rendered, you can try to set this to
-     * a smaller value.
+     * a larger value.
      * You can modify this by defining CG_RENDER_FAR before including this header file.
      * @example 
      * // this is how you can change CG_RENDER_FAR to 8
@@ -360,25 +360,29 @@ enum CGIdentifiers{
 /************GEOMETRIES************/
 
 /**
- * @brief Geometry properties for geometry objects.
+ * @brief Object properties for objects that will be rendered on screen.
  */
 typedef struct{
     /**
-     * @brief color of the geometry
+     * @brief rotation of the object (in radians)
+     */
+    float rotation;
+    /**
+     * @brief The depth of the object.
+     */
+    float z;
+    /**
+     * @brief color of the object
      */
     CGColor color;
     /**
-     * @brief transform of the geometry
+     * @brief transform of the object
      */
     CGVector2 transform;
     /**
-     * @brief scale of the geometry
+     * @brief scale of the object
      */
     CGVector2 scale;
-    /**
-     * @brief rotation of the geometry (in radians)
-     */
-    float rotation;
 }CGRenderObjectProperty;
 
 /**
@@ -405,14 +409,6 @@ void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* 
  * @brief Triangle
  */
 typedef struct{
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
     /**
      * @brief first vertex position
      */
@@ -447,14 +443,6 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 
 typedef struct{
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
     /**
      * @brief first vertex position
      */
@@ -503,14 +491,6 @@ typedef struct{
      * @brief Texture's OpenGL ID
      */
     unsigned int texture_id;
-    /**
-     * @brief The depth of the geometry.
-     */
-    float z;
-    /**
-     * @brief The assigned z for rendering sortting.
-     */
-    float assigned_z;
     /**
      * @brief The window that the visual_image is created in.
      */
