@@ -76,7 +76,7 @@ void CGSprite::Draw(float p_delta)
     if (texture == nullptr)
         return;
     
-    texture->z = transform.depth;
+    render_property->z = transform.depth;
     render_property->transform = transform.position;
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;

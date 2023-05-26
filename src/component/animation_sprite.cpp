@@ -1,4 +1,5 @@
 #include "cos_graphics/component/animation_sprite.h"
+#include "cos_graphics/game.h"
 #include <iostream>
 
 CGAnimationSprite::CGAnimationSprite(const std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
@@ -64,8 +65,10 @@ void CGAnimationSprite::Draw(float p_delta)
         current_frame = 0;
     }
     auto frame_displayed = *(animation_played.begin() + current_frame);
-    frame_displayed->z = transform.depth;
+    render_property->z = transform.depth;
     render_property->transform = transform.position;
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;
+
+    CGDrawVisualImage(frame_displayed, render_property, CGGame::GetInstance()->GetGameWindow());
 }
