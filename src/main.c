@@ -64,7 +64,6 @@ int main()
         (CGVector2){100, -100},
         (CGVector2){-100, 100});
     float rotation = 0.0f;
-    triangle.z = 1;
     CGRenderObjectProperty* quad1_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 0.0f, 0.0f, 0.5f),
         (CGVector2){-50, 0},
@@ -79,8 +78,7 @@ int main()
     
     CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
         window);
-    sprite->z = 2;
-    quad2.z = -3;
+    quad2_property->z = -3;
     double tick_end_time = CGGetCurrentTime();
     const double fixed_delta = 1.0 / 60;
     while(!CGShouldWindowClose(window))
@@ -95,13 +93,13 @@ int main()
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
         CGTickRenderStart(window);
-        //CGDrawTriangle(&triangle, window);
-        //CGDrawQuadrangle(&quad2, window);
+        CGDrawTriangle(&triangle, NULL, window);
+        CGDrawQuadrangle(&quad2, quad2_property, window);
         CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0);
         CGDrawVisualImage(sprite, 
             prop, 
             window);
-        //CGDrawQuadrangle(&quad1, quad1_property, window);
+        CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();

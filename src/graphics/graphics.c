@@ -68,28 +68,12 @@ CGShaderProgram cg_default_visual_image_shader_program;
  */
 CGShaderProgram cg_visual_image_shader_program;
 
-#define CG_RETURN_RENDER_PROPERTY(object, identifier, property_name)      \
-    switch (identifier)                               \
-    {                                                       \
-    case CG_RD_TYPE_TRIANGLE:                               \
-        return &((CGTriangle*)object)->property_name;   \
-    case CG_RD_TYPE_QUADRANGLE:                             \
-        return &((CGQuadrangle*)object)->property_name; \
-    case CG_RD_TYPE_VISUAL_IMAGE:                                 \
-        return &((CGVisualImage*)object)->property_name;     \
-    default:                                                \
-        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to get the \"%s\" property from node: Cannot find render identifier: %d.", #property_name, identifier);    \
-    }((void)0)
-
 #define CG_EXTRACT_RENDER_NODE_DATA(node) ((CGRenderNodeData*)node->data)
 typedef struct
 {
     void* object;
     CGRenderObjectProperty* property;
 }CGRenderNodeData;
-
-// get the "z" property of the render node object.
-float* CGGetDepthPointer(void* object, int identifier);
 
 // get assigned z property of the render node object
 float* CGGetAssignedZPointer(void* object, int identifier);
@@ -638,11 +622,6 @@ void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* 
     CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(data, object_type));
 }
 
-float* CGGetDepthPointer(void* object, int identifier)
-{
-    CG_RETURN_RENDER_PROPERTY(object, identifier, z);
-}
-
 void CGCreateRenderList(CGWindow* window)
 {
     CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create render list: Window must be specified to a non-null window instance.");
@@ -658,8 +637,13 @@ void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
     // using list_head as an temperary variable
     while (list_head->next != NULL)
     {
-        if (*CGGetDepthPointer(CG_EXTRACT_RENDER_NODE_DATA(node)->object, node->identifier) > 
-            *CGGetDepthPointer(CG_EXTRACT_RENDER_NODE_DATA(list_head->next)->object, node->identifier))
+        float current_z = 0;
+        if (CG_EXTRACT_RENDER_NODE_DATA(node)->property != NULL)
+            current_z = CG_EXTRACT_RENDER_NODE_DATA(node)->property->z;
+        float next_z = 0;
+        if (CG_EXTRACT_RENDER_NODE_DATA(list_head->next)->property != NULL)
+            next_z = CG_EXTRACT_RENDER_NODE_DATA(list_head->next)->property->z;
+        if (current_z > next_z)
         {
             CGRenderNode* temp = list_head->next;
             list_head->next = node;
@@ -682,6 +666,7 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
     property->transform = transform;
     property->scale = scale;
     property->rotation = rotation;
+    property->z = 0;
     return property;
 }
 
@@ -775,7 +760,6 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     result.vert_1 = vert_1;
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
-    result.z = 0;
     return result;
 }
 
@@ -786,7 +770,6 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
-    result->z = 0;
     return result;
 }
 
@@ -877,7 +860,6 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
     result.vert_4 = vert_4;
-    result.z = 0.0f;
     return result;
 }
 
@@ -889,7 +871,6 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
-    result->z = 0.0f;
     return result;
 }
 
