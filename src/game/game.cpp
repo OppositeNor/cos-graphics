@@ -11,7 +11,7 @@ CGGame::~CGGame()
 {
     if (game_window != nullptr)
         CGDestroyWindow(game_window);
-    for (auto i = component_list.begin(); i < component_list.end() + 1; ++i)
+    for (auto i = component_list.begin(); i <= component_list.end(); ++i)
         delete (*i);
     game_initialized = false;
 }
@@ -50,7 +50,6 @@ void CGGame::StartGame()
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before starting the game.");
     game_instance->Ready();
     game_instance->GameLoop();
-    CG_PRINT("Game exited.");
 }
 
 void CGGame::ExitGame()
