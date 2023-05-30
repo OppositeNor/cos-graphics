@@ -1,5 +1,6 @@
 #include "cos_graphics/resource.h"
 #include "cos_graphics/log.h"
+#include "cos_graphics/linked_list.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -7,6 +8,40 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#define CG_EXTRACT_MEM_RES_NODE_DATA(node) ((CGMemRes*)(node->data))
+
+typedef CGLinkedListNode CGMemResNode;
+
+typedef struct
+{
+    void* data;
+    void (*deleter)(void*);
+}CGMemRes;
+
+enum CGMemResType
+{
+    CG_MEM_RES_TYPE_HEAD = 0,
+
+    CG_MEM_RES_TYPE_DATA
+};
+
+/**
+ * @brief Linked list head for memory resources.
+ */
+CGMemResNode *mem_res_head = NULL;
+
+CG_BOOL CGResourceSystemInitialized()
+{
+    return mem_res_head != NULL;
+}
+
+void CGInitResourceSystem()
+{
+    mem_res_head = CGCreateLinkedListNode(NULL, CG_MEM_RES_TYPE_HEAD);
+}
+
+
+/// Disk functions ///
 char* CGLoadFile(const char* file_path)
 {
     FILE* file = fopen(file_path, "r");
@@ -58,6 +93,7 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
     }
     else
         image->data = NULL;
+    CGRegisterResource(image, CG_DELETER(CGDeleteImage));
     return image;
 }
 
@@ -89,4 +125,72 @@ void CGSetFloatArrayValue(unsigned int count, float* array, ...)
         array[i] = (float)va_arg(args, double);
     }
     va_end(args);
+}
+
+/// Memory functions ///
+
+CGMemRes* CGCreateMemRes(void* data, void (*deleter)(void*))
+{
+    CGMemRes* mem_res = (CGMemRes*)malloc(sizeof(CGMemRes));
+    CG_ERROR_COND_RETURN(mem_res == NULL, NULL, "Failed to allocate memory for memory resource.");
+    mem_res->data = data;
+    mem_res->deleter = deleter;
+    return mem_res;
+}
+
+void CGRegisterResource(void* data, void (*deleter)(void*))
+{
+    CG_ERROR_CONDITION(mem_res_head == NULL, "Memory resource system not initialized.");
+    CGMemRes* resource = CGCreateMemRes(data, deleter);
+    CG_ERROR_CONDITION(resource == NULL, "Failed to create memory resource.");
+    CGMemResNode* p = mem_res_head;
+    while (p->next != NULL)
+    {
+        CG_ERROR_CONDITION(p->data == data, "Resource already registered.");
+        p = p->next;
+    }
+    p->next = CGCreateLinkedListNode(resource, CG_MEM_RES_TYPE_DATA);
+}
+
+
+void CGFreeResource(void* resource)
+{
+    CGMemResNode* p = mem_res_head->next;
+    if(p == NULL)
+        return;
+    while (p->next != NULL)
+    {
+        if (CG_EXTRACT_MEM_RES_NODE_DATA(p)->data == resource)
+        {
+            CGMemResNode* temp = p->next;
+            p->next = p->next->next;
+            CGMemRes* mem_res = CG_EXTRACT_MEM_RES_NODE_DATA(temp)->data;
+            mem_res->deleter(mem_res->data);
+            free(mem_res);
+            free(temp);
+            return;
+        }
+        p = p->next;
+    }
+}
+
+void CGClearResource()
+{
+    CGMemResNode* p = mem_res_head;
+    while (p->next != NULL)
+    {
+        CGMemResNode* temp = p->next;
+        p->next = p->next->next;
+        CGMemRes* mem_res = (CGMemRes*)temp->data;
+        mem_res->deleter(mem_res->data);
+        free(mem_res);
+        free(temp);
+    }
+}
+
+void CGTerminateResourceSystem()
+{
+    CGClearResource();
+    free(mem_res_head);
+    mem_res_head = NULL;
 }

@@ -1,6 +1,5 @@
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
-#include "cos_graphics/resource.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -28,45 +27,45 @@ CGRenderObjectProperty* cg_default_visual_image_property;
 #define CG_BUFFERS_VISUAL_IMAGE_VBO 3
 #define CG_BUFFERS_VISUAL_IMAGE_EBO 4
 
-unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
-unsigned int cg_buffer_count;
+static unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
+static unsigned int cg_buffer_count;
 
 /**
  * @brief vertex shader path for a geometry
  */
-const char* cg_default_geo_vshader_path = "./shaders/default_geo_shader.vert";
+static const char* cg_default_geo_vshader_path = "./shaders/default_geo_shader.vert";
 /**
  * @brief fragment shader path for a geometry
  */
-const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
+static const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
 /**
  * @brief vertex shader path for a geometry
  */
-const char* cg_default_visual_image_vshader_path = "./shaders/default_visual_image_shader.vert";
+static const char* cg_default_visual_image_vshader_path = "./shaders/default_visual_image_shader.vert";
 /**
  * @brief fragment shader path for a geometry
  */
-const char* cg_default_visual_image_fshader_path = "./shaders/default_visual_image_shader.frag";
+static const char* cg_default_visual_image_fshader_path = "./shaders/default_visual_image_shader.frag";
 
 /**
  * @brief default shader for geometry
  */
-CGShaderProgram cg_default_geo_shader_program;
+static CGShaderProgram cg_default_geo_shader_program;
 
 /**
  * @brief shader program for drawing geometry
  */
-CGShaderProgram cg_geo_shader_program;
+static CGShaderProgram cg_geo_shader_program;
 
 /**
  * @brief default shader for visual_images
  */
-CGShaderProgram cg_default_visual_image_shader_program;
+static CGShaderProgram cg_default_visual_image_shader_program;
 
 /**
  * @brief shader program for drawing visual_images
  */
-CGShaderProgram cg_visual_image_shader_program;
+static CGShaderProgram cg_visual_image_shader_program;
 
 #define CG_EXTRACT_RENDER_NODE_DATA(node) ((CGRenderNodeData*)node->data)
 typedef struct
@@ -76,9 +75,9 @@ typedef struct
 }CGRenderNodeData;
 
 // get assigned z property of the render node object
-float* CGGetAssignedZPointer(void* object, int identifier);
+static float* CGGetAssignedZPointer(void* object, int identifier);
 
-const float cg_normal_matrix[16] = {
+static const float cg_normal_matrix[16] = {
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
@@ -86,46 +85,46 @@ const float cg_normal_matrix[16] = {
 };
 
 // compile one specific shader from source
-CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
+static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 
 // initialize default shader
-void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
+static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
 
 // make a vertices array out of triangle
-float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z);
+static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z);
 
 // make a vertices array out of quadrangle
-float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z);
+static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z);
 
 // make a vertices array out of visual_image
-float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z);
+static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z);
 
 // set buffer value
-void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
+static void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage);
 
 // create transform matrix
-float* CGCreateTransformMatrix(CGVector2 transform);
+static float* CGCreateTransformMatrix(CGVector2 transform);
 
 // create scale matrix
-float* CGCreateScaleMatrix(CGVector2 scale);
+static float* CGCreateScaleMatrix(CGVector2 scale);
 
 // create rotation matrix
-float* CGCreateRotateMatrix(float rotate);
+static float* CGCreateRotateMatrix(float rotate);
 
 // set geometry matrices uniform
-void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property);
+static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property);
 
 // render triangle
-void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
+static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
 
 // render quadrangle
-void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
+static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z);
 
 // render visual_image
-void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
+static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
 
 // bind texture to vao
-void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
+static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -137,7 +136,7 @@ void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* textu
  * @param demention_y The y count of the result matrix
  * @return float* 
  */
-void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
+static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
 
 
 /**
@@ -145,7 +144,7 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
  * 
  * @param window the window to create the render list on.
  */
-void CGCreateRenderList(CGWindow* window);
+static void CGCreateRenderList(CGWindow* window);
 
 /**
  * @brief Add a render list node in the list.
@@ -153,7 +152,37 @@ void CGCreateRenderList(CGWindow* window);
  * @param list_head The head of the list. If this parameter is NULL, the program will not do anything.
  * @param node The node to be added into the list
  */
-void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
+static void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
+
+
+
+/**
+ * @brief Delete the CGShaderSource object used by the shader source
+ * 
+ * @param source shader source
+ */
+static void CGDeleteShaderSource(CGShaderSource* shader_source);
+
+/**
+ * @brief Delete shader object
+ * 
+ * @param shader shader object to be deleted
+ */
+static void CGDeleteShader(CGShader* shader);
+
+/**
+ * @brief delete shader program
+ * 
+ * @param program shader program to be deleted
+ */
+static void CGDeleteShaderProgram(CGShaderProgram program);
+
+/**
+ * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
+ * 
+ * @param visual_image visual_image object instance to be deleted
+ */
+static void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -210,9 +239,11 @@ void CGTerminateGraphics()
         glfwTerminate();
         cg_is_glfw_initialized = CG_FALSE;
     }
+    if (CGResourceSystemInitialized())
+        CGTerminateResourceSystem();
 }
 
-void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program)
+static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program)
 {
     CG_ERROR_COND_EXIT(shader_vpath == NULL || shader_fpath == NULL, -1, "Default shader path cannot be set to NULL.");
     CG_ERROR_COND_EXIT(shader_program == NULL, -1, "Cannot init a default shader for NULL shader program.");
@@ -221,8 +252,8 @@ void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGS
     CGShader* shader = CGCreateShader(shader_source);
     CG_ERROR_COND_EXIT(shader == NULL, -1, "Failed to init default shader.");
     *shader_program = CGCreateShaderProgram(shader);
-    CGDeleteShaderSource(shader_source);
-    CGDeleteShader(shader);
+    CGFreeResource(shader_source);
+    CGFreeResource(shader);
 }
 
 void CGInitGLAD()
@@ -259,6 +290,9 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     if (!cg_is_glfw_initialized)
         CGInitGLFW(resizable);
 
+    if (!CGResourceSystemInitialized())
+        CGInitResourceSystem();
+
     CGWindow* window = (CGWindow*)malloc(sizeof(CGWindow));
     CG_ERROR_COND_RETURN(window == NULL, NULL, "Failed to allocate memory for window.");
     window->width = width;
@@ -278,7 +312,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         return NULL;
     }
     CGCreateViewport(window);
-
+    CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
     return window;
 }
 
@@ -441,7 +475,7 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
     if (use_geometry)
         CGMakeStr(result->geometry, geometry, "Construct shader source failed.");
     result->use_geometry = use_geometry;
-
+    CGRegisterResource(result, CG_DELETER(CGDeleteShaderSource));
     return result;
 }
 
@@ -484,10 +518,11 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     else
         result->geometry = NULL;
     result->use_geometry = use_geometry;
+    CGRegisterResource(result, CG_DELETER(CGDeleteShaderSource));
     return result;
 }
 
-void CGDeleteShaderSource(CGShaderSource* shader_source)
+static void CGDeleteShaderSource(CGShaderSource* shader_source)
 {
     if (shader_source != NULL)
     {
@@ -499,7 +534,7 @@ void CGDeleteShaderSource(CGShaderSource* shader_source)
     }
 }
 
-CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
+static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source)
 {
     CG_ERROR_COND_RETURN(shader_source == NULL, CG_FALSE, "Attempting to compile a shader with a NULL source.");
     glShaderSource(shader_id, 1, &shader_source, NULL);
@@ -548,10 +583,11 @@ CGShader* CGCreateShader(CGShaderSource* shader_source)
         CG_ERROR("Failed to compile geometry shader.");
         return NULL;
     }
+    CGRegisterResource(shader, CG_DELETER(CGDeleteShader));
     return shader;
 }
 
-void CGDeleteShader(CGShader* shader)
+static void CGDeleteShader(CGShader* shader)
 {
     glDeleteShader(shader->vertex);
     glDeleteShader(shader->fragment);
@@ -583,7 +619,7 @@ void CGUseShaderProgram(CGShaderProgram program)
         cg_geo_shader_program = cg_default_geo_shader_program;
 }
 
-void CGDeleteShaderProgram(CGShaderProgram program)
+static void CGDeleteShaderProgram(CGShaderProgram program)
 {
     glDeleteProgram(program);
 }
@@ -622,7 +658,7 @@ void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* 
     CGAddRenderListNode(window->render_list, CGCreateLinkedListNode(data, object_type));
 }
 
-void CGCreateRenderList(CGWindow* window)
+static void CGCreateRenderList(CGWindow* window)
 {
     CG_ERROR_COND_EXIT(window == NULL, -1, "Failed to create render list: Window must be specified to a non-null window instance.");
     if (window->render_list != NULL)
@@ -630,7 +666,7 @@ void CGCreateRenderList(CGWindow* window)
     window->render_list = CGCreateLinkedListNode(NULL, CG_LIST_HEAD);
 }
 
-void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
+static void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node)
 {
     if (node == NULL || list_head == NULL)
         return;
@@ -667,10 +703,11 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
     property->scale = scale;
     property->rotation = rotation;
     property->z = 0;
+    CGRegisterResource(property, CG_DELETER(free));
     return property;
 }
 
-float* CGCreateTransformMatrix(CGVector2 transform)
+static float* CGCreateTransformMatrix(CGVector2 transform)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
     CG_ERROR_COND_RETURN(result == NULL, NULL, "failed to allocate memory for transform matrix.");
@@ -681,7 +718,7 @@ float* CGCreateTransformMatrix(CGVector2 transform)
     return result;
 }
 
-float* CGCreateScaleMatrix(CGVector2 scale)
+static float* CGCreateScaleMatrix(CGVector2 scale)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
     CG_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for scale matrix.");
@@ -691,7 +728,7 @@ float* CGCreateScaleMatrix(CGVector2 scale)
     return result;
 }
 
-float* CGCreateRotateMatrix(float rotate)
+static float* CGCreateRotateMatrix(float rotate)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
     CG_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for rotation matrix.");
@@ -706,7 +743,7 @@ float* CGCreateRotateMatrix(float rotate)
     return result;
 }
 
-void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
+static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
 {
     CG_ERROR_CONDITION(result == NULL || mat_1 == NULL || mat_2 == NULL, "Unable to multiply NULL matrix");
     for (int i = 0; i < demention_y; ++i)
@@ -723,7 +760,7 @@ void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int de
     }
 }
 
-void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property)
+static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRenderObjectProperty* property)
 {
     CG_ERROR_CONDITION(property == NULL, "Attempting to set uniforms out of a NULL property");
     CGSetShaderUniformVec4f(shader_program, "color", 
@@ -770,10 +807,11 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
+    CGRegisterResource(result, free);
     return result;
 }
 
-float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
+static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, "Cannot make vertices array out of a triangle of value NULL.");
     float* result = (float*)malloc(sizeof(float) * 9);
@@ -788,14 +826,14 @@ float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
     return result;
 }
 
-void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
+static void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
 {
     CGGladInitializeCheck();
     glBindBuffer(buffer_type, buffer);
     glBufferData(buffer_type, buffer_size, buffer_data, usage);
 }
 
-void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
+static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Attempting to draw triangle on a NULL window.");
     CG_ERROR_CONDITION(triangle == NULL, "Attempting to draw a NULL triangle object.");
@@ -823,7 +861,7 @@ void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectProperty* 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z)
+static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, "Cannot make vertices array out of a quadrangle of value NULL.");
     float* vertices = (float*)malloc(sizeof(float) * 12);
@@ -838,7 +876,7 @@ float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z
     return vertices;
 }
 
-float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z)
+static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z)
 {
     CG_ERROR_COND_RETURN(visual_image == NULL, NULL, "Cannot make vertices array out of a visual_image of value NULL");
     float* vertices = (float*)malloc(sizeof(float) * 20);
@@ -871,10 +909,11 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
+    CGRegisterResource(result, free);
     return result;
 }
 
-void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
+static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Cannot draw quadrangle on a NULL window.");
     CG_ERROR_CONDITION(quadrangle == NULL, "Attempting to draw a NULL quadrangle.");
@@ -900,7 +939,7 @@ void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProp
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture)
+static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture)
 {
     CG_ERROR_CONDITION(texture == NULL, "Cannot bind a NULL texture.");
     CGGladInitializeCheck();
@@ -915,7 +954,7 @@ void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* textu
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
         break;
     default:
-        CGDeleteImage(texture);
+        CGFreeResource(texture);
         free(texture);
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -947,17 +986,18 @@ CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window)
     }
     glGenTextures(1, &visual_image->texture_id);
     CGSetTextureValue(visual_image->texture_id, window->visual_image_vao, image);
-    CGDeleteImage(image);
+    CGFreeResource(image);
+    CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
 }
 
-void CGDeleteVisualImage(CGVisualImage* visual_image)
+static void CGDeleteVisualImage(CGVisualImage* visual_image)
 {
     glDeleteTextures(1, &visual_image->texture_id);
     free(visual_image);
 }
 
-void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z)
+static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(visual_image == NULL, "Failed to draw visual_image: VisualImage must be specified to a non-null visual_image instance.");
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, "Failed to draw visual_image: Attempting to draw visual_image on a NULL window");

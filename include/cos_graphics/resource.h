@@ -5,6 +5,28 @@
 extern "C" {
 #endif
 
+#include "defs.h"
+
+/**
+ * @brief Convert a function to a type that is accepted by the resource system.
+ * 
+ */
+#define CG_DELETER(function) ((void(*)(void*))function)
+
+/**
+ * @brief Check if the resource system is initialized.
+ * 
+ * @return CG_BOOL CG_TRUE if the resource system is initialized, CG_FALSE otherwise.
+ */
+CG_BOOL CGResourceSystemInitialized();
+
+/**
+ * @brief Initialize resource system.
+ */
+void CGInitResourceSystem();
+
+/// Disk functions ///
+
 /**
  * @brief Load file from disk
  * 
@@ -29,8 +51,6 @@ typedef struct{
  */
 CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data);
 
-
-
 /**
  * @brief Load image from disk.
  * 
@@ -54,6 +74,35 @@ void CGDeleteImage(CGImage* image);
  * @param ... the values to be set to the array
  */
 void CGSetFloatArrayValue(unsigned int count, float* array, ...);
+
+/// Memory functions ///
+
+/**
+ * @brief Register a resource.
+ * 
+ * @param data The data of the resource.
+ * @param deleter The deleter of the resource. The data will be released by calling deleter(data)
+ */
+void CGRegisterResource(void* data, void (*deleter)(void*));
+
+/**
+ * @brief Free the resource that's been created.
+ * 
+ * @param resource The resource to be freed.
+ */
+void CGFreeResource(void* resource);
+
+/**
+ * @brief Clear all resources.
+ * 
+ */
+void CGClearResource();
+
+/**
+ * @brief Terminate resource system.
+ * 
+ */
+void CGTerminateResourceSystem();
 
 #ifdef __cplusplus
 }

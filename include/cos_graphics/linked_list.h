@@ -22,6 +22,14 @@ CGLinkedListNode* CGCreateLinkedListNode(void* data, int type);
 void CGRemoveLinkedListNode(CGLinkedListNode** node);
 
 /**
+ * @brief Remove a linked list node by data.
+ * 
+ * @param head The head of the list.
+ * @param data The data of the node to be removed.
+ */
+void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data);
+
+/**
  * @brief Delete list.
  * 
  * @param head The head of the list.
