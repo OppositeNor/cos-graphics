@@ -79,7 +79,7 @@ void CGPrintList(CGLinkedListNode* head)
     unsigned int i = 0;
     while (p_node != NULL)
     {
-        CG_PRINT("%d", p_node->identifier);
+        CG_PRINT("Node: %d, Identifier: %d, Data location: %p", i, p_node->identifier, p_node->data);
         p_node = p_node->next;
         ++i;
     }

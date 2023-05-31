@@ -171,6 +171,11 @@ void CGFreeResource(void* resource)
     CG_ERROR_CONDITION(CG_TRUE, "Resource not found.");
 }
 
+void CGPrintMemoryList()
+{
+    CGPrintList(mem_res_head);
+}
+
 void CGClearResource()
 {
     CGMemResNode* p = mem_res_head;

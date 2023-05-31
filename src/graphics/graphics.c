@@ -574,6 +574,7 @@ CGShader* CGCreateShader(CGShaderSource* shader_source)
     if (!shader_source->use_geometry)
     {
         shader_source->geometry = NULL;
+        CGRegisterResource(shader, CG_DELETER(CGDeleteShader));
         return shader;
     }
     shader->geometry = glCreateShader(GL_GEOMETRY_SHADER);

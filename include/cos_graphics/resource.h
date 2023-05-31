@@ -93,6 +93,12 @@ void CGRegisterResource(void* data, void (*deleter)(void*));
 void CGFreeResource(void* resource);
 
 /**
+ * @brief Print the memory list.
+ * 
+ */
+void CGPrintMemoryList();
+
+/**
  * @brief Clear all resources.
  * 
  */
