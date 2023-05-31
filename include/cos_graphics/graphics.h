@@ -2,6 +2,7 @@
 #define _CG_GRAPHICS_H_
 #include "defs.h"
 #include "linked_list.h"
+#include "resource.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -242,13 +243,6 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     const char* geometry_path, CG_BOOL use_geometry);
 
 /**
- * @brief Delete the CGShaderSource object used by the shader source
- * 
- * @param source shader source
- */
-void CGDeleteShaderSource(CGShaderSource* shader_source);
-
-/**
  * @brief Shaders
  * 
  */
@@ -283,13 +277,6 @@ typedef struct{
  */
 CGShader* CGCreateShader(CGShaderSource* shader_source);
 
-/**
- * @brief Delete shader object
- * 
- * @param shader shader object to be deleted
- */
-void CGDeleteShader(CGShader* shader);
-
 typedef unsigned int CGShaderProgram;
 
 /**
@@ -306,13 +293,6 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader);
  * @param program the shader program. If program is 0, the shader program will be set to the default shader program
  */
 void CGUseShaderProgram(CGShaderProgram program);
-
-/**
- * @brief delete shader program
- * 
- * @param program shader program to be deleted
- */
-void CGDeleteShaderProgram(CGShaderProgram program);
 
 /**
  * @brief Set opengl shader 1f uniform
@@ -510,13 +490,6 @@ typedef struct{
  * @return CGVisualImage* The created CGVisualImage object
  */
 CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window);
-
-/**
- * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
- * 
- * @param visual_image visual_image object instance to be deleted
- */
-void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 #ifdef __cplusplus
 }

@@ -33,6 +33,30 @@ void CGRemoveLinkedListNode(CGLinkedListNode** node)
     p_node->next = temp;
 }
 
+void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data)
+{
+    CG_ERROR_CONDITION(head == NULL || *head == NULL, "Failed to remove data from list: The head of the list is null.");
+    CGLinkedListNode* p = *head;
+    if (p->data == data)
+    {
+        *head = p->next;
+        free(p);
+        return;
+    }
+    while (p->next != NULL)
+    {
+        if (p->next->data == data)
+        {
+            CGLinkedListNode* temp = p->next->next;
+            free(p->next);
+            p->next = temp;
+            return;
+        }
+        p = p->next;
+    }
+    CG_WARNING("Failed to remove data from list: The data is not in the list.");
+}
+
 void CGDeleteList(CGLinkedListNode* head)
 {
     if (head == NULL)
@@ -44,6 +68,22 @@ void CGDeleteList(CGLinkedListNode* head)
         free(p_node);
         p_node = temp;
     }
+}
+
+void CGPrintList(CGLinkedListNode* head)
+{
+    if (head == NULL)
+        return;
+    CG_PRINT("Print list with head %p: ", head);
+    CGLinkedListNode* p_node = head;
+    unsigned int i = 0;
+    while (p_node != NULL)
+    {
+        CG_PRINT("Node: %d, Identifier: %d, Data location: %p", i, p_node->identifier, p_node->data);
+        p_node = p_node->next;
+        ++i;
+    }
+    CG_PRINT("Print list end. Total %d nodes.\n", i);
 }
 
 #ifdef __cplusplus

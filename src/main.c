@@ -40,6 +40,7 @@ int main()
 #include <math.h>
 #ifdef CG_TG_WIN
 #include<windows.h>
+#include<conio.h>
 #elif defined CG_TG_LINUX
 #include <unistd.h>
 #endif
@@ -105,14 +106,10 @@ int main()
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        free(prop);
+        CGFreeResource(prop);
     }
-    CGDeleteVisualImage(sprite);
-    CGDestroyWindow(window);
     CGTerminateGraphics();
-    window = NULL;
-    free(quad1_property);
-    free(quad2_property);
+    
     return 0;
 }
 #endif
