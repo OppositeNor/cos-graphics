@@ -70,7 +70,21 @@ void CGDeleteList(CGLinkedListNode* head)
     }
 }
 
-
+void CGPrintList(CGLinkedListNode* head)
+{
+    if (head == NULL)
+        return;
+    CG_PRINT("Print list with head %p: ", head);
+    CGLinkedListNode* p_node = head;
+    unsigned int i = 0;
+    while (p_node != NULL)
+    {
+        CG_PRINT("%d", p_node->identifier);
+        p_node = p_node->next;
+        ++i;
+    }
+    CG_PRINT("Print list end. Total %d nodes.\n", i);
+}
 
 #ifdef __cplusplus
 }

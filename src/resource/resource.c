@@ -28,7 +28,7 @@ enum CGMemResType
 /**
  * @brief Linked list head for memory resources.
  */
-CGMemResNode *mem_res_head = NULL;
+static CGMemResNode *mem_res_head = NULL;
 
 CG_BOOL CGResourceSystemInitialized()
 {
@@ -155,23 +155,20 @@ void CGRegisterResource(void* data, void (*deleter)(void*))
 
 void CGFreeResource(void* resource)
 {
-    CGMemResNode* p = mem_res_head->next;
-    if(p == NULL)
-        return;
+    CG_ERROR_CONDITION(mem_res_head == NULL, "Memory resource system not initialized.");
+    CGMemResNode* p = mem_res_head;
     while (p->next != NULL)
     {
-        if (CG_EXTRACT_MEM_RES_NODE_DATA(p)->data == resource)
+        CGMemRes* extract = CG_EXTRACT_MEM_RES_NODE_DATA(p->next);
+        if (extract->data == resource)
         {
-            CGMemResNode* temp = p->next;
-            p->next = p->next->next;
-            CGMemRes* mem_res = CG_EXTRACT_MEM_RES_NODE_DATA(temp)->data;
-            mem_res->deleter(mem_res->data);
-            free(mem_res);
-            free(temp);
+            extract->deleter(extract->data);
+            CGRemoveLinkedListNode(&(p->next));
             return;
         }
         p = p->next;
     }
+    CG_ERROR_CONDITION(CG_TRUE, "Resource not found.");
 }
 
 void CGClearResource()

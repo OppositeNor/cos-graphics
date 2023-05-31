@@ -228,9 +228,9 @@ void CGTerminateGraphics()
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
         glDeleteProgram(cg_default_visual_image_shader_program);
-        free(cg_default_geo_property);
+        CGFreeResource(cg_default_geo_property);
         cg_default_geo_property = NULL;
-        free(cg_default_visual_image_property);
+        CGFreeResource(cg_default_visual_image_property);
         cg_default_visual_image_property = NULL;
         cg_is_glad_initialized = CG_FALSE;
     }
@@ -259,7 +259,6 @@ static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpa
 void CGInitGLAD()
 {
     CG_ERROR_EXP_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, "GLAD setup OpenGL loader failed");
-
     CGInitDefaultShader(cg_default_geo_vshader_path, cg_default_geo_fshader_path, &cg_default_geo_shader_program);
     cg_geo_shader_program = cg_default_geo_shader_program;
 

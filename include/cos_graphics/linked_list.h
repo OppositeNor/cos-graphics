@@ -35,3 +35,10 @@ void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data);
  * @param head The head of the list.
  */
 void CGDeleteList(CGLinkedListNode* head);
+
+/**
+ * @brief Print list.
+ * 
+ * @param head The head of the list
+ */
+void CGPrintList(CGLinkedListNode* head);
