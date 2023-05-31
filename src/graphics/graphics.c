@@ -155,6 +155,12 @@ static void CGCreateRenderList(CGWindow* window);
 static void CGAddRenderListNode(CGRenderNode* list_head, CGRenderNode* node);
 
 
+/**
+ * @brief Destroy the window
+ * 
+ * @param window The window to be destroyed.
+ */
+static void CGDestroyWindow(CGWindow* window);
 
 /**
  * @brief Delete the CGShaderSource object used by the shader source
@@ -315,7 +321,7 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
     return window;
 }
 
-void CGDestroyWindow(CGWindow* window)
+static void CGDestroyWindow(CGWindow* window)
 {
     glDeleteVertexArrays(1, &window->triangle_vao);
     glDeleteVertexArrays(1, &window->quadrangle_vao);
