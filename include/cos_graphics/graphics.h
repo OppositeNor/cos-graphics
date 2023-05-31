@@ -129,13 +129,6 @@ CGVector2 CGConstructVector2(float x, float y);
 CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen, CG_BOOL resizable);
 
 /**
- * @brief Destroy the window
- * 
- * @param window The window to be destroyed.
- */
-void CGDestroyWindow(CGWindow* window);
-
-/**
  * @brief Create viewport object
  * 
  * @param window window instance
