@@ -16,6 +16,5 @@ int main()
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
     CGGame::StartGame();
     CGGame::ExitGame();
-    CGDeleteVisualImage(image);
     return 0;
 }

@@ -23,7 +23,7 @@ CGAnimationSprite::CGAnimationSprite(const std::map<std::string, std::initialize
 
 CGAnimationSprite::~CGAnimationSprite()
 {
-    free(render_property);
+    CGFreeResource(render_property);
 }
 
 void CGAnimationSprite::Play()

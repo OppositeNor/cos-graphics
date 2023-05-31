@@ -44,7 +44,7 @@ void CGSprite::SetTexture(CGVisualImage*& p_texture)
 {
     texture = p_texture;
     if (!is_texture_shared)
-        CGDeleteVisualImage(texture);
+        CGFreeResource(texture);
     is_texture_shared = true;
 }
 
@@ -52,7 +52,7 @@ void CGSprite::SetTexture(CGVisualImage*&& p_texture)
 {
     texture = p_texture;
     if (!is_texture_shared)
-        CGDeleteVisualImage(texture);
+        CGFreeResource(texture);
     is_texture_shared = false;
 }
 
@@ -60,15 +60,15 @@ void CGSprite::SetTexture(const std::string& p_texture_path)
 {
     texture = CGCreateVisualImage(p_texture_path.c_str(), CGGame::GetInstance()->GetGameWindow());
     if (!is_texture_shared)
-        CGDeleteVisualImage(texture);
+        CGFreeResource(texture);
     is_texture_shared = false;
 }
 
 CGSprite::~CGSprite()
 {
-    free(render_property);
+    CGFreeResource(render_property);
     if(!is_texture_shared)
-        CGDeleteVisualImage(texture);
+        CGFreeResource(texture);
 }
 
 void CGSprite::Draw(float p_delta)

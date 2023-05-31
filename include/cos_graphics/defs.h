@@ -32,9 +32,6 @@ typedef char CG_BOOL;
 #else
     #error "Unknown target platform."
 #endif
-#endif
-
-
 
 // cpp version
 #ifdef __cplusplus
@@ -43,3 +40,6 @@ static constexpr float GetReciprocal(float p_num)
     return 1.0f / p_num;
 }
 #endif
+
+#endif
+

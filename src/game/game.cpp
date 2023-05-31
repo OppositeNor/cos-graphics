@@ -10,7 +10,7 @@ CGGame::CGGame()
 CGGame::~CGGame()
 {
     if (game_window != nullptr)
-        CGDestroyWindow(game_window);
+        CGFreeResource(game_window);
     for (auto i = component_list.begin(); i <= component_list.end(); ++i)
         delete (*i);
     game_initialized = false;
@@ -41,7 +41,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p
         CGGame::game_instance->window_properties.resizable);
     CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, "Failed to create window");
     CG_PRINT("Window created.");
-    CG_PRINT("Game initialized.");
+    CG_PRINT("Game initialized.\n");
     game_instance->game_initialized = true;
 }
 
@@ -55,9 +55,9 @@ void CGGame::StartGame()
 void CGGame::ExitGame()
 {
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before exiting the game.");
-    CGTerminateGraphics();
     delete game_instance;
     game_instance = nullptr;
+    CGTerminateGraphics();
     CG_PRINT("Game exited.");
 }
 
