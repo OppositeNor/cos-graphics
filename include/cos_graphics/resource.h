@@ -2,6 +2,7 @@
 #define _CG_RESOURCE_H_
 
 #ifdef __cplusplus
+#include "resource_ext.h"
 extern "C" {
 #endif
 
