@@ -43,18 +43,13 @@ protected:
      * @param CGAnimationSprite* The animation that is finished.
      */
     void (*animation_finish_callback)(CGAnimationSprite*) = nullptr;
+    
+    /**
+     * @brief Whether the texture is shared or not.
+     */
+    bool is_texture_shared;
 
 public:
-
-    /**
-     * @brief Construct a new CGAnimationSprite object
-     * 
-     * @param p_animation_map The map the animations' textures.
-     * @param p_default_animation
-     * @param p_position The position of the animation is going to be displayed.
-     */
-    CGAnimationSprite(const std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
-        std::string p_default_animation, const CGVector2& p_position = {0, 0});
 
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -64,9 +59,19 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(const std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
-        std::string p_default_animation, float p_fps, const CGVector2& p_position = {0, 0});
-
+    CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
+        std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
+    
+    /**
+     * @brief Construct a new CGAnimationSprite object
+     * 
+     * @param p_animation_map The map the animations' textures.
+     * @param p_fps The frame rate of the animation.
+     * @param p_start_frame The frame that the animation is going to start.
+     * @param p_position The position of the animation is going to be displayed.
+     */
+    CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>&& p_animation_map, 
+        std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
     /**
      * @brief Play the current animation.
      */

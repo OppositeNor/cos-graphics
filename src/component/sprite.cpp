@@ -8,24 +8,12 @@ CGSprite::CGSprite(const std::string& p_texture_path, const CGVector2& p_positio
         return;
     texture = CGCreateVisualImage(p_texture_path.c_str(), CGGame::GetInstance()->GetGameWindow());
     is_texture_shared = false;
-    render_property = CGCreateRenderObjectProperty(
-        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        transform.position,
-        transform.scale,
-        transform.rotation
-    );
 }
 
 CGSprite::CGSprite(CGVisualImage*& p_texture, const CGVector2& p_position) : 
     texture(p_texture), CGVisualComponent(p_position)
 {
     is_texture_shared = true;
-    render_property = CGCreateRenderObjectProperty(
-        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        transform.position,
-        transform.scale,
-        transform.rotation
-    );
 }
 
 CGSprite::CGSprite(CGVisualImage*&& p_texture, const CGVector2& p_position) : 

@@ -2,28 +2,37 @@
 #include "cos_graphics/game.h"
 #include <iostream>
 
-CGAnimationSprite::CGAnimationSprite(const std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
-        std::string p_default_animation, const CGVector2& p_position)
-    : animation_map(p_animation_map), current_animation(p_default_animation), frame_duration(0.2f), CGVisualComponent(p_position)
-{
-    render_property = CGCreateRenderObjectProperty(CGConstructColor(1.0f, 1.0f, 1.0f,1.0f), 
-        transform.position, transform.scale, transform.rotation);
-}
 
-
-        
-CGAnimationSprite::CGAnimationSprite(const std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
+CGAnimationSprite::CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
         std::string p_default_animation, float p_fps, const CGVector2& p_position)
     : animation_map(p_animation_map), current_animation(p_default_animation), frame_duration(GetReciprocal(p_fps)), 
         CGVisualComponent(p_position)
 {
-    render_property = CGCreateRenderObjectProperty(CGConstructColor(1.0f, 1.0f, 1.0f,1.0f), 
-        transform.position, transform.scale, transform.rotation);
+    is_texture_shared = true;
+}
+
+CGAnimationSprite::CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>&& p_animation_map, 
+        std::string p_default_animation, float p_fps, const CGVector2& p_position)
+    : animation_map(std::move(p_animation_map)), current_animation(p_default_animation), frame_duration(GetReciprocal(p_fps)), 
+        CGVisualComponent(p_position)
+{
+    is_texture_shared = false;
 }
 
 CGAnimationSprite::~CGAnimationSprite()
 {
     CGFreeResource(render_property);
+    if (!is_texture_shared)
+    {
+        // Free all the textures
+        for (auto& animation : animation_map)
+        {
+            for (auto& frame : animation.second)
+            {
+                CGFreeResource(frame);
+            }
+        }
+    }
 }
 
 void CGAnimationSprite::Play()

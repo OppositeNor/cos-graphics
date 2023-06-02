@@ -3,6 +3,8 @@
 
 CGVisualComponent::CGVisualComponent(const CGVector2& p_position) : CGComponent(), position(p_position)
 {
+    render_property = CGCreateRenderObjectProperty(CGConstructColor(1.0f, 1.0f, 1.0f,1.0f), 
+        transform.position, transform.scale, transform.rotation);
 }
 
 CGVisualComponent::~CGVisualComponent()

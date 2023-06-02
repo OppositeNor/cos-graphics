@@ -6,7 +6,6 @@
 class CGSprite : public CGVisualComponent
 {
 
-    CGRenderObjectProperty* render_property;
 protected:
     /**
      * @brief The texture of the sprite.

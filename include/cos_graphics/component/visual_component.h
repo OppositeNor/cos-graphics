@@ -9,6 +9,10 @@
 class CGVisualComponent : public CGComponent
 {
 protected:
+    /**
+     * @brief The render property for objects to render.
+     */
+    CGRenderObjectProperty* render_property;
 
     /**
      * @brief Is the component visual in the game.
