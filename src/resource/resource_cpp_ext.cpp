@@ -1,1 +1,0 @@
-#include "cos_graphics/resource_ext.h"

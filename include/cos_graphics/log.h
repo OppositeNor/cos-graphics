@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
-#define CG_PRINT(...) CGPrint("CosGraphics", "Output", __VA_ARGS__)
-#define CG_ERROR(...) CGPrint("CosGraphics", "Error", __VA_ARGS__)
-#define CG_WARNING(...) CGPrint("CosGraphics", "Warning", __VA_ARGS__)
+#ifndef CG_MODIFY_OUTPUT_MESSAGE
+    #define CG_PRINT(...) CGPrint("CosGraphics", "Output", __VA_ARGS__)
+    #define CG_ERROR(...) CGPrint("CosGraphics", "Error", __VA_ARGS__)
+    #define CG_WARNING(...) CGPrint("CosGraphics", "Warning", __VA_ARGS__)
+#endif
 
 void CGPrint(const char* sender, const char* type, const char* fmt, ...);
 

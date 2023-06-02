@@ -6,7 +6,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
 
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib)
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
+file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 # set this to OFF if you only want to export the library
 set (USE_TEST_EXE ON)
@@ -23,8 +24,6 @@ find_package(OpenGL REQUIRED)
 list(APPEND libs OpenGL::GL)
 
 set(CG_INCLUDE_DIRECTORIES 
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/src/graphics
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/dependencies/glad/include
     ${CMAKE_SOURCE_DIR}/dependencies/stb)
@@ -59,7 +58,8 @@ include_directories(
     ${CG_INCLUDE_DIRECTORIES}
 )
 
-set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe)
+set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
+file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 add_library(${LIB_OUTPUT_NAME} STATIC
     ${SOURCES}
