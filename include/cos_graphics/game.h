@@ -3,6 +3,7 @@
 #include <vector>
 
 class CGComponent;
+class CGCamera;
 
 /**
  * @brief The game class.
@@ -42,6 +43,11 @@ class CGGame
     std::vector<CGComponent*> component_list;
 
     bool game_initialized = false;
+
+    /**
+     * @brief The main camera for the game.
+     */
+    CGCamera* main_camera = nullptr;
 
     /**
      * @brief Constructor
@@ -101,6 +107,20 @@ public:
      * @param p_color The color to be set to
      */
     void SetWindowClearColor(const CGColor& p_color);
+
+    /**
+     * @brief Get the Main Camera object
+     * 
+     * @return CGCamera* The main camera object.
+     */
+    CGCamera* GetMainCamera();
+
+    /**
+     * @brief Use the camera as the main camera.
+     * 
+     * @param p_camera The camera that the main camera will be set to.
+     */
+    void SetMainCamera(CGCamera* p_camera);
     
 private:
     /**

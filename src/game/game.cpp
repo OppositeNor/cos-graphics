@@ -1,6 +1,7 @@
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
 #include "cos_graphics/component/component.h"
+#include "cos_graphics/component/camera.h"
 
 CGGame::CGGame()
 {
@@ -24,7 +25,7 @@ CGGame* CGGame::GetInstance()
 
 void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p_title, CG_BOOL p_fullscreen, CG_BOOL p_resizable)
 {
-    CG_PRINT("Start game called, starting game...");
+    CG_PRINT("Initializing game...");
     if (CGGame::game_instance != nullptr)
     {
         delete game_instance;
@@ -43,6 +44,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p
     CG_PRINT("Window created.");
     CG_PRINT("Game initialized.\n");
     game_instance->game_initialized = true;
+    game_instance->main_camera = new CGCamera();
 }
 
 void CGGame::StartGame()
@@ -83,6 +85,16 @@ void CGGame::SetWindowClearColor(const CGColor& p_color)
 {
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before setting the window clear color.");
     CGSetClearScreenColor(p_color);
+}
+
+CGCamera* CGGame::GetMainCamera()
+{
+    return main_camera;
+}
+
+void CGGame::SetMainCamera(CGCamera* p_camera)
+{
+    main_camera = p_camera;
 }
 
 CGWindow* CGGame::GetGameWindow()

@@ -18,11 +18,6 @@ protected:
      * @brief Is the component visual in the game.
      */
     bool visual = true;
-    
-    /**
-     * @brief The position on the window that the component will be drawn.
-     */
-    CGVector2 position;
 
     /**
      * @brief Draw component on the window.

@@ -1,6 +1,7 @@
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
+#include "cos_graphics/component/camera.h"
 
 CGSprite::CGSprite(const std::string& p_texture_path, const CGVector2& p_position) : CGVisualComponent(p_position)
 {
@@ -66,6 +67,8 @@ void CGSprite::Draw(float p_delta)
     
     render_property->z = transform.depth;
     render_property->transform = transform.position;
+    if (CGGame::GetInstance()->GetMainCamera() != nullptr)
+        render_property->transform -= CGGame::GetInstance()->GetMainCamera()->GetTransform().position;
     render_property->rotation = transform.rotation;
     render_property->scale = transform.scale;
     
