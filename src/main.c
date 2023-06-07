@@ -73,7 +73,7 @@ int main()
         rotation);
     CGRenderObjectProperty* quad2_property = CGCreateRenderObjectProperty(
         CGConstructColor(0.0f, 1.0f, 0.0f, 0.8f),
-        (CGVector2){-50, 0},
+        (CGVector2){0, 0},
         (CGVector2){1, 1},
         rotation
     );
@@ -96,11 +96,13 @@ int main()
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
         CGTickRenderStart(window);
         CGDrawTriangle(&triangle, NULL, window);
-        CGDrawQuadrangle(&quad2, quad2_property, window);
+        CGDrawTriangle(&triangle, quad2_property, window);
         CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0);
         CGDrawVisualImage(sprite, 
             prop, 
             window);
+        CGRotateRenderObject(quad1_property, delta, (CGVector2){100, 100});
+        //quad2_property->rotation = clock * 0.2;
         CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
         CGTickRenderEnd();

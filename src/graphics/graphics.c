@@ -713,6 +713,17 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
     return property;
 }
 
+void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVector2 center)
+{
+    property->rotation = rotation;
+    float sin_theta = sin(rotation);
+    float cos_theta = cos(rotation);
+    float delta_x = property->transform.x - center.x;
+    float delta_y = property->transform.y - center.y;
+    property->transform.x = delta_x * cos_theta - delta_y * sin_theta + center.x;
+    property->transform.y = delta_y * cos_theta + delta_x * sin_theta + center.y;
+}
+
 static float* CGCreateTransformMatrix(CGVector2 transform)
 {
     float* result = (float*)malloc(sizeof(float) * 16);
@@ -752,6 +763,26 @@ static float* CGCreateRotateMatrix(float rotate)
 static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
 {
     CG_ERROR_CONDITION(result == NULL || mat_1 == NULL || mat_2 == NULL, "Unable to multiply NULL matrix");
+    float *temp1 = NULL, *temp2 = NULL;
+    if (mat_1 == result)
+    {
+        temp1 = (float*)malloc(sizeof(float) * demention_x * demention_y);
+        CG_ERROR_CONDITION(temp1 == NULL, "Failed to allocate memory for temp matrix.");
+        memcpy(temp1, mat_1, sizeof(float) * demention_x * demention_y);
+        mat_1 = temp1;
+    }
+    if (mat_2 == result)
+    {
+        temp2 = (float*)malloc(sizeof(float) * demention_x * demention_y);
+        if (temp2 == NULL)
+        {
+            if (temp1 != NULL)
+                free(temp1);
+            CG_ERROR_CONDITION(CG_TRUE, "Failed to allocate memory for temp matrix.");
+        }
+        memcpy(temp2, mat_2, sizeof(float) * demention_x * demention_y);
+        mat_2 = temp2;
+    }
     for (int i = 0; i < demention_y; ++i)
     {
         for (int j = 0; j < demention_x; ++j)
@@ -763,6 +794,16 @@ static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2,
             }
             result[i * demention_x + j] = value;
         }
+    }
+    if (temp1 != NULL)
+    {
+        free(temp1);
+        temp1 = NULL;
+    }
+    if (temp2 != NULL)
+    {
+        free(temp2);
+        temp2 = NULL;
     }
 }
 
