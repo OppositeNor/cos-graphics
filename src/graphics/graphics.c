@@ -718,8 +718,10 @@ void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVe
     property->rotation = rotation;
     float sin_theta = sin(rotation);
     float cos_theta = cos(rotation);
-    property->transform.x = center.x * (1 - cos_theta) + center.y * sin_theta;
-    property->transform.y = center.y * (1 - cos_theta) - center.x * sin_theta;
+    float delta_x = property->transform.x - center.x;
+    float delta_y = property->transform.y - center.y;
+    property->transform.x = delta_x * cos_theta - delta_y * sin_theta + center.x;
+    property->transform.y = delta_y * cos_theta + delta_x * sin_theta + center.y;
 }
 
 static float* CGCreateTransformMatrix(CGVector2 transform)

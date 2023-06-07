@@ -100,7 +100,7 @@ int main()
         CGDrawVisualImage(sprite, 
             prop, 
             window);
-        CGRotateRenderObject(quad1_property, clock * 0.2, (CGVector2){5, 5});
+        CGRotateRenderObject(quad1_property, delta, (CGVector2){100, 100});
         //quad2_property->rotation = clock * 0.2;
         CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
