@@ -110,6 +110,13 @@ typedef struct {
  */
 CGColor CGConstructColor(float r, float g, float b, float alpha);
 
+/**
+ * @brief Construct a 2D vector
+ * 
+ * @param x The x value of the vector
+ * @param y The y value of the vector
+ * @return CGVector2 The vector that is constructed
+ */
 CGVector2 CGConstructVector2(float x, float y);
 
 /**
@@ -368,6 +375,15 @@ typedef struct{
  * @return CGRenderObjectProperty* property object instance
  */
 CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 transform, CGVector2 scale, float rotation);
+
+/**
+ * @brief Rotate a render object
+ * 
+ * @param property The property of the object. This will be set to the new property after the object is rotated
+ * @param rotation The rotation in radius.
+ * @param center The center of the rotation.
+ */
+void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVector2 center);
 
 /**
  * @brief Register a object to the render list.
