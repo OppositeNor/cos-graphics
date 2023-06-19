@@ -29,6 +29,7 @@ CGRenderObjectProperty* cg_default_visual_image_property;
 
 static unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
 static unsigned int cg_buffer_count;
+static CGKeyCallbackFunction cg_key_callback = NULL;
 
 /**
  * @brief vertex shader path for a geometry
@@ -83,6 +84,11 @@ static const float cg_normal_matrix[16] = {
     0, 0, 1, 0,
     0, 0, 0, 1
 };
+
+typedef CGLinkedListNode CGWindowListNode;
+
+// The list that contains windows that are currently listenning to events.
+static CGWindowListNode* cg_window_list = NULL;
 
 // compile one specific shader from source
 static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
@@ -190,6 +196,16 @@ static void CGDeleteShaderProgram(CGShaderProgram program);
  */
 static void CGDeleteVisualImage(CGVisualImage* visual_image);
 
+/**
+ * @brief Key callback function for GLFW
+ * 
+ * @param window The window that the key event is triggered on
+ * @param key The key that is pressed
+ * @param action 
+ * @param mods 
+ */
+static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
     CGColor color;
@@ -223,6 +239,7 @@ void CGInitGLFW(CG_BOOL window_resizable)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, window_resizable);
     glfwSwapInterval(0);
+    cg_window_list = CGCreateLinkedListNode(NULL, 0);
     cg_is_glfw_initialized = CG_TRUE;
 }
 
@@ -243,6 +260,7 @@ void CGTerminateGraphics()
     if (cg_is_glfw_initialized)
     {
         glfwTerminate();
+        CGDeleteList(cg_window_list);
         cg_is_glfw_initialized = CG_FALSE;
     }
     if (CGResourceSystemInitialized())
@@ -316,20 +334,49 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         free(window);
         return NULL;
     }
+    CG_PRINT("%p", window->glfw_window_instance);
+    glfwSetKeyCallback(window->glfw_window_instance, CGGLFWKeyCallback);
     CGCreateViewport(window);
+    CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
     CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
     return window;
 }
 
+static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (cg_key_callback == NULL)
+        return;
+    CGWindowListNode* p = cg_window_list->next;
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    if (p == NULL)
+    {
+        CG_WARNING("Failed to find window instance in window list.");
+        return;
+    }
+    CGWindow* cg_window = (CGWindow*)(p->data);
+    cg_key_callback(cg_window, key, action, mods);
+}
+
 static void CGDestroyWindow(CGWindow* window)
 {
+    CGRemoveLinkedListNodeByData(&cg_window_list, window);
     glDeleteVertexArrays(1, &window->triangle_vao);
     glDeleteVertexArrays(1, &window->quadrangle_vao);
     glDeleteVertexArrays(1, &window->visual_image_vao);
     glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     CGDeleteList(window->render_list);
-    
+
     free(window);
+}
+
+void CGSetKeyCallback(CGKeyCallbackFunction callback)
+{
+    cg_key_callback = callback;
+}
+
+CGKeyCallbackFunction CGGetKeyCallback()
+{
+    return cg_key_callback;
 }
 
 void CGCreateViewport(CGWindow* window)
