@@ -15,6 +15,5 @@ int main()
     sprite3->GetTransform().position = CGConstructVector2(-100.0f, -100.0f);
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
     CGGame::StartGame();
-    CGGame::ExitGame();
     return 0;
 }

@@ -52,6 +52,7 @@ void CGGame::StartGame()
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before starting the game.");
     game_instance->Ready();
     game_instance->GameLoop();
+    game_instance->ExitGame();
 }
 
 void CGGame::ExitGame()
