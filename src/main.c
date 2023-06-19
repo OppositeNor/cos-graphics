@@ -45,9 +45,11 @@ int main()
 #include <unistd.h>
 #endif
 
+void KeyCallback(CGWindow* window, int key, int action, int mods);
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
+    CGSetKeyCallback(KeyCallback);
     
     if (window == NULL)
         return 0;
@@ -110,10 +112,17 @@ int main()
         delta = tick_end_time - tick_start_time;
         CGFreeResource(prop);
     }
+    CGFreeResource(window);
     CGTerminateGraphics();
     
     return 0;
 }
+void KeyCallback(CGWindow* window, int key, int action, int mods)
+{
+    if (key == CG_KEY_ESCAPE && action == CG_PRESS)
+        CG_PRINT("QAQ");
+}
+
 #endif
 
 #if 0

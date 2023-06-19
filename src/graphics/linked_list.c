@@ -43,18 +43,35 @@ void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data)
         free(p);
         return;
     }
-    while (p->next != NULL)
+    for (; p->next != NULL; p = p->next)
     {
         if (p->next->data == data)
         {
-            CGLinkedListNode* temp = p->next->next;
-            free(p->next);
-            p->next = temp;
+            CGLinkedListNode* temp = p->next;
+            p->next = p->next->next;
+            free(temp);
             return;
         }
-        p = p->next;
     }
     CG_WARNING("Failed to remove data from list: The data is not in the list.");
+}
+
+void CGAppendListNode(CGLinkedListNode* head, CGLinkedListNode* node)
+{
+    CGLinkedListNode* p = head;
+    for (; p->next != NULL; p = p->next);
+    p->next = node;
+}
+
+CGLinkedListNode* CGFindLinkedListNodeByData(CGLinkedListNode* head, void* data)
+{
+    for (CGLinkedListNode* p = head; p != NULL; p = p->next)
+    {
+        if (p->data == data)
+            return p;
+    }
+    CG_WARNING("Failed to find data from list: The data is not in the list. Returning NULL...");
+    return NULL;
 }
 
 void CGDeleteList(CGLinkedListNode* head)

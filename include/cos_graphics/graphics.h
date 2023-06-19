@@ -66,7 +66,7 @@ typedef struct {
 /**
  * @brief Window
  */
-typedef struct {
+typedef struct CGWindow{
     char title[256];
     int width;
     int height;
@@ -76,7 +76,19 @@ typedef struct {
     unsigned int quadrangle_vao;
     unsigned int visual_image_vao;
     CGRenderNode* render_list;
+    
 } CGWindow;
+
+/**
+ * @brief The callback function for key event
+ * @param window The window that the event is triggered
+ * @param key The key that is pressed
+ * @param action The action of the key. See 
+ *  <a href="https://www.glfw.org/docs/latest/group__input.html#ga2485743d0b59df3791c45951c4195265">GLFW documentation</a> 
+ * for more information.
+ * @param mods The mods of the key
+ */
+typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action, int mods);
 
 /**
  * @brief Viewport
@@ -134,6 +146,20 @@ CGVector2 CGConstructVector2(float x, float y);
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
 CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen, CG_BOOL resizable);
+
+/**
+ * @brief Set the callback function for key events.
+ * 
+ * @param callback The callback function.
+ */
+void CGSetKeyCallback(CGKeyCallbackFunction callback);
+
+/**
+ * @brief Get the callback function for key events.
+ * 
+ * @return CGKeyCallbackFunction The callback function.
+ */
+CGKeyCallbackFunction CGGetKeyCallback();
 
 /**
  * @brief Create viewport object

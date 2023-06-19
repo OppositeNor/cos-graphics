@@ -30,6 +30,22 @@ void CGRemoveLinkedListNode(CGLinkedListNode** node);
 void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data);
 
 /**
+ * @brief Add a node to the end of the list
+ * 
+ * @param head The head of the list.
+ * @param node The node to be added.
+ */
+void CGAppendListNode(CGLinkedListNode* head, CGLinkedListNode* node);
+
+/**
+ * @brief Find a node by data.
+ * 
+ * @param head The head of the list.
+ * @param data The data of the node to be found.
+ */
+CGLinkedListNode* CGFindLinkedListNodeByData(CGLinkedListNode* head, void* data);
+
+/**
  * @brief Delete list.
  * 
  * @param head The head of the list.
