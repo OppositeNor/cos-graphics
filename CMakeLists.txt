@@ -19,6 +19,9 @@ add_subdirectory(src/graphics)
 add_subdirectory(src/log)
 add_subdirectory(src/resource)
 
+add_subdirectory(dependencies/cos-graphics-resource-wrapper)
+
+
 # opengl
 find_package(OpenGL REQUIRED)
 list(APPEND libs OpenGL::GL)

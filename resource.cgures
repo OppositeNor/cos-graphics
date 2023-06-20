@@ -1,0 +1,35 @@
+
+["image"]
+{
+    key = "test1";
+    path = "./test1.png";
+};
+["image"]
+{
+    key = "test2";
+    path = "./test2.png";
+};
+
+["text"]
+{
+    key = "default_geometry_shader_vertex";
+    path = "./shaders/default_geo_shader.vert";
+};
+
+["text"]
+{
+    key = "default_geometry_shader_fragment";
+    path = "./shaders/default_geo_shader.frag";
+};
+
+["text"]
+{
+    key = "default_visual_image_shader_vertex";
+    path = "./shaders/default_visual_image_shader.vert";
+};
+
+["text"]
+{
+    key = "default_visual_image_shader_fragment";
+    path = "./shaders/default_visual_image_shader.frag";
+};

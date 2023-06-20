@@ -53,12 +53,20 @@ typedef struct{
 CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data);
 
 /**
- * @brief Load image from disk.
+ * @brief Load image from path.
  * 
- * @param file_path Image file path.
- * @return CGImage* The image file created.
+ * @param file_path The path of the image.
+ * @return CGImage* The image data created.
  */
 CGImage* CGLoadImage(const char* file_path);
+
+/**
+ * @brief Load image from resource.
+ * 
+ * @param file_rk The resource key of the image.
+ * @return CGImage* The image data created.
+ */
+CGImage* CGLoadImageFromResource(const char* file_rk);
 
 /**
  * @brief Delete image object.
@@ -110,6 +118,14 @@ void CGClearResource();
  * 
  */
 void CGTerminateResourceSystem();
+
+/**
+ * @brief Load resource from resource file.
+ * 
+ * @param resource_key The key of the resource.
+ * @return char* The data of the resource.
+ */
+char* CGLoadResource(const char* resource_key, int* size, char* type);
 
 #ifdef __cplusplus
 }
