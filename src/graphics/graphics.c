@@ -32,21 +32,21 @@ static unsigned int cg_buffer_count;
 static CGKeyCallbackFunction cg_key_callback = NULL;
 
 /**
- * @brief vertex shader path for a geometry
+ * @brief vertex shader resource key for a geometry
  */
-static const char* cg_default_geo_vshader_path = "./shaders/default_geo_shader.vert";
+static const char* cg_default_geo_vshader_rk = "default_geometry_shader_vertex";
 /**
  * @brief fragment shader path for a geometry
  */
-static const char* cg_default_geo_fshader_path = "./shaders/default_geo_shader.frag";
+static const char* cg_default_geo_fshader_rk = "default_geometry_shader_fragment";
 /**
  * @brief vertex shader path for a geometry
  */
-static const char* cg_default_visual_image_vshader_path = "./shaders/default_visual_image_shader.vert";
+static const char* cg_default_visual_image_vshader_rk = "default_visual_image_shader_vertex";
 /**
  * @brief fragment shader path for a geometry
  */
-static const char* cg_default_visual_image_fshader_path = "./shaders/default_visual_image_shader.frag";
+static const char* cg_default_visual_image_fshader_rk = "default_visual_image_shader_fragment";
 
 /**
  * @brief default shader for geometry
@@ -94,7 +94,7 @@ static CGWindowListNode* cg_window_list = NULL;
 static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
 
 // initialize default shader
-static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program);
+static void CGInitDefaultShader(const char* shader_v_rk, const char* shader_f_rk, CGShaderProgram* shader_program);
 
 // make a vertices array out of triangle
 static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z);
@@ -267,11 +267,11 @@ void CGTerminateGraphics()
         CGTerminateResourceSystem();
 }
 
-static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpath, CGShaderProgram* shader_program)
+static void CGInitDefaultShader(const char* shader_v_rk, const char* shader_f_rk, CGShaderProgram* shader_program)
 {
-    CG_ERROR_COND_EXIT(shader_vpath == NULL || shader_fpath == NULL, -1, "Default shader path cannot be set to NULL.");
+    CG_ERROR_COND_EXIT(shader_v_rk == NULL || shader_f_rk == NULL, -1, "Default shader path cannot be set to NULL.");
     CG_ERROR_COND_EXIT(shader_program == NULL, -1, "Cannot init a default shader for NULL shader program.");
-    CGShaderSource* shader_source = CGCreateShaderSourceFromPath(shader_vpath, shader_fpath, NULL, CG_FALSE);
+    CGShaderSource* shader_source = CGCreateShaderSourceFromPath(shader_v_rk, shader_f_rk, NULL, CG_FALSE);
     CG_ERROR_COND_EXIT(shader_source == NULL, -1, "Failed to create shader source.");
     CGShader* shader = CGCreateShader(shader_source);
     CG_ERROR_COND_EXIT(shader == NULL, -1, "Failed to init default shader.");
@@ -283,7 +283,7 @@ static void CGInitDefaultShader(const char* shader_vpath, const char* shader_fpa
 void CGInitGLAD()
 {
     CG_ERROR_EXP_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, "GLAD setup OpenGL loader failed");
-    CGInitDefaultShader(cg_default_geo_vshader_path, cg_default_geo_fshader_path, &cg_default_geo_shader_program);
+    CGInitDefaultShader(cg_default_geo_vshader_rk, cg_default_geo_fshader_rk, &cg_default_geo_shader_program);
     cg_geo_shader_program = cg_default_geo_shader_program;
 
     cg_default_geo_property = CGCreateRenderObjectProperty(
@@ -292,7 +292,7 @@ void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
 
-    CGInitDefaultShader(cg_default_visual_image_vshader_path, cg_default_visual_image_fshader_path, &cg_default_visual_image_shader_program);
+    CGInitDefaultShader(cg_default_visual_image_vshader_rk, cg_default_visual_image_fshader_rk, &cg_default_visual_image_shader_program);
     cg_visual_image_shader_program = cg_default_visual_image_shader_program;
     
     cg_default_visual_image_property = CGCreateRenderObjectProperty(
@@ -334,7 +334,6 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         free(window);
         return NULL;
     }
-    CG_PRINT("%p", window->glfw_window_instance);
     glfwSetKeyCallback(window->glfw_window_instance, CGGLFWKeyCallback);
     CGCreateViewport(window);
     CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
@@ -531,8 +530,8 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
     return result;
 }
 
-CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char* fragment_path, 
-    const char* geometry_path, CG_BOOL use_geometry)
+CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_rk, const char* fragment_rk, 
+    const char* geometry_rk, CG_BOOL use_geometry)
 {
     CGShaderSource* result = (CGShaderSource*)malloc(sizeof(CGShaderSource));
     if (result == NULL)
@@ -540,14 +539,14 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
         CG_ERROR("Construct shader source failed.");
         return NULL;
     }
-    result->vertex = CGLoadFile(vertex_path);
+    result->vertex = CGLoadResource(vertex_rk, NULL, NULL);
     if (result->vertex == NULL)
     {
         CG_ERROR("Load vertex shader source failed.");
         free(result);
         return NULL;
     }
-    result->fragment = CGLoadFile(fragment_path);
+    result->fragment = CGLoadResource(fragment_rk, NULL, NULL);
     if (result->fragment == NULL)
     {
         CG_ERROR("Load fragment shader source failed.");
@@ -557,7 +556,7 @@ CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char
     }
     if (use_geometry)
     {
-        result->geometry = CGLoadFile(geometry_path);
+        result->geometry = CGLoadResource(geometry_rk, NULL, NULL);
         if (result->geometry == NULL)
         {
             CG_ERROR("Load geometry shader source failed.");
@@ -1059,9 +1058,9 @@ static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage
     glBindVertexArray(0);
 }
 
-CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window)
+CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
 {
-    CG_ERROR_COND_RETURN(img_path == NULL, NULL, "Cannot create image with NULL texture path.");
+    CG_ERROR_COND_RETURN(img_rk == NULL, NULL, "Cannot create image with NULL texture path.");
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, "Cannot create image with NULL window.");
     CGGladInitializeCheck();
     CGVisualImage* visual_image = (CGVisualImage*)malloc(sizeof(CGVisualImage));
@@ -1069,7 +1068,7 @@ CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window)
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     visual_image->in_window = window;
-    CGImage* image = CGLoadImage(img_path);
+    CGImage* image = CGLoadImageFromResource(img_rk);
     CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
     visual_image->demention.x = image->width;
     visual_image->demention.y = image->height;

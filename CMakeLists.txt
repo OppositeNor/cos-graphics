@@ -36,6 +36,9 @@ add_subdirectory(src/resource)
 add_subdirectory(src/component)
 add_subdirectory(src/game)
 
+add_subdirectory(dependencies/cos-graphics-resource-wrapper)
+
+
 # opengl
 find_package(OpenGL REQUIRED)
 list(APPEND libs OpenGL::GL)

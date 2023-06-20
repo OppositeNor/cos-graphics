@@ -80,7 +80,7 @@ int main()
         rotation
     );
     
-    CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
+    CGVisualImage* sprite = CGCreateVisualImage("test2", 
         window);
     quad2_property->z = -3;
     double tick_end_time = CGGetCurrentTime();

@@ -2,5 +2,7 @@ build
 export
 bin
 .vscode
+
+# testing resources
 *.jpg
 *.png

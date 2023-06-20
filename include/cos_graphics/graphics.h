@@ -259,14 +259,14 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
 /**
  * @brief Create a CGShaderSource object from file
  * 
- * @param vertex_path vertex shader path
- * @param fragment_path fragment shader path
- * @param geometry_path geometry shader source
+ * @param vertex_rk The resource key of the vertex shader
+ * @param fragment_rk The resource key of the fragment shader
+ * @param geometry_rk The resource key of the geometry shader
  * @param use_geometry use geometry source
  * @return CGShaderSource* 
  */
-CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_path, const char* fragment_path, 
-    const char* geometry_path, CG_BOOL use_geometry);
+CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_rk, const char* fragment_rk, 
+    const char* geometry_rk, CG_BOOL use_geometry);
 
 /**
  * @brief Shaders
@@ -519,12 +519,12 @@ typedef struct{
 /**
  * @brief Create CGVisualImage object
  * 
- * @param img_path texture image path
- * @param property visual_image property object
+ * @param img_rk The resource key of the texture.
+ * @param property visual_image property object.
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const char* img_path, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
 
 #ifdef __cplusplus
 }
