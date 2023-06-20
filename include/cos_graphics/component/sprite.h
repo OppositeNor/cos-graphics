@@ -22,10 +22,10 @@ public:
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @param p_texture_path The path of the texture for the sprite
+     * @param p_texture_rk The resource key of the texture for the sprite
      * @param p_position The position that the sprite is going to be on.
      */
-    explicit CGSprite(const std::string& p_texture_path = std::string(""), const CGVector2& p_position = {0, 0});
+    explicit CGSprite(const std::string& p_texture_rk = std::string(""), const CGVector2& p_position = {0, 0});
 
     
     /**
@@ -61,7 +61,7 @@ public:
     /**
      * @brief Set the texture of the sprite
      * 
-     * @param p_texture_path The path of the texture file that the sprite is going to be set to.
+     * @param p_texture_rk The resource key of the texture file that the sprite is going to be set to.
      */
-    void SetTexture(const std::string& p_texture_path);
+    void SetTexture(const std::string& p_texture_rk);
 };

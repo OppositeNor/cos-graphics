@@ -3,11 +3,11 @@
 #include "cos_graphics/log.h"
 #include "cos_graphics/component/camera.h"
 
-CGSprite::CGSprite(const std::string& p_texture_path, const CGVector2& p_position) : CGVisualComponent(p_position)
+CGSprite::CGSprite(const std::string& p_texture_rk, const CGVector2& p_position) : CGVisualComponent(p_position)
 {
-    if (p_texture_path == std::string(""))
+    if (p_texture_rk == std::string(""))
         return;
-    texture = CGCreateVisualImage(p_texture_path.c_str(), CGGame::GetInstance()->GetGameWindow());
+    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
     is_texture_shared = false;
 }
 
@@ -45,9 +45,9 @@ void CGSprite::SetTexture(CGVisualImage*&& p_texture)
     is_texture_shared = false;
 }
 
-void CGSprite::SetTexture(const std::string& p_texture_path)
+void CGSprite::SetTexture(const std::string& p_texture_rk)
 {
-    texture = CGCreateVisualImage(p_texture_path.c_str(), CGGame::GetInstance()->GetGameWindow());
+    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
     if (!is_texture_shared)
         CGFreeResource(texture);
     is_texture_shared = false;
