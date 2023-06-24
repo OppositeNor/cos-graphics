@@ -318,11 +318,10 @@ static void CGRWPhraseData(const char* file_data, CGRWResourceData* data_head)
 {
     unsigned int line_count = 1;
     // head should be kept empty
-    CGRW_ERROR_COND_EXIT(data_head == NULL, -1, "Failed to allocate memory for resource data.");
+    CGRW_ERROR_COND_EXIT(data_head == NULL, -1, "Cannot phrase resource with data_head valued \"NULL\".");
     data_head->type[0] = '\0';
     data_head->key[0] = '\0';
     data_head->path[0] = '\0';
-    strcpy(data_head->key, "head");
     data_head->next = NULL;
     
     CGRWResourceData* data = data_head;
@@ -342,21 +341,25 @@ static void CGRWPhraseData(const char* file_data, CGRWResourceData* data_head)
         case '[':
             {
                 CGRW_PRINT_VERBOSE("Found resource at line: %d", line_count);
-                CGRWResourceData* t_data = (CGRWResourceData*)malloc(sizeof(CGRWResourceData));
-                CGRW_ERROR_COND_EXIT(t_data == NULL, -1, "Failed to allocate memory for resource data.");
-                t_data->key[0] = '\0';
-                t_data->path[0] = '\0';
-                t_data->type[0] = '\0';
-                t_data->next = NULL;
-                data->next = t_data;
-                data = t_data;
+                if (data != data_head || data->type[0] != '\0' || data->key[0] != '\0' || data->path[0] != '\0')
+                {
+                    CGRWResourceData* t_data = (CGRWResourceData*)malloc(sizeof(CGRWResourceData));
+                    CGRW_ERROR_COND_EXIT(t_data == NULL, -1, "Failed to allocate memory for resource data.");
+                    data->next = t_data;
+                    data = t_data;
+                    data->key[0] = '\0';
+                    data->path[0] = '\0';
+                    data->type[0] = '\0';
+                    data->next = NULL;
+                }
                 char* t_p = p;
                 CGRWGoToNext(&p, &line_count, ']');
+                CGRW_ERROR_COND_EXIT(t_p == p, -1, "Data type cannot be empty.", line_count);
                 CGRWGetSubString(t_p, 1, p - t_p - 1, data->type);
                 CGRW_PRINT_VERBOSE("Resource type: \"%s\".", data->type);
             }break;
         case '{':
-            CGRW_ERROR_COND_EXIT(data == NULL || data == data_head, -1, "Invalid resource file format at line: %d.", line_count);
+            CGRW_ERROR_COND_EXIT(data == NULL, -1, "Invalid resource file format at line: %d.", line_count);
             CGRWPhraseChunk(p, line_count, data);
             break;
 

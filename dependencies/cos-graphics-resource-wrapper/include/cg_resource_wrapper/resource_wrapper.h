@@ -8,6 +8,10 @@ extern "C" {
 #define CGRW_TRUE 1
 #define CGRW_FALSE 0
 
+#define CGRW_TYPE_BUFF_SIZE 64
+#define CGRW_KEY_BUFF_SIZE 64
+#define CGRW_PATH_BUFF_SIZE 128
+
 // define target platform
 #ifdef __WIN32__
     #define CGRW_TG_WIN              //windows
@@ -40,9 +44,9 @@ typedef char* CGRWResourceIdentifier;
  */
 typedef struct CGRWResourceData
 {
-    char type[64];     /*The type of the resource.*/
-    char key[64];      /*The key of the resource.*/
-    char path[128];     /*The path of the resource.*/
+    char type[CGRW_TYPE_BUFF_SIZE];     /*The type of the resource.*/
+    char key[CGRW_KEY_BUFF_SIZE];      /*The key of the resource.*/
+    char path[CGRW_PATH_BUFF_SIZE];     /*The path of the resource.*/
     struct CGRWResourceData* next; /*The next resource data.*/
 }CGRWResourceData;
 

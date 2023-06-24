@@ -176,6 +176,7 @@ CGImage* CGLoadImageFromResource(const char* file_rk)
         return NULL;
     }
     image->data = stbi_load_from_memory(img_buff, buff_size, &image->width, &image->height, &image->channels, 0);
+    free(img_buff);
     if (image->data == NULL)
     {
         free(image);
