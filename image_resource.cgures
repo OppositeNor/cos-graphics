@@ -1,0 +1,10 @@
+["image"]
+{
+    key = "test1";
+    path = "./test1.png";
+};
+["image"]
+{
+    key = "test2";
+    path = "./test2.png";
+};

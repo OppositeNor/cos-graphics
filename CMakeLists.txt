@@ -30,6 +30,11 @@ set (USE_TEST_EXE ON)
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 
+# add your resource by appending them to cg_resources list. The default "resource.cgures" should not be included in the list.
+list(APPEND CG_RESOURCES image_resource.cgures)
+
+
+set_property(GLOBAL PROPERTY CG_RESOURCES ${CG_RESOURCES})
 add_subdirectory(src/graphics)
 add_subdirectory(src/log)
 add_subdirectory(src/resource)

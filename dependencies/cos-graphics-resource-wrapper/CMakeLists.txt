@@ -37,5 +37,5 @@ add_executable(${PROJECT_NAME}
 add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME}
+    COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
 )
