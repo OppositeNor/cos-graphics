@@ -20,7 +20,7 @@ file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 if (EXISTS ${EXECUTABLE_OUTPUT_PATH}/${CGRW_EXECUTABLE_NAME})
     execute_process(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME}
+        COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
     )
 endif()
 
