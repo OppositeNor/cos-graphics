@@ -129,8 +129,8 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
 // render visual_image
 static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
 
-// bind texture to vao
-static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture);
+// Set an image data to a texture. Note that if you have a texture that is binded, the texture will be unbinded after you call this function.
+static void CGSetTextureValue(unsigned int texture_id, CGImage* texture);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -761,7 +761,7 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
 
 void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVector2 center)
 {
-    property->rotation = rotation;
+    property->rotation += rotation;
     float sin_theta = sin(rotation);
     float cos_theta = cos(rotation);
     float delta_x = property->transform.x - center.x;
@@ -975,11 +975,13 @@ static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float
     float* vertices = (float*)malloc(sizeof(float) * 20);
     CG_ERROR_COND_RETURN(vertices == NULL, NULL, "Failed to allocate memory for vertices");
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
+    double temp_half_width = (double)visual_image->img_width / 2;
+    double temp_half_height = (double)visual_image->img_height / 2;
     CGSetFloatArrayValue(20, vertices,
-        -1 * visual_image->demention.x / 2,      visual_image->demention.y / 2, depth, 0.0, 0.0,
-             visual_image->demention.x / 2,      visual_image->demention.y / 2, depth, 1.0, 0.0,
-             visual_image->demention.x / 2, -1 * visual_image->demention.y / 2, depth, 1.0, 1.0,
-        -1 * visual_image->demention.x / 2, -1 * visual_image->demention.y / 2, depth, 0.0, 1.0
+        -1 * temp_half_width,      temp_half_height, depth, 0.0, 0.0,
+             temp_half_width,      temp_half_height, depth, 1.0, 0.0,
+             temp_half_width, -1 * temp_half_height, depth, 1.0, 1.0,
+        -1 * temp_half_width, -1 * temp_half_height, depth, 0.0, 1.0
     );
     return vertices;
 }
@@ -1032,11 +1034,10 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage* texture)
+static void CGSetTextureValue(unsigned int texture_id, CGImage* texture)
 {
     CG_ERROR_CONDITION(texture == NULL, "Cannot bind a NULL texture.");
     CGGladInitializeCheck();
-    glBindVertexArray(vao);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     switch(texture->channels)
     {
@@ -1047,15 +1048,11 @@ static void CGSetTextureValue(unsigned int texture_id, unsigned int vao, CGImage
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
         break;
     default:
-        CGFreeResource(texture);
-        free(texture);
-        glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
         CG_ERROR_CONDITION(CG_TRUE, "Invalid image channel count. CosGraphics currently only supports images with 3 or 4 channels.");
     }
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glBindVertexArray(0);
 }
 
 CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
@@ -1070,18 +1067,52 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
     visual_image->in_window = window;
     CGImage* image = CGLoadImageFromResource(img_rk);
     CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
-    visual_image->demention.x = image->width;
-    visual_image->demention.y = image->height;
+    visual_image->img_width = image->width;
+    visual_image->img_height = image->height;
+    visual_image->img_channels = image->channels;
     if (image == NULL)
     {
         free(visual_image);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for visual_image texture.");
     }
     glGenTextures(1, &visual_image->texture_id);
-    CGSetTextureValue(visual_image->texture_id, window->visual_image_vao, image);
+    CGSetTextureValue(visual_image->texture_id, image);
     CGFreeResource(image);
     CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
+}
+
+CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
+{
+    CG_ERROR_COND_RETURN(visual_image == NULL, NULL, "Cannot copy a NULL visual_image.");
+    CGGladInitializeCheck();
+    CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, "Failed to allocate memory for visual image.");
+    result->img_width = visual_image->img_width;
+    result->img_height = visual_image->img_height;
+    result->img_channels = visual_image->img_channels;
+    CGWindow* in_window = result->in_window = visual_image->in_window;
+    if (glfwGetCurrentContext() != in_window->glfw_window_instance)
+        glfwMakeContextCurrent(in_window->glfw_window_instance);
+    
+    glGenTextures(1, &result->texture_id);
+    CGImage* image = CGCreateImage(visual_image->img_width, visual_image->img_height, visual_image->img_channels, NULL);
+    CGSetTextureValue(result->texture_id, image);
+    CGFreeResource(image);
+
+    unsigned int fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER , fbo);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, visual_image->texture_id, 0);
+    
+    glBindTexture(GL_TEXTURE_2D, result->texture_id);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, visual_image->img_width, visual_image->img_height);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &fbo);
+
+    CGRegisterResource(result, CG_DELETER(CGDeleteVisualImage));
+    return result;
 }
 
 static void CGDeleteVisualImage(CGVisualImage* visual_image)
