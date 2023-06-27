@@ -42,7 +42,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p
         CGGame::game_instance->window_properties.resizable);
     CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, "Failed to create window");
     CG_PRINT("Window created.");
-    CG_PRINT("Game initialized.\n");
+    CG_PRINT("Game initialized.");
     game_instance->game_initialized = true;
     game_instance->main_camera = new CGCamera();
 }

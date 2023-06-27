@@ -3,6 +3,11 @@
 #include "cos_graphics/graphics.h"
 #include <string>
 
+/**
+ * @brief The sprite component. It can be used to render a component with a texture.
+ * 
+ * @bug The texture copy is still unusable.
+ */
 class CGSprite : public CGVisualComponent
 {
 
@@ -11,13 +16,7 @@ protected:
      * @brief The texture of the sprite.
      */
     CGVisualImage* texture;
-
     void Draw(float p_delta) override;
-
-    /**
-     * @brief Whether the texture is shared or not.
-     */
-    bool is_texture_shared;
 public:
     /**
      * @brief Construct a new CGSprite object
@@ -27,11 +26,28 @@ public:
      */
     explicit CGSprite(const std::string& p_texture_rk = std::string(""), const CGVector2& p_position = {0, 0});
 
+    /**
+     * @brief Copy constructor
+     * 
+     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
+     * If you want to pass a texture, Please move the texture by calling @code std::move(sprite) @endcode
+     * if posible.
+     * 
+     * @bug The texture copy is still unusable.
+     * 
+     * @param p_other The other CGSprite object.
+     */
+    CGSprite(const CGSprite& p_other);
     
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @param p_texture The texture for the sprite.
+     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
+     * If you want to pass a texture, Please move the texture by calling std::move(texture) if posible.
+     * 
+     * @bug The texture copy is still unusable.
+     * 
+     * @param p_texture The texture for the sprite. The texture is going to be copied.
      * @param p_position The position that the sprite is going to be on.
      */
     CGSprite(CGVisualImage*& p_texture, const CGVector2& p_position = {0, 0});
@@ -39,24 +55,30 @@ public:
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @param p_texture The texture for the sprite.
+     * @param p_texture The texture for the sprite. The texture is going to be moved.
      * @param p_position The position that the sprite is going to be on.
      */
     CGSprite(CGVisualImage*&& p_texture, const CGVector2& p_position = {0, 0});
+
     virtual ~CGSprite() override;
 
     /**
-     * @brief Set the texture of the sprite
+     * @brief Set the texture of the sprite. The texture is going to be copied.
+     * 
+     * @bug The texture copy is still unusable.
+     * 
+     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
+     * If you want to pass a texture, Please move the texture by calling std::move(texture) if posible.
      * 
      * @param p_texture The texture that the sprite is going to be set to.
      */
     void SetTexture(CGVisualImage*& p_texture);
     /**
-     * @brief Set the texture of the sprite
+     * @brief Set the texture of the sprite. The texture is going to be moved.
      * 
      * @param p_texture The texture that the sprite is going to be set to.
      */
-    void SetTexture(CGVisualImage*&& p_texture);
+    void SetTexture(CGVisualImage*&& p_texture) noexcept;
 
     /**
      * @brief Set the texture of the sprite

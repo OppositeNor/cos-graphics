@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <map>
 
+using CGAnimationMap = std::map<std::string, std::initializer_list<CGVisualImage*>>;
 class CGAnimationSprite : CGVisualComponent
 {
     CGRenderObjectProperty* render_property;
@@ -31,7 +32,7 @@ protected:
      * @tparam std::string The name of the animation.
      * @tparam std::initializer_list<CGVisualImage*> The list of textures of the animation.
      */
-    std::map<std::string, std::initializer_list<CGVisualImage*>> animation_map;
+    CGAnimationMap animation_map;
 
     /**
      * @brief Is the animation playing.
@@ -43,13 +44,16 @@ protected:
      * @param CGAnimationSprite* The animation that is finished.
      */
     void (*animation_finish_callback)(CGAnimationSprite*) = nullptr;
-    
-    /**
-     * @brief Whether the texture is shared or not.
-     */
-    bool is_texture_shared;
 
 public:
+
+    /**
+     * @brief Construct a new CGAnimationSprite::CGAnimationSprite object
+     * 
+     * @param p_fps The frame rate of the animation.
+     * @param p_position The position of the animation is going to be displayed.
+     */
+    CGAnimationSprite(float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
 
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -59,7 +63,7 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
+    CGAnimationSprite(CGAnimationMap& p_animation_map, 
         std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
     
     /**
@@ -70,7 +74,7 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>&& p_animation_map, 
+    CGAnimationSprite(CGAnimationMap&& p_animation_map, 
         std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
     /**
      * @brief Play the current animation.

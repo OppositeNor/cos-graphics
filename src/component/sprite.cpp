@@ -8,19 +8,17 @@ CGSprite::CGSprite(const std::string& p_texture_rk, const CGVector2& p_position)
     if (p_texture_rk == std::string(""))
         return;
     texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
-    is_texture_shared = false;
 }
 
-CGSprite::CGSprite(CGVisualImage*& p_texture, const CGVector2& p_position) : 
-    texture(p_texture), CGVisualComponent(p_position)
+CGSprite::CGSprite(CGVisualImage*& p_texture, const CGVector2& p_position) : CGVisualComponent(p_position)
 {
-    is_texture_shared = true;
+    texture = CGCopyVisualImage(p_texture);
 }
 
 CGSprite::CGSprite(CGVisualImage*&& p_texture, const CGVector2& p_position) : 
     texture(p_texture), CGVisualComponent(p_position)
 {
-    is_texture_shared = false;
+    p_texture = nullptr;
     render_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
         transform.position,
@@ -29,35 +27,39 @@ CGSprite::CGSprite(CGVisualImage*&& p_texture, const CGVector2& p_position) :
     );
 }
 
+
+CGSprite::CGSprite(const CGSprite& p_other) : CGVisualComponent(p_other)
+{
+    texture = CGCopyVisualImage(p_other.texture);
+
+    render_property = CGCreateRenderObjectProperty(
+        p_other.render_property->color,
+        p_other.transform.position,
+        p_other.transform.scale,
+        p_other.transform.rotation
+    );
+}
+
 void CGSprite::SetTexture(CGVisualImage*& p_texture)
 {
-    texture = p_texture;
-    if (!is_texture_shared)
-        CGFreeResource(texture);
-    is_texture_shared = true;
+    texture = CGCopyVisualImage(p_texture);
 }
 
 void CGSprite::SetTexture(CGVisualImage*&& p_texture)
 {
     texture = p_texture;
-    if (!is_texture_shared)
-        CGFreeResource(texture);
-    is_texture_shared = false;
+    p_texture = nullptr;
 }
 
 void CGSprite::SetTexture(const std::string& p_texture_rk)
 {
-    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
-    if (!is_texture_shared)
-        CGFreeResource(texture);
-    is_texture_shared = false;
+    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow()), CGFreeResource;
 }
 
 CGSprite::~CGSprite()
 {
+    CGFreeResource(texture);
     CGFreeResource(render_property);
-    if(!is_texture_shared)
-        CGFreeResource(texture);
 }
 
 void CGSprite::Draw(float p_delta)

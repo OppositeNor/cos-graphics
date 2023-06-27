@@ -7,6 +7,13 @@ CGVisualComponent::CGVisualComponent(const CGVector2& p_position) : CGComponent(
         transform.position, transform.scale, transform.rotation);
 }
 
+CGVisualComponent::CGVisualComponent(const CGVisualComponent& p_other) : CGComponent(p_other)
+{
+    render_property = CGCreateRenderObjectProperty(p_other.render_property->color, 
+        p_other.transform.position, p_other.transform.scale, p_other.transform.rotation);
+    visual = p_other.visual;
+}
+
 CGVisualComponent::~CGVisualComponent()
 {
 }

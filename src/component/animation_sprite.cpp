@@ -3,34 +3,38 @@
 #include <iostream>
 
 
-CGAnimationSprite::CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>& p_animation_map, 
+CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
         std::string p_default_animation, float p_fps, const CGVector2& p_position)
-    : animation_map(p_animation_map), current_animation(p_default_animation), frame_duration(GetReciprocal(p_fps)), 
-        CGVisualComponent(p_position)
+    : CGAnimationSprite(p_fps, p_position)
 {
-    is_texture_shared = true;
+    animation_map = CGAnimationMap(p_animation_map);
+    current_animation = p_default_animation;
+    frame_duration = GetReciprocal(p_fps);
 }
 
-CGAnimationSprite::CGAnimationSprite(std::map<std::string, std::initializer_list<CGVisualImage*>>&& p_animation_map, 
+CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map, 
         std::string p_default_animation, float p_fps, const CGVector2& p_position)
-    : animation_map(std::move(p_animation_map)), current_animation(p_default_animation), frame_duration(GetReciprocal(p_fps)), 
-        CGVisualComponent(p_position)
+    : CGAnimationSprite(p_fps, p_position)
 {
-    is_texture_shared = false;
+    animation_map = std::move(p_animation_map);
+    current_animation = p_default_animation;
+}
+
+CGAnimationSprite::CGAnimationSprite(float p_fps, const CGVector2& p_position)
+    : frame_duration(GetReciprocal(p_fps)), CGVisualComponent(p_position)
+{
+    
 }
 
 CGAnimationSprite::~CGAnimationSprite()
 {
     CGFreeResource(render_property);
-    if (!is_texture_shared)
+    // Free all the textures
+    for (auto& animation : animation_map)
     {
-        // Free all the textures
-        for (auto& animation : animation_map)
+        for (auto& frame : animation.second)
         {
-            for (auto& frame : animation.second)
-            {
-                CGFreeResource(frame);
-            }
+            CGFreeResource(frame);
         }
     }
 }

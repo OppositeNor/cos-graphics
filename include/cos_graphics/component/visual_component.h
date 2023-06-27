@@ -24,7 +24,20 @@ protected:
      */
     virtual void Draw(float p_delta) = 0;
 public:
+    /**
+     * @brief Construct a new CGVisualComponent object.
+     * 
+     * @param p_position The initial position of the component.
+     */
     explicit CGVisualComponent(const CGVector2& p_position = {0, 0});
+
+    /**
+     * @brief Copy a new CGVisualComponent object.
+     * 
+     * @param p_other The other CGVisualComponent object.
+     */
+    CGVisualComponent(const CGVisualComponent& p_other);
+
     virtual ~CGVisualComponent() override;
 
     /**
