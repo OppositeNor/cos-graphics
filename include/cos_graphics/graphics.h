@@ -506,14 +506,25 @@ typedef struct{
      * @brief Texture's OpenGL ID
      */
     unsigned int texture_id;
+
+    /**
+     * @brief The width of the texture
+     */
+    unsigned int img_width;
+
+    /**
+     * @brief The height of the texture
+     */
+    unsigned int img_height;
+
+    /**
+     * @brief The number of channels of the texture
+     */
+    unsigned int img_channels;
     /**
      * @brief The window that the visual_image is created in.
      */
     CGWindow* in_window;
-    /**
-     * @brief the width and height of the visual_image
-     */
-    CGVector2 demention;
 }CGVisualImage;
 
 /**
@@ -525,6 +536,14 @@ typedef struct{
  * @return CGVisualImage* The created CGVisualImage object
  */
 CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
+
+/**
+ * @brief Copy CGVisualImage object
+ * 
+ * @param visual_image The visual_image to be copied.
+ * @return CGVisualImage* The copied visual_image
+ */
+CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
 #ifdef __cplusplus
 }

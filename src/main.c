@@ -79,11 +79,12 @@ int main()
         rotation
     );
     
-    CGVisualImage* sprite = CGCreateVisualImage("test2", 
-        window);
+    CGVisualImage* sprite = CGCreateVisualImage("test1", window);
+    CGVisualImage* sprite1 = CGCopyVisualImage(sprite);
     quad2_property->z = -3;
     double tick_end_time = CGGetCurrentTime();
     const double fixed_delta = 1.0 / 60;
+    CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, -100}, (CGVector2){1, 1}, 0);
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -96,21 +97,21 @@ int main()
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
         CGTickRenderStart(window);
-        CGDrawTriangle(&triangle, NULL, window);
-        CGDrawTriangle(&triangle, quad2_property, window);
-        CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0);
-        CGDrawVisualImage(sprite, 
-            prop, 
-            window);
-        CGRotateRenderObject(quad1_property, delta, (CGVector2){100, 100});
+        //CGDrawTriangle(&triangle, NULL, window);
+        //CGDrawTriangle(&triangle, quad2_property, window);
+        CGRotateRenderObject(prop, delta, (CGVector2){100, 100});
+        CGDrawVisualImage(sprite, prop, window);
+        CGRenderObjectProperty* prop2 = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 100}, (CGVector2){1, 1}, 0);
+        // CGDrawVisualImage(sprite1, prop2, window);
         //quad2_property->rotation = clock * 0.2;
         CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        CGFreeResource(prop);
+        CGFreeResource(prop2);
     }
+    CGFreeResource(prop);
     CGFreeResource(window);
     CGTerminateGraphics();
     

@@ -142,7 +142,11 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
     if (data != NULL)
     {
         image->data = (unsigned char*)malloc(sizeof(unsigned char) * image_size);
-        CG_ERROR_COND_RETURN(image->data == NULL, NULL, "Failed to allocate memory for image data.");
+        if (image->data == NULL)
+        {
+            free(image);
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for image data.");
+        }
         memcpy(image->data, data, image_size);
     }
     else
