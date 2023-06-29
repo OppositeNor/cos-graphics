@@ -245,7 +245,6 @@ void CGInitGLFW(CG_BOOL window_resizable)
 
 void CGTerminateGraphics()
 {
-    CG_PRINT("?");
     if (cg_is_glad_initialized)
     {
         CGClearTextureResource();
@@ -259,14 +258,12 @@ void CGTerminateGraphics()
         cg_default_visual_image_property = NULL;
         cg_is_glad_initialized = CG_FALSE;
     }
-    CG_PRINT("??");
     if (cg_is_glfw_initialized)
     {
         glfwTerminate();
         CGDeleteList(cg_window_list);
         cg_is_glfw_initialized = CG_FALSE;
     }
-    CG_PRINT("???");
     if (CGResourceSystemInitialized())
         CGTerminateResourceSystem();
 }
