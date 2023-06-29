@@ -1,3 +1,5 @@
+#ifndef __LINKED_LIST_H__
+#define __LINKED_LIST_H__
 
 typedef struct CGLinkedListNode{
     int identifier;
@@ -58,3 +60,5 @@ void CGDeleteList(CGLinkedListNode* head);
  * @param head The head of the list
  */
 void CGPrintList(CGLinkedListNode* head);
+
+#endif // __LINKED_LIST_H__

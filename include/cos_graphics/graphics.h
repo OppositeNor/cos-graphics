@@ -528,6 +528,21 @@ typedef struct{
 }CGVisualImage;
 
 /**
+ * @brief Create an OpenGL texture.
+ * 
+ * @param image The image that the texture is going to be created from.
+ * @return unsigned int The texture id of the created texture.
+ */
+unsigned int CGCreateTexture(CGImage* image);
+
+/**
+ * @brief Delete an OpenGL texture.
+ * 
+ * @param texture_id The texture id of the texture to be deleted.
+ */
+void CGDeleteTexture(unsigned int texture_id);
+
+/**
  * @brief Create CGVisualImage object
  * 
  * @param img_rk The resource key of the texture.
