@@ -15,7 +15,7 @@ extern "C" {
 #ifdef CGRW_NO_VERBOSE
 #define CGRW_PRINT_VERBOSE(...) ((void)0)
 #else
-#define CGRW_PRINT_VERBOSE(...) CGRW_PRINT(__VA_ARGS__)
+#define CGRW_PRINT_VERBOSE(...) CGRWPrint("CGResourceWrapper", "OutputVerbose", __VA_ARGS__)
 #endif
 
 void CGRWPrint(const char* sender, const char* type, const char* fmt, ...);

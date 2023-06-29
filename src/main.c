@@ -103,7 +103,7 @@ int main()
         CGRotateRenderObject(prop, delta, (CGVector2){100, 100});
         CGDrawVisualImage(sprite, prop, window);
         CGRenderObjectProperty* prop2 = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 100}, (CGVector2){1, 1}, 0);
-        // CGDrawVisualImage(sprite1, prop2, window);
+        CGDrawVisualImage(sprite1, prop2, window);
         //quad2_property->rotation = clock * 0.2;
         CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);

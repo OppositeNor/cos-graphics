@@ -1055,6 +1055,22 @@ static void CGSetTextureValue(unsigned int texture_id, CGImage* texture)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+unsigned int CGCreateTexture(CGImage* image)
+{
+    CG_ERROR_COND_RETURN(image == NULL, 0, "Cannot create texture from NULL image.");
+    CGGladInitializeCheck();
+    unsigned int texture_id;
+    glGenTextures(1, &texture_id);
+    CGSetTextureValue(texture_id, image);
+    return texture_id;
+}
+
+void CGDeleteTexture(unsigned int texture_id)
+{
+    CGGladInitializeCheck();
+    glDeleteTextures(1, &texture_id);
+}
+
 CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
 {
     CG_ERROR_COND_RETURN(img_rk == NULL, NULL, "Cannot create image with NULL texture path.");
@@ -1075,8 +1091,7 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
         free(visual_image);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for visual_image texture.");
     }
-    glGenTextures(1, &visual_image->texture_id);
-    CGSetTextureValue(visual_image->texture_id, image);
+    visual_image->texture_id = CGGetTextureResource(img_rk);
     CGFreeResource(image);
     CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
@@ -1095,21 +1110,7 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     if (glfwGetCurrentContext() != in_window->glfw_window_instance)
         glfwMakeContextCurrent(in_window->glfw_window_instance);
     
-    glGenTextures(1, &result->texture_id);
-    CGImage* image = CGCreateImage(visual_image->img_width, visual_image->img_height, visual_image->img_channels, NULL);
-    CGSetTextureValue(result->texture_id, image);
-    CGFreeResource(image);
-
-    unsigned int fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER , fbo);
-    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, visual_image->texture_id, 0);
-    
-    glBindTexture(GL_TEXTURE_2D, result->texture_id);
-    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, visual_image->img_width, visual_image->img_height);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glDeleteFramebuffers(1, &fbo);
+    result->texture_id = CGCopyTextureResource(visual_image->texture_id);
 
     CGRegisterResource(result, CG_DELETER(CGDeleteVisualImage));
     return result;
@@ -1117,7 +1118,9 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
 
 static void CGDeleteVisualImage(CGVisualImage* visual_image)
 {
-    glDeleteTextures(1, &visual_image->texture_id);
+    if (visual_image == NULL)
+        return;
+    CGFreeTextureResource(visual_image->texture_id);
     free(visual_image);
 }
 

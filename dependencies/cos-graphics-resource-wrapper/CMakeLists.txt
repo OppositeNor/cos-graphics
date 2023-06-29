@@ -9,6 +9,10 @@ else()
     set(CGRW_EXECUTABLE_NAME "cg_resource_wrapper" PARENT_SCOPE)
 endif()
 
+if (CGRW_NO_VERBOSE MATCHES ON)
+    add_definitions(-DCGRW_NO_VERBOSE)
+endif()
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 include_directories(

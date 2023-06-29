@@ -30,6 +30,9 @@ set (USE_TEST_EXE ON)
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 
+# Turn this to OFF if you want to print out more information about the resource build process.
+set(CGRW_NO_VERBOSE OFF)
+
 # add your resource by appending them to cg_resources list. The default "resource.cgures" should not be included in the list.
 list(APPEND CG_RESOURCES image_resource.cgures)
 

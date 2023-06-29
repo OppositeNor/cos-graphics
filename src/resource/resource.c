@@ -1,6 +1,6 @@
 #include "cos_graphics/resource.h"
+#include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
-#include "cos_graphics/linked_list.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -57,6 +57,20 @@ typedef struct
     void (*deleter)(void*);
 }CGMemRes;
 
+typedef struct CGTextureResource{
+    unsigned int texture_id;
+    unsigned int reference_count;
+    char* key;
+    struct CGTextureResource* next;
+}CGTextureResource;
+
+static CGTextureResource* cg_texture_res_head = NULL;
+
+/**
+ * @brief Clear all texture resources.
+ */
+static void CGClearTextureResource();
+
 enum CGMemResType
 {
     CG_MEM_RES_TYPE_HEAD = 0,
@@ -92,6 +106,9 @@ void CGInitResourceSystem()
     sprintf(cg_resource_finder_path, "%s%c%s", buff, CG_FILE_SPLITTER, cg_resource_finder_name);
     
     mem_res_head = CGCreateLinkedListNode(NULL, CG_MEM_RES_TYPE_HEAD);
+    cg_texture_res_head = (CGTextureResource*)malloc(sizeof(CGTextureResource));
+    CG_ERROR_CONDITION(cg_texture_res_head == NULL, "Failed to allocate memory for texture resource head.");
+    cg_texture_res_head->next = NULL;
 }
 
 
@@ -162,8 +179,7 @@ CGImage* CGLoadImage(const char* file_path)
     if (image->data == NULL)
     {
         free(image);
-        CG_ERROR("Failed to load image from path: %s", file_path);
-        return NULL;
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to load image from path: %s", file_path);
     }
     return image;
 }
@@ -279,6 +295,9 @@ void CGTerminateResourceSystem()
     cg_resource_finder_path = NULL;
     free(cg_resource_file_path);
     cg_resource_file_path = NULL;
+    CGClearTextureResource();
+    free(cg_texture_res_head);
+    cg_texture_res_head = NULL;
 }
 
 char* CGLoadResource(const char* resource_key, int* size, char* type)
@@ -346,4 +365,96 @@ char* CGLoadResource(const char* resource_key, int* size, char* type)
 
     fclose(file);
     CG_ERROR_COND_EXIT(CG_TRUE, -1, "Failed to find resource with key: %s.", resource_key);
+}
+
+unsigned int CGGetTextureResource(const char* file_rk)
+{
+    CGTextureResource* p = cg_texture_res_head;
+    for (; p->next != NULL; p = p->next)
+    {
+        if (strcmp(p->key, file_rk) == 0)
+        {
+            ++p->reference_count;
+            return p->texture_id;
+        }
+    }
+
+    CGTextureResource* result = (CGTextureResource*)malloc(sizeof(CGTextureResource));
+    CG_ERROR_COND_RETURN(result == NULL, 0, "Failed to allocate memory for texture resource.");
+    CGImage* temp_image = CGLoadImageFromResource(file_rk);
+    if (temp_image == NULL)
+    {
+        free(result);
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to load image.");
+    }
+    result->key = (char*)malloc(sizeof(char) * (strlen(file_rk) + 1));
+    if (result->key == NULL)
+    {
+        free(result);
+        CGFreeResource(temp_image);
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to allocate memory for texture resource key.");
+    }
+    strcpy(result->key, file_rk);
+    result->texture_id = CGCreateTexture(temp_image);
+    if (result->texture_id == 0)
+    {
+        free(result);
+        CGFreeResource(temp_image);
+        free(result->key);
+        CG_ERROR_COND_RETURN(CG_TRUE, 0, "Failed to create texture.");
+    }
+    result->reference_count = 0;
+    p->next = result;
+    return result->texture_id;
+}
+
+unsigned int CGCopyTextureResource(unsigned int texture_id)
+{
+    CG_ERROR_COND_RETURN(cg_texture_res_head == NULL, 0, "Texture resource system not initialized.");
+
+    for (CGTextureResource* p = cg_texture_res_head; p->next != NULL; p = p->next)
+    {
+        if (p->next->texture_id == texture_id)
+        {
+            ++p->next->reference_count;
+            return p->next->texture_id;
+        }
+    }
+    CG_ERROR_COND_RETURN(CG_TRUE, 0, "Texture resource not found.");
+    return 0;
+}
+
+void CGFreeTextureResource(unsigned int texture_id)
+{
+    CG_ERROR_CONDITION(cg_texture_res_head == NULL, "Texture resource system not initialized.");
+
+    for (CGTextureResource* p = cg_texture_res_head; p->next != NULL; p = p->next)
+    {
+        if (p->next->texture_id == texture_id)
+        {
+            --p->next->reference_count;
+            if (p->next->reference_count == 0)
+            {
+                CGTextureResource* temp = p->next;
+                p->next = p->next->next;
+                CGDeleteTexture(temp->texture_id);
+                free(temp->key);
+                free(temp);
+            }
+            return;
+        }
+    }
+}
+
+static void CGClearTextureResource()
+{
+    CGTextureResource* p = cg_texture_res_head;
+    while (p->next != NULL)
+    {
+        CGTextureResource* temp = p->next;
+        p->next = p->next->next;
+        CGDeleteTexture(temp->texture_id);
+        free(temp->key);
+        free(temp);
+    }
 }
