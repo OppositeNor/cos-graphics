@@ -21,6 +21,12 @@ extern "C" {
  */
 CG_BOOL CGResourceSystemInitialized();
 
+
+/**
+ * @brief Clear all texture resources. This must be called before terminating OpenGL.
+ */
+void CGClearTextureResource();
+
 /**
  * @brief Initialize resource system.
  */
