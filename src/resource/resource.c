@@ -66,11 +66,6 @@ typedef struct CGTextureResource{
 
 static CGTextureResource* cg_texture_res_head = NULL;
 
-/**
- * @brief Clear all texture resources.
- */
-static void CGClearTextureResource();
-
 enum CGMemResType
 {
     CG_MEM_RES_TYPE_HEAD = 0,
@@ -295,7 +290,6 @@ void CGTerminateResourceSystem()
     cg_resource_finder_path = NULL;
     free(cg_resource_file_path);
     cg_resource_file_path = NULL;
-    CGClearTextureResource();
     free(cg_texture_res_head);
     cg_texture_res_head = NULL;
 }
@@ -405,6 +399,7 @@ unsigned int CGGetTextureResource(const char* file_rk)
     }
     result->reference_count = 0;
     p->next = result;
+    result->next = NULL;
     return result->texture_id;
 }
 
@@ -446,13 +441,12 @@ void CGFreeTextureResource(unsigned int texture_id)
     }
 }
 
-static void CGClearTextureResource()
+void CGClearTextureResource()
 {
-    CGTextureResource* p = cg_texture_res_head;
-    while (p->next != NULL)
+    while (cg_texture_res_head->next != NULL)
     {
-        CGTextureResource* temp = p->next;
-        p->next = p->next->next;
+        CGTextureResource* temp = cg_texture_res_head->next;
+        cg_texture_res_head->next = cg_texture_res_head->next->next;
         CGDeleteTexture(temp->texture_id);
         free(temp->key);
         free(temp);
