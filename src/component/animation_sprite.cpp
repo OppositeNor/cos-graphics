@@ -4,8 +4,8 @@
 
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
-        std::string p_default_animation, float p_fps, const CGVector2& p_position)
-    : CGAnimationSprite(p_fps, p_position)
+        std::string p_default_animation, float p_fps)
+    : CGAnimationSprite(p_fps)
 {
     animation_map = CGAnimationMap(p_animation_map);
     current_animation = p_default_animation;
@@ -13,15 +13,15 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map,
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map, 
-        std::string p_default_animation, float p_fps, const CGVector2& p_position)
-    : CGAnimationSprite(p_fps, p_position)
+        std::string p_default_animation, float p_fps)
+    : CGAnimationSprite(p_fps)
 {
     animation_map = std::move(p_animation_map);
     current_animation = p_default_animation;
 }
 
-CGAnimationSprite::CGAnimationSprite(float p_fps, const CGVector2& p_position)
-    : frame_duration(GetReciprocal(p_fps)), CGVisualComponent(p_position)
+CGAnimationSprite::CGAnimationSprite(float p_fps)
+    : frame_duration(GetReciprocal(p_fps)), CGVisualComponent()
 {
     
 }

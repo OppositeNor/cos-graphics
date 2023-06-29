@@ -5,6 +5,11 @@
 #include <map>
 
 using CGAnimationMap = std::map<std::string, std::initializer_list<CGVisualImage*>>;
+
+/**
+ * @brief A component that displays an animation.
+ * @warning UNTESTED
+ */
 class CGAnimationSprite : CGVisualComponent
 {
     CGRenderObjectProperty* render_property;
@@ -53,7 +58,7 @@ public:
      * @param p_fps The frame rate of the animation.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
+    explicit CGAnimationSprite(float p_fps = 5.0f);
 
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -64,7 +69,7 @@ public:
      * @param p_position The position of the animation is going to be displayed.
      */
     CGAnimationSprite(CGAnimationMap& p_animation_map, 
-        std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
+        std::string p_default_animation, float p_fps = 5.0f);
     
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -75,7 +80,7 @@ public:
      * @param p_position The position of the animation is going to be displayed.
      */
     CGAnimationSprite(CGAnimationMap&& p_animation_map, 
-        std::string p_default_animation, float p_fps = 5.0f, const CGVector2& p_position = {0, 0});
+        std::string p_default_animation, float p_fps = 5.0f);
     /**
      * @brief Play the current animation.
      */

@@ -1,7 +1,7 @@
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/game.h"
 
-CGVisualComponent::CGVisualComponent(const CGVector2& p_position) : CGComponent()
+CGVisualComponent::CGVisualComponent() : CGComponent()
 {
     render_property = CGCreateRenderObjectProperty(CGConstructColor(1.0f, 1.0f, 1.0f,1.0f), 
         transform.position, transform.scale, transform.rotation);

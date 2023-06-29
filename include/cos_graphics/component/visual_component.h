@@ -29,7 +29,7 @@ public:
      * 
      * @param p_position The initial position of the component.
      */
-    explicit CGVisualComponent(const CGVector2& p_position = {0, 0});
+    CGVisualComponent();
 
     /**
      * @brief Copy a new CGVisualComponent object.

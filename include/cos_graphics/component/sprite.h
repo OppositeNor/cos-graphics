@@ -24,7 +24,7 @@ public:
      * @param p_texture_rk The resource key of the texture for the sprite
      * @param p_position The position that the sprite is going to be on.
      */
-    explicit CGSprite(const std::string& p_texture_rk = std::string(""), const CGVector2& p_position = {0, 0});
+    explicit CGSprite(const std::string& p_texture_rk = std::string(""));
 
     /**
      * @brief Copy constructor
@@ -50,7 +50,7 @@ public:
      * @param p_texture The texture for the sprite. The texture is going to be copied.
      * @param p_position The position that the sprite is going to be on.
      */
-    CGSprite(CGVisualImage*& p_texture, const CGVector2& p_position = {0, 0});
+    CGSprite(CGVisualImage*& p_texture);
 
     /**
      * @brief Construct a new CGSprite object
@@ -58,7 +58,7 @@ public:
      * @param p_texture The texture for the sprite. The texture is going to be moved.
      * @param p_position The position that the sprite is going to be on.
      */
-    CGSprite(CGVisualImage*&& p_texture, const CGVector2& p_position = {0, 0});
+    CGSprite(CGVisualImage*&& p_texture);
 
     virtual ~CGSprite() override;
 
