@@ -276,28 +276,17 @@ CGRWResourceData* CGRWPhraseUsedResource(const char* file_path)
     CGRWPhraseData(file_data, data_head);
     free(file_data);
 
-    CGRWResourceData* p = data_head->next;
+    CGRWResourceData* p = data_head;
 
     // check is resource valid
     CGRW_PRINT_VERBOSE("Checking is resource valid...");
+
     for (unsigned int i = 0; p != NULL; p = p->next)
     {
         CGRW_PRINT_VERBOSE("Checking resource index %d...", i);
-        if (p->type[0] == '\0')
-        {
-            CGRW_PRINT_VERBOSE("Resource type is empty.");
-            CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, "Resource type is empty.");
-        }
-        if (p->key[0] == '\0')
-        {
-            CGRW_PRINT_VERBOSE("Resource key is empty.");
-            CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, "Resource key is empty.");
-        }
-        if (p->path[0] == '\0')
-        {
-            CGRW_PRINT_VERBOSE("Resource path is empty.");
-            CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, "Resource path is empty.");
-        }
+        CGRW_ERROR_COND_EXIT(p->type[0] == '\0', -1, "Resource type is empty.");
+        CGRW_ERROR_COND_EXIT(p->key[0] == '\0', -1, "Resource key is empty.");
+        CGRW_ERROR_COND_EXIT(p->path[0] == '\0', -1, "Resource path is empty.");
         for (CGRWResourceData* q = p->next; q != NULL; q = q->next)
         {
             if (strcmp(p->key, q->key) == 0)
@@ -404,9 +393,15 @@ static void CGRWPhraseChunk(const char* str, unsigned int line_count, CGRWResour
             char* t_p = p;
             CGRWGoToNext(&t_p, &line_count, '"');
             if (strcmp(buff, "key") == 0)
+            {
                 CGRWGetSubString(p, 0, t_p - p, data->key);
+                CGRW_PRINT_VERBOSE("key: \"%s\"", data->key);
+            }
             else if (strcmp(buff, "path") == 0)
+            {
                 CGRWGetSubString(p, 0, t_p - p, data->path);
+                CGRW_PRINT_VERBOSE("path: \"%s\"", data->path);
+            }
             p = t_p + 1;
             CGRWSkipSpaces(&p, &line_count);
             CGRW_ERROR_COND_EXIT(*p != ';', -1, "Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead.", line_count, *p);
@@ -520,6 +515,7 @@ static void CGRWGetFirstWord(const char* str, char* sub_string)
         *sub_string = str[i];
         ++sub_string;
     }
+    *sub_string = '\0';
 }
 
 static void CGRWGoToNext(char** p, unsigned int* line_count, char identifier)
