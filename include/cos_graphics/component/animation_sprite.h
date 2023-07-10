@@ -2,6 +2,7 @@
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/resource.h"
 #include <initializer_list>
+#include <string>
 #include <map>
 
 using CGAnimationMap = std::map<std::string, std::initializer_list<CGVisualImage*>>;
