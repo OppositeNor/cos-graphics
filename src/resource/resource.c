@@ -27,7 +27,6 @@
 
     static void CGGetExecDir(char* buff, unsigned int size)
     {
-        char* p = buff;
         readlink("/proc/self/exe", buff, size - 1);
         char* p = buff + size - 1;
         for (; *p != '/'; p--);
