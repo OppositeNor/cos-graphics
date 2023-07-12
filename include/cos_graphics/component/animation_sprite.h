@@ -1,10 +1,11 @@
 #pragma once
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/resource.h"
-#include <initializer_list>
+#include <vector>
 #include <map>
 
-using CGAnimationMap = std::map<std::string, std::initializer_list<CGVisualImage*>>;
+using CGAnimationMap = std::map<std::string, std::vector<CGVisualImage*>>;
+using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
 
 /**
  * @brief A component that displays an animation.
@@ -35,7 +36,7 @@ protected:
     /**
      * @brief The map the animations' textures.
      * @tparam std::string The name of the animation.
-     * @tparam std::initializer_list<CGVisualImage*> The list of textures of the animation.
+     * @tparam std::std::vector<CGVisualImage*> The list of textures of the animation.
      */
     CGAnimationMap animation_map;
 
@@ -51,6 +52,8 @@ protected:
     void (*animation_finish_callback)(CGAnimationSprite*) = nullptr;
 
 public:
+
+    virtual ~CGAnimationSprite();
 
     /**
      * @brief Construct a new CGAnimationSprite::CGAnimationSprite object
@@ -68,8 +71,7 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(CGAnimationMap& p_animation_map, 
-        std::string p_default_animation, float p_fps = 5.0f);
+    CGAnimationSprite(CGAnimationMap& p_animation_map, std::string p_default_animation, float p_fps = 5.0f);
     
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -79,8 +81,25 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(CGAnimationMap&& p_animation_map, 
-        std::string p_default_animation, float p_fps = 5.0f);
+    CGAnimationSprite(CGAnimationMap&& p_animation_map, std::string p_default_animation, float p_fps = 5.0f);
+
+    
+
+    /**
+     * @brief Add an animation to the animation map.
+     * 
+     * @param p_animation_name The name of the animation.
+     * @param p_animation The list of textures of the animation.
+     */
+    void CGAddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation);
+
+    /**
+     * @brief Add an animation to the animation map.
+     * 
+     * @param p_animation_pair The pair of the animation name and the list of textures of the animation.
+     */
+    void CGAddAnimation(const CGAnimationPair& p_animation_pair);
+    
     /**
      * @brief Play the current animation.
      */
@@ -102,6 +121,4 @@ public:
      * @param animation_finish_callback The function that will be called after the animation is finished.
      */
     void SetAnimationFinishCallback(void (*p_animation_finish_callback)(CGAnimationSprite*));
-
-    virtual ~CGAnimationSprite();
 };

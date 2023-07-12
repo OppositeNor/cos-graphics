@@ -1,6 +1,7 @@
 #include "cos_graphics/component/animation_sprite.h"
 #include "cos_graphics/game.h"
-#include <iostream>
+#include "cos_graphics/log.h"
+#include "cos_graphics/utils.hpp"
 
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
@@ -9,7 +10,7 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map,
 {
     animation_map = CGAnimationMap(p_animation_map);
     current_animation = p_default_animation;
-    frame_duration = GetReciprocal(p_fps);
+    frame_duration = CGUtils::CGGetReciprocal(p_fps);
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map, 
@@ -20,8 +21,18 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map,
     current_animation = p_default_animation;
 }
 
+void CGAnimationSprite::CGAddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation)
+{
+    animation_map.insert(std::make_pair(p_animation_name, p_animation));
+}
+
+void CGAnimationSprite::CGAddAnimation(const CGAnimationPair& p_animation_pair)
+{
+    animation_map.insert(p_animation_pair);
+}
+
 CGAnimationSprite::CGAnimationSprite(float p_fps)
-    : frame_duration(GetReciprocal(p_fps)), CGVisualComponent()
+    : frame_duration(CGUtils::CGGetReciprocal(p_fps)), CGVisualComponent()
 {
     
 }
@@ -65,6 +76,13 @@ void CGAnimationSprite::SetAnimationFinishCallback(void (*p_animation_finish_cal
 
 void CGAnimationSprite::Draw(float p_delta)
 {
+    if (animation_map.size() == 0)
+        return;
+    if (animation_map.find(current_animation) == animation_map.end())
+    {
+        CG_WARNING("Animation %s not found.", current_animation.c_str());
+        return;
+    }
     auto animation_played = animation_map[current_animation];
     if (animation_played.size() == 0)
         return;

@@ -45,7 +45,7 @@ public:
      * 
      * @param p_delta_time The time difference between frames
      */
-    void Tick(double p_delta_time) override;
+    virtual void Tick(double p_delta_time) override;
 
     /**
      * @brief Set the Visual object
