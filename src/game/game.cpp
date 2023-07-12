@@ -12,7 +12,7 @@ CGGame::~CGGame()
 {
     if (game_window != nullptr)
         CGFreeResource(game_window);
-    for (auto i = component_list.begin(); i <= component_list.end(); ++i)
+    for (auto&& i = component_list.begin(); i <= component_list.end(); ++i)
         delete (*i);
     game_initialized = false;
 }
@@ -111,7 +111,7 @@ void CGGame::Ready()
 
 void CGGame::Update(float p_delta)
 {
-    for (auto i : component_list)
+    for (auto& i : component_list)
         i->Tick(p_delta);
 }
 

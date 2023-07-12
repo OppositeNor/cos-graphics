@@ -61,11 +61,4 @@ public:
      * @return false The component is not visual in the game
      */
     bool IsVisual();
-    
-    /**
-     * @brief Set the depth of the component
-     * 
-     * @param p_depth The depth that the component will be set to.
-     */
-    void SetDepth(float p_depth);
 };

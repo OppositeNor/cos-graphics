@@ -4,8 +4,28 @@
  * 
  */
 #include "cos_graphics/graphics.h"
+#include <vector>
+
 class CGComponent
 {
+
+    /**
+     * @brief The parent of the component. The child will follow the parent's transformation.
+     * If the parent is NULL, the component will be in world space. The children will also follow
+     * the parent's life cycle.
+     * 
+     * @todo Implement parent-child relationship
+     */
+    CGComponent* parent = nullptr;
+
+    /**
+     * @brief The children of the component. The children will follow the component's transformation.
+     * When the component is destroyed, the children will also be destroyed.
+     * 
+     * @todo Implement parent-child relationship
+     */
+    std::vector<CGComponent*> children;
+
 public:
     /**
      * @brief Transform component that contains the transformation of components.
@@ -79,14 +99,21 @@ public:
      * 
      * @return CGTransform& The transform of the component
      */
-    const CGTransform& GetTransform() const;
+    const CGTransform& GetTransform() const noexcept;
 
     /**
      * @brief Get the reference of the Transform object
      * 
      * @return CGComponent::CGTransform& The reference of the transform object
      */
-    CGTransform& GetTransform();
+    CGTransform& GetTransform() noexcept;
+
+    /**
+     * @brief Get the global transform of the component
+     * 
+     * @return CGTransform The global transform of the component
+    */
+    CGTransform GetGlobalTransform() const;
 
     /**
      * @brief Set the Depth object
@@ -94,4 +121,18 @@ public:
      * @param p_depth The new depth to be set to
      */
     void SetDepth(float p_depth);
+
+    /**
+     * @brief Add a child to the component.
+     * 
+     * @param p_child The child to be added.
+     */
+    void AddChild(CGComponent* p_child);
+
+    /**
+     * @brief Detach a child from the component.
+     * 
+     * @param p_child The child to be detached.
+     */
+    void DetachChild(CGComponent* p_child);
 };

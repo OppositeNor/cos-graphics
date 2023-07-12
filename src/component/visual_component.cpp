@@ -34,9 +34,3 @@ bool CGVisualComponent::IsVisual()
 {
     return visual;
 }
-
-
-void CGVisualComponent::SetDepth(float p_depth)
-{
-    transform.depth = p_depth;
-}

@@ -3,6 +3,7 @@
 #include "cos_graphics/resource.h"
 #include <vector>
 #include <map>
+#include <string>
 
 using CGAnimationMap = std::map<std::string, std::vector<CGVisualImage*>>;
 using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
