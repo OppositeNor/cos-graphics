@@ -53,6 +53,11 @@ class CGGame
      * @brief Constructor
      */
     CGGame();
+
+    /**
+     * @brief Marks that is the game terminating and preparing to release resources.
+     */
+    bool game_terminating = false;
 public:
 
     /**
@@ -84,7 +89,7 @@ public:
      */
     static void ExitGame();
     
-    CGWindow* GetGameWindow();
+    CGWindow* GetGameWindow() noexcept;
 
     /**
      * @brief Add component to the component list, and return the component's identifier.
@@ -113,20 +118,31 @@ public:
      * 
      * @return CGCamera* The main camera object.
      */
-    CGCamera* GetMainCamera();
+    const CGCamera* GetMainCamera() const noexcept;
+    
+    /**
+     * @brief Get the Main Camera object
+     * 
+     * @return CGCamera* The main camera object.
+     */
+    CGCamera* GetMainCamera() noexcept;
 
     /**
      * @brief Use the camera as the main camera.
      * 
      * @param p_camera The camera that the main camera will be set to.
      */
-    void SetMainCamera(CGCamera* p_camera);
+    void SetMainCamera(CGCamera* p_camera) noexcept;
+
+    /**
+     * @brief Check if the game is terminating and releasing component resource.
+     * 
+     * @return true The game is terminating and self-releasing component resources is not allowed.
+     * @return false The game is not terminating and self-releasing resources is allowed.
+     */
+    bool IsGameTerminating() const noexcept;
     
 private:
-    /**
-     * @brief Called once when the game is created.
-     */
-    void Ready();
 
     /**
      * @brief Game loop.
@@ -136,5 +152,18 @@ private:
     /**
      * @brief Update, called every frame.
      */
-    void Update(float p_delta);
+    void Tick(float p_delta);
+
+protected:
+    /**
+     * @brief Called once when the game is created.
+     */
+    virtual void Ready() {}
+
+    /**
+     * @brief Called every frame.
+     * 
+     * @param p_delta The difference in time between frames.
+     */
+    virtual void Update(float p_delta) {}
 };

@@ -562,29 +562,6 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
 #ifdef __cplusplus
 }
-
-
-static constexpr CGVector2 operator+(const CGVector2& p_vec1, const CGVector2& p_vec2)
-{
-    return {p_vec1.x + p_vec2.x, p_vec1.y + p_vec2.y};
-}
-
-static inline void operator+=(CGVector2& p_vec1, const CGVector2& p_vec2)
-{
-    p_vec1.x += p_vec2.x;
-    p_vec1.y += p_vec2.y;
-}
-
-static constexpr CGVector2 operator-(const CGVector2& p_vec1, const CGVector2& p_vec2)
-{
-    return {p_vec1.x - p_vec2.x, p_vec1.y - p_vec2.y};
-}
-
-static inline void operator-=(CGVector2& p_vec1, const CGVector2& p_vec2)
-{
-    p_vec1.x -= p_vec2.x;
-    p_vec1.y -= p_vec2.y;
-}
 #endif
 
 #endif  //_CG_GRAPHICS_H_

@@ -5,6 +5,8 @@ project(CosGraphics LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set (CMAKE_BUILD_TYPE Release)
+
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
@@ -49,7 +51,7 @@ add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
 # opengl
 find_package(OpenGL REQUIRED)
-list(APPEND libs OpenGL::GL)
+list(APPEND libs PUBLIC OpenGL::GL)
 
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/include
@@ -62,21 +64,21 @@ message("System: ${CMAKE_SYSTEM_NAME}")
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     # GLFW
     find_package(glfw3 REQUIRED)
-    list(APPEND libs glfw)
+    list(APPEND libs PUBLIC glfw)
 
-    list(APPEND libs m)
+    list(APPEND libs PUBLIC m)
 #windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message("Building for: x64")
         if (MINGW)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
+            list(APPEND libs PUBLIC "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
             list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/include")
         endif()
     else()
         message("Building for: x86")
         if (MINGW)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
+            list(APPEND libs PUBLIC "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
             list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/include")
         endif()
     endif()
@@ -93,7 +95,7 @@ add_library(${LIB_OUTPUT_NAME} STATIC
     ${SOURCES}
 )
 
-target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
+target_link_libraries(${LIB_OUTPUT_NAME} 
     ${libs}
 )
 if (USE_TEST_EXE)

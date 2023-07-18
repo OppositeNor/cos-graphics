@@ -1,10 +1,12 @@
 #pragma once
 #include <initializer_list>
+#include <cmath>
+#include <string>
 #include "cos_graphics/graphics.h"
 
 class CGUtils
 {
-    CGUtils() {}
+    CGUtils() = delete;
 public:
     /**
      * @brief Get the reciprocal of a number.
@@ -26,14 +28,47 @@ public:
      * @param p_image_rks The list of image resource keys.
      * @return std::vector<CGVisualImage*>&& The list of CGVisualImage*.
      */
-    static std::vector<CGVisualImage*>&& CGCreateVisualImageList(const std::initializer_list<std::string>& p_image_rks)
+    static std::vector<CGVisualImage*> CGCreateVisualImageList(const std::initializer_list<std::string>& p_image_rks)
     {
         std::vector<CGVisualImage*> list;
         for (auto iter : p_image_rks)
         {
             list.insert(list.end(), CGCreateVisualImage(iter.c_str(), CGGame::GetInstance()->GetGameWindow()));
         }
-        return std::move(list);
+        return list;
     }
-    
+
+    static inline CGVector2 CGGetVectorRotatedPosition(const CGVector2& p_position, float p_rotation, const CGVector2 p_center) noexcept
+    {
+        CGVector2 result;
+        float sin_theta = sin(p_rotation);
+        float cos_theta = cos(p_rotation);
+        float delta_x = p_position.x - p_center.x;
+        float delta_y = p_position.y - p_center.y;
+        result.x = delta_x * cos_theta - delta_y * sin_theta + p_center.x;
+        result.y = delta_y * cos_theta + delta_x * sin_theta + p_center.y;
+        return result;
+    }
 };
+
+static constexpr CGVector2 operator+(const CGVector2& p_vec1, const CGVector2& p_vec2)
+{
+    return {p_vec1.x + p_vec2.x, p_vec1.y + p_vec2.y};
+}
+
+static inline void operator+=(CGVector2& p_vec1, const CGVector2& p_vec2)
+{
+    p_vec1.x += p_vec2.x;
+    p_vec1.y += p_vec2.y;
+}
+
+static constexpr CGVector2 operator-(const CGVector2& p_vec1, const CGVector2& p_vec2)
+{
+    return {p_vec1.x - p_vec2.x, p_vec1.y - p_vec2.y};
+}
+
+static inline void operator-=(CGVector2& p_vec1, const CGVector2& p_vec2)
+{
+    p_vec1.x -= p_vec2.x;
+    p_vec1.y -= p_vec2.y;
+}

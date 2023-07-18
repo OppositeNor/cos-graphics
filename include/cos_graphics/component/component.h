@@ -130,6 +130,20 @@ public:
     void AddChild(CGComponent* p_child);
 
     /**
+     * @brief Remove a child from the component.
+     * 
+     * @param p_child The child to be removed.
+     */
+    void RemoveChild(CGComponent* p_child);
+
+    /**
+     * @brief Set the Parent object
+     * 
+     * @param p_parent The parent to be set to
+     */
+    void SetParent(CGComponent* p_parent);
+
+    /**
      * @brief Detach a child from the component.
      * 
      * @param p_child The child to be detached.

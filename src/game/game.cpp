@@ -10,10 +10,9 @@ CGGame::CGGame()
 
 CGGame::~CGGame()
 {
-    if (game_window != nullptr)
-        CGFreeResource(game_window);
-    for (auto&& i = component_list.begin(); i <= component_list.end(); ++i)
-        delete (*i);
+    game_terminating = true;
+    for (auto&& i : component_list)
+        delete i;
     game_initialized = false;
 }
 
@@ -88,29 +87,35 @@ void CGGame::SetWindowClearColor(const CGColor& p_color)
     CGSetClearScreenColor(p_color);
 }
 
-CGCamera* CGGame::GetMainCamera()
+const CGCamera* CGGame::GetMainCamera() const noexcept
 {
     return main_camera;
 }
 
-void CGGame::SetMainCamera(CGCamera* p_camera)
+CGCamera* CGGame::GetMainCamera() noexcept
+{
+    return main_camera;
+}
+
+void CGGame::SetMainCamera(CGCamera* p_camera) noexcept
 {
     main_camera = p_camera;
 }
 
-CGWindow* CGGame::GetGameWindow()
+bool CGGame::IsGameTerminating() const noexcept
+{
+    return game_terminating;
+}
+
+CGWindow* CGGame::GetGameWindow() noexcept
 {
     return game_window;
 }
 
-void CGGame::Ready()
+
+void CGGame::Tick(float p_delta)
 {
-
-
-}
-
-void CGGame::Update(float p_delta)
-{
+    Update(p_delta);
     for (auto& i : component_list)
         i->Tick(p_delta);
 }
@@ -124,7 +129,7 @@ void CGGame::GameLoop()
         static double delta = 0.01;
         tick_start_time = CGGetCurrentTime();
         CGTickRenderStart(game_window);
-        Update(delta);
+        Tick(delta);
         CGWindowDraw(game_window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
