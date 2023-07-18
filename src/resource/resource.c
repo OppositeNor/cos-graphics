@@ -258,7 +258,8 @@ void CGFreeResource(void* resource)
         }
         p = p->next;
     }
-    CG_ERROR_CONDITION(CG_TRUE, "Resource not found.");
+    CG_WARNING("Resource is not registered. Freeing the resource directly...");
+    free(resource);
 }
 
 void CGPrintMemoryList()
