@@ -233,7 +233,7 @@ void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 
 void CGInitGLFW(CG_BOOL window_resizable)
 {
-    CG_ERROR_EXP_EXIT(glfwInit() != GLFW_TRUE, -1, "GLFW initialization failed");
+    CG_ERROR_COND_EXIT(glfwInit() != GLFW_TRUE, -1, "GLFW initialization failed");
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -283,7 +283,7 @@ static void CGInitDefaultShader(const char* shader_v_rk, const char* shader_f_rk
 
 void CGInitGLAD()
 {
-    CG_ERROR_EXP_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, "GLAD setup OpenGL loader failed");
+    CG_ERROR_COND_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, "GLAD setup OpenGL loader failed");
     CGInitDefaultShader(cg_default_geo_vshader_rk, cg_default_geo_fshader_rk, &cg_default_geo_shader_program);
     cg_geo_shader_program = cg_default_geo_shader_program;
 

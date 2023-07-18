@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.8)
 
 project(CosGraphics LANGUAGES C)
 
+message("Build type: ${CMAKE_BUILD_TYPE}")
+
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
@@ -11,6 +13,9 @@ file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 # set this to OFF if you only want to export the library
 set (USE_TEST_EXE ON)
+
+# set this to OFF if you don't want to export the library
+set (USE_SHARED_LIB ON)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
@@ -72,13 +77,16 @@ include_directories(
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
-add_library(${LIB_OUTPUT_NAME} STATIC
-    ${SOURCES}
-)
+if (USE_SHARED_LIB)
+    add_library(${LIB_OUTPUT_NAME} STATIC
+        ${SOURCES}
+    )
 
-target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
-    ${libs}
-)
+    target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
+        ${libs}
+    )
+endif()
+
 if (USE_TEST_EXE)
     add_executable(${EXE_OUTPUT_NAME}
         src/main.c
