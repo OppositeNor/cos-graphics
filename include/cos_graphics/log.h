@@ -7,11 +7,13 @@ extern "C" {
 
 #ifndef CG_MODIFY_OUTPUT_MESSAGE
     #define CG_PRINT(...) CGPrint("CosGraphics", "Output", __VA_ARGS__)
-    #define CG_ERROR(...) CGPrint("CosGraphics", "Error", __VA_ARGS__)
-    #define CG_WARNING(...) CGPrint("CosGraphics", "Warning", __VA_ARGS__)
+    #define CG_ERROR(...) CGPrintWithFunction("CosGraphics", "Error", __FUNCTION__, __VA_ARGS__)
+    #define CG_WARNING(...) CGPrint("CosGraphics", "Warning", __FUNCTION__, __VA_ARGS__)
 #endif
 
 void CGPrint(const char* sender, const char* type, const char* fmt, ...);
+
+void CGPrintWithFunction(const char* sender, const char* type, const char* function_name, const char* fmt, ...);
 
 #if CG_DEBUG
 /**

@@ -258,7 +258,7 @@ void CGFreeResource(void* resource)
         }
         p = p->next;
     }
-    CG_WARNING("Resource is not registered. Freeing the resource directly...");
+    CG_WARNING("Resource at %p is not registered. Freeing the resource directly...", resource);
     free(resource);
 }
 
