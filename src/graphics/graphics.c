@@ -360,10 +360,14 @@ static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int act
 static void CGDestroyWindow(CGWindow* window)
 {
     CGRemoveLinkedListNodeByData(&cg_window_list, window);
-    glDeleteVertexArrays(1, &window->triangle_vao);
-    glDeleteVertexArrays(1, &window->quadrangle_vao);
-    glDeleteVertexArrays(1, &window->visual_image_vao);
-    glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
+    if (cg_is_glad_initialized)
+    {
+        glDeleteVertexArrays(1, &window->triangle_vao);
+        glDeleteVertexArrays(1, &window->quadrangle_vao);
+        glDeleteVertexArrays(1, &window->visual_image_vao);
+    }
+    if (cg_is_glfw_initialized)
+        glfwDestroyWindow((GLFWwindow*)window->glfw_window_instance);
     CGDeleteList(window->render_list);
 
     free(window);

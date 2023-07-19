@@ -113,7 +113,7 @@ int main()
         CGFreeResource(prop2);
     }
     CGFreeResource(prop);
-    CGFreeResource(window);
+    //CGFreeResource(window);
     CGTerminateGraphics();
     
     return 0;
