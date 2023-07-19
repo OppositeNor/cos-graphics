@@ -3,6 +3,7 @@
 
 class CGCamera : public CGComponent
 {
+    CG_COMPONENT_TYPE(CGCamera)
 public:
     CGCamera();
 };

@@ -10,7 +10,7 @@
  */
 class CGSprite : public CGVisualComponent
 {
-
+    CG_COMPONENT_TYPE(CGSprite)
 protected:
     /**
      * @brief The texture of the sprite.

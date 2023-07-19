@@ -12,7 +12,9 @@ CGGame::~CGGame()
 {
     game_terminating = true;
     for (auto&& i : component_list)
+    {
         delete i;
+    }
     game_initialized = false;
 }
 

@@ -5,10 +5,25 @@
  */
 #include "cos_graphics/graphics.h"
 #include <vector>
+#include <string>
 
+/**
+ * @brief Identification of a component. The region under this macro will be set to private.
+ * Everytime you create a component you should put this macro inside it. Use 
+ * @code CG_COMPONENT_TYPE(YourComponentName) to identify the component.
+ * @endcode
+ *  
+ */
+#define CG_COMPONENT_TYPE(type) \
+    public:                     \
+    virtual std::string GetComponentType() override { return #type; } \
+    private:
+
+/**
+ * @brief The base class for all the components in the game.
+ */
 class CGComponent
 {
-
     /**
      * @brief The parent of the component. The child will follow the parent's transformation.
      * If the parent is NULL, the component will be in world space. The children will also follow
@@ -27,6 +42,13 @@ class CGComponent
     std::vector<CGComponent*> children;
 
 public:
+    /**
+     * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
+     * 
+     * @return std::string 
+     */
+    virtual std::string GetComponentType() {return "CGComponent";}
+    
     /**
      * @brief Transform component that contains the transformation of components.
      * 

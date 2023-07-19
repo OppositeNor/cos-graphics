@@ -8,6 +8,7 @@
  */
 class CGVisualComponent : public CGComponent
 {
+    CG_COMPONENT_TYPE(CGVisualComponent)
 protected:
     /**
      * @brief The render property for objects to render.

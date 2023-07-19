@@ -14,6 +14,8 @@ using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
  */
 class CGAnimationSprite : CGVisualComponent
 {
+    CG_COMPONENT_TYPE(CGAnimationSprite)
+    
     CGRenderObjectProperty* render_property;
 protected:
 
