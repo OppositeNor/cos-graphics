@@ -10,7 +10,6 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map,
 {
     animation_map = CGAnimationMap(p_animation_map);
     current_animation = p_default_animation;
-    frame_duration = CGUtils::CGGetReciprocal(p_fps);
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map, 
@@ -41,9 +40,9 @@ CGAnimationSprite::~CGAnimationSprite()
 {
     CGFreeResource(render_property);
     // Free all the textures
-    for (auto& animation : animation_map)
+    for (auto&& animation : animation_map)
     {
-        for (auto& frame : animation.second)
+        for (auto&& frame : animation.second)
         {
             CGFreeResource(frame);
         }

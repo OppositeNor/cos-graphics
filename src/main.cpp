@@ -5,7 +5,7 @@
 
 int main()
 {
-    CGGame::InitGame(1280, 1060, "Test", CG_FALSE, CG_FALSE);
+    CGGame::InitGame(1280, 720, "Test", CG_FALSE, CG_FALSE);
 
     CGVisualImage* image = CGCreateVisualImage("test1", 
         CGGame::GetInstance()->GetGameWindow());

@@ -51,24 +51,26 @@ public:
     }
 };
 
-static constexpr CGVector2 operator+(const CGVector2& p_vec1, const CGVector2& p_vec2)
+static constexpr CGVector2 operator+(const CGVector2& p_vec1, const CGVector2& p_vec2) noexcept
 {
     return {p_vec1.x + p_vec2.x, p_vec1.y + p_vec2.y};
 }
 
-static inline void operator+=(CGVector2& p_vec1, const CGVector2& p_vec2)
+static inline CGVector2& operator+=(CGVector2& p_vec1, const CGVector2& p_vec2) noexcept
 {
     p_vec1.x += p_vec2.x;
     p_vec1.y += p_vec2.y;
+    return p_vec1;
 }
 
-static constexpr CGVector2 operator-(const CGVector2& p_vec1, const CGVector2& p_vec2)
+static constexpr CGVector2 operator-(const CGVector2& p_vec1, const CGVector2& p_vec2) noexcept
 {
     return {p_vec1.x - p_vec2.x, p_vec1.y - p_vec2.y};
 }
 
-static inline void operator-=(CGVector2& p_vec1, const CGVector2& p_vec2)
+static inline CGVector2& operator-=(CGVector2& p_vec1, const CGVector2& p_vec2) noexcept
 {
     p_vec1.x -= p_vec2.x;
     p_vec1.y -= p_vec2.y;
+    return p_vec1;
 }

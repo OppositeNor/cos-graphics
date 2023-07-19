@@ -29,10 +29,6 @@ public:
     /**
      * @brief Copy constructor
      * 
-     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
-     * If you want to pass a texture, Please move the texture by calling @code std::move(sprite) @endcode
-     * if posible.
-     * 
      * @bug The texture copy is still unusable.
      * 
      * @param p_other The other CGSprite object.
@@ -41,9 +37,6 @@ public:
     
     /**
      * @brief Construct a new CGSprite object
-     * 
-     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
-     * If you want to pass a texture, Please move the texture by calling std::move(texture) if posible.
      * 
      * @bug The texture copy is still unusable.
      * 
@@ -66,9 +59,6 @@ public:
      * @brief Set the texture of the sprite. The texture is going to be copied.
      * 
      * @bug The texture copy is still unusable.
-     * 
-     * @attention I STRONGLY don't suggest you to copy the texture, or it may takes a lot of v-ram. 
-     * If you want to pass a texture, Please move the texture by calling std::move(texture) if posible.
      * 
      * @param p_texture The texture that the sprite is going to be set to.
      */

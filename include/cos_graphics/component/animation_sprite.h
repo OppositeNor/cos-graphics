@@ -10,7 +10,7 @@ using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
 
 /**
  * @brief A component that displays an animation.
- * @warning UNTESTED
+ * @warning UNTESTED and BUGGY
  */
 class CGAnimationSprite : CGVisualComponent
 {
