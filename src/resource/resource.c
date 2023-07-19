@@ -27,12 +27,15 @@
 
     static void CGGetExecDir(char* buff, unsigned int size)
     {
-        readlink("/proc/self/exe", buff, size - 1);
+        CG_ERROR_COND_EXIT(readlink("/proc/self/exe", buff, size - 1) == -1, -1, "Failed to get the path of the executable.");
         char* p = buff + size - 1;
         for (; *p != '/'; p--);
         *p = '\0';
     }
 #endif
+
+#define CGFRead(buff, size, count, file) CG_ERROR_COND_EXIT(fread(buff, size, count, file) != count, -1, "Failed to read file")
+
 /**
  * @brief The path of the resource. (uwu stands for unified wrapper unit)
  */
@@ -124,7 +127,8 @@ char* CGLoadFile(const char* file_path)
     if (file_data == NULL)
     {
         fclose(file);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, "Failed to allocate memory for file data.");
+        CG_ERROR("Failed to allocate memory for file data.");
+        return NULL;
     }
     rewind(file);
     for (int i = 0; i < file_size; ++i)
@@ -258,7 +262,7 @@ void CGFreeResource(void* resource)
         }
         p = p->next;
     }
-    CG_WARNING("Resource is not registered. Freeing the resource directly...");
+    CG_WARNING("Resource at %p is not registered. Freeing the resource directly...", resource);
     free(resource);
 }
 
@@ -306,7 +310,7 @@ char* CGLoadResource(const char* resource_key, int* size, char* type)
     rewind(file);
     for(;;)
     {
-        fread(&buff[i], 1, 1, file);
+        CGFRead(&buff[i], 1, 1, file);
         if (ftell(file) >= file_size)
         {
             fclose(file);
@@ -321,23 +325,23 @@ char* CGLoadResource(const char* resource_key, int* size, char* type)
         if (strcmp(buff, resource_key) == 0)
         {
             unsigned int data_location;
-            fread(&data_location, sizeof(unsigned int), 1, file);
+            CGFRead(&data_location, sizeof(unsigned int), 1, file);
             unsigned int data_size;
-            fread(&data_size, sizeof(unsigned int), 1, file);
+            CGFRead(&data_size, sizeof(unsigned int), 1, file);
             if (size != NULL)
                 *size = data_size;
             if (type != NULL)
             {
                 for (int i = 0; type[i] != '\0'; ++i)
-                    fread(&type[i], 1, 1, file);
+                    CGFRead(&type[i], 1, 1, file);
             }
             fclose(file);
             file = fopen(cg_resource_file_path, "rb");
-            CG_ERROR_COND_EXIT(file == NULL, -1, "Failed to open resource file.");
+            CG_ERROR_COND_EXIT(file == NULL, -1, "Failed to open resource file at path: %s.", cg_resource_file_path);
             fseek(file, data_location, SEEK_SET);
             char* data = (char*)malloc(data_size * sizeof(char) + 1);
             CG_ERROR_COND_EXIT(data == NULL, -1, "Failed to allocate memory for resource data.");
-            fread(data, 1, data_size, file);
+            CGFRead(data, 1, data_size, file);
             data[data_size] = '\0';
             fclose(file);
             return data;
@@ -345,7 +349,7 @@ char* CGLoadResource(const char* resource_key, int* size, char* type)
         for (;;)
         {
             char p;
-            fread(&p, 1, 1, file);
+            CGFRead(&p, 1, 1, file);
             if (p == '\n')
                 break;
             if (ftell(file) == file_size)
