@@ -260,6 +260,8 @@ void CGTerminateGraphics()
     }
     if (cg_is_glfw_initialized)
     {
+        for (CGWindowListNode* p = cg_window_list->next; p != NULL; p = p->next)
+            CGFreeResource(p->data);
         glfwTerminate();
         CGDeleteList(cg_window_list);
         cg_is_glfw_initialized = CG_FALSE;
