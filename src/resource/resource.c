@@ -34,7 +34,7 @@
     }
 #endif
 
-#define CGFRead(buff, size, count, file) CG_ERROR_COND_EXIT(fread(buff, size, count, file) != count, -1, "Failed to read file")
+#define CGFRead(buff, size, count, file) CG_ERROR_COND_EXIT(fread(buff, size, count, file) != count, -1, "Failed to read file at path: %s.", cg_resource_file_path)
 
 /**
  * @brief The path of the resource. (uwu stands for unified wrapper unit)
