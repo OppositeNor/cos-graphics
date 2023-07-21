@@ -12,11 +12,9 @@ using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
  * @brief A component that displays an animation.
  * @warning UNTESTED and BUGGY
  */
-class CGAnimationSprite : CGVisualComponent
+class CGAnimationSprite : public CGVisualComponent
 {
     CG_COMPONENT_TYPE(CGAnimationSprite)
-    
-    CGRenderObjectProperty* render_property;
 protected:
 
     void Draw(float p_delta) override;

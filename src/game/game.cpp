@@ -109,11 +109,15 @@ bool CGGame::IsGameTerminating() const noexcept
     return game_terminating;
 }
 
-CGWindow* CGGame::GetGameWindow() noexcept
+const CGWindow* CGGame::GetGameWindow() const noexcept
 {
     return game_window;
 }
 
+CGWindow* CGGame::GetGameWindow() noexcept
+{
+    return game_window;
+}
 
 void CGGame::Tick(float p_delta)
 {

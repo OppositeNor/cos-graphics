@@ -9,11 +9,15 @@
 class CGVisualComponent : public CGComponent
 {
     CG_COMPONENT_TYPE(CGVisualComponent)
+
+    CGRenderObjectProperty* render_property;
 protected:
     /**
-     * @brief The render property for objects to render.
+     * @brief Get the render property for objects to render.
      */
-    CGRenderObjectProperty* render_property;
+    CGRenderObjectProperty* GetRenderProperty() noexcept;
+    
+    const CGRenderObjectProperty* GetRenderProperty() const noexcept;
 
     /**
      * @brief Is the component visual in the game.
@@ -53,7 +57,7 @@ public:
      * 
      * @param p_visual The new value of visual
      */
-    void SetVisual(bool p_visual);
+    void SetVisual(bool p_visual) noexcept;
 
     /**
      * @brief Is the component visual in the game
@@ -61,5 +65,5 @@ public:
      * @return true The component is visual in the game
      * @return false The component is not visual in the game
      */
-    bool IsVisual();
+    bool IsVisual() const noexcept;
 };

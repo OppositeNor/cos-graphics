@@ -88,7 +88,19 @@ public:
      * @brief Exit the game.
      */
     static void ExitGame();
+
+    /**
+     * @brief Get the instance of the game window.
+     * 
+     * @return CGWindow* The instance of the game window.
+     */
+    const CGWindow* GetGameWindow() const noexcept;
     
+    /**
+     * @brief Get the instance of the game window.
+     * 
+     * @return CGWindow* The instance of the game window.
+     */
     CGWindow* GetGameWindow() noexcept;
 
     /**

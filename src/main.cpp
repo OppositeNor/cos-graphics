@@ -14,7 +14,9 @@ int main()
     CGSprite* sprite = new CGSprite(std::move(image));
     sprite->GetTransform().position = CGConstructVector2(-100.0f, 100.0f);
 
-    //CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
+    CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
+    
+
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
     
     CGGame::StartGame();

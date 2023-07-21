@@ -4,6 +4,12 @@
 #include "cos_graphics/utils.hpp"
 
 
+CGAnimationSprite::CGAnimationSprite(float p_fps)
+    : frame_duration(CGUtils::GetReciprocal(p_fps)), CGVisualComponent()
+{
+    
+}
+
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
         std::string p_default_animation, float p_fps)
     : CGAnimationSprite(p_fps)
@@ -30,15 +36,8 @@ void CGAnimationSprite::CGAddAnimation(const CGAnimationPair& p_animation_pair)
     animation_map.insert(p_animation_pair);
 }
 
-CGAnimationSprite::CGAnimationSprite(float p_fps)
-    : frame_duration(CGUtils::CGGetReciprocal(p_fps)), CGVisualComponent()
-{
-    
-}
-
 CGAnimationSprite::~CGAnimationSprite()
 {
-    CGFreeResource(render_property);
     // Free all the textures
     for (auto&& animation : animation_map)
     {
@@ -95,10 +94,6 @@ void CGAnimationSprite::Draw(float p_delta)
         current_frame = 0;
     }
     auto frame_displayed = *(animation_played.begin() + current_frame);
-    render_property->z = transform.depth;
-    render_property->transform = transform.position;
-    render_property->rotation = transform.rotation;
-    render_property->scale = transform.scale;
 
-    CGDrawVisualImage(frame_displayed, render_property, CGGame::GetInstance()->GetGameWindow());
+    CGDrawVisualImage(frame_displayed, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
 }
