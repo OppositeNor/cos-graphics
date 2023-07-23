@@ -83,12 +83,11 @@ typedef struct CGWindow{
  * @brief The callback function for key event
  * @param window The window that the event is triggered
  * @param key The key that is pressed
- * @param action The action of the key. See 
- *  <a href="https://www.glfw.org/docs/latest/group__input.html#ga2485743d0b59df3791c45951c4195265">GLFW documentation</a> 
- * for more information.
- * @param mods The mods of the key
+ * @param action The action of the key. It can be CG_PRESS, CG_RELEASE, or CG_REPEAT
  */
-typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action, int mods);
+typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action);
+
+typedef void (*CGMouseButtonCallbackFunction)(CGWindow* window, int button, int action);
 
 /**
  * @brief Viewport
@@ -150,7 +149,7 @@ CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_fu
 /**
  * @brief Set the callback function for key events.
  * 
- * @param callback The callback function.
+ * @param callback The callback function for key events.
  */
 void CGSetKeyCallback(CGKeyCallbackFunction callback);
 
@@ -160,6 +159,28 @@ void CGSetKeyCallback(CGKeyCallbackFunction callback);
  * @return CGKeyCallbackFunction The callback function.
  */
 CGKeyCallbackFunction CGGetKeyCallback();
+
+/**
+ * @brief Set the callback function for mouse button events.
+ * 
+ * @param callback The callback function for mouse button events.
+ */
+void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback);
+
+/**
+ * @brief Get the callback function for mouse button events.
+ * 
+ * @return CGMouseButtonCallbackFunction The callback function.
+ */
+CGMouseButtonCallbackFunction CGGetMouseButtonCallback();
+
+/**
+ * @brief Get the cursor position.
+ * 
+ * @param window The window that the cursor position is going to be get.
+ * @return CGVector2 The position of the cursor.
+ */
+CGVector2 CGGetCursorPosition(CGWindow* window);
 
 /**
  * @brief Create viewport object

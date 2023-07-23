@@ -29,7 +29,9 @@ CGRenderObjectProperty* cg_default_visual_image_property;
 
 static unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
 static unsigned int cg_buffer_count;
+
 static CGKeyCallbackFunction cg_key_callback = NULL;
+static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
 
 /**
  * @brief vertex shader resource key for a geometry
@@ -202,9 +204,19 @@ static void CGDeleteVisualImage(CGVisualImage* visual_image);
  * @param window The window that the key event is triggered on
  * @param key The key that is pressed
  * @param action 
- * @param mods 
+ * @param mods The modifier bits. @see <a href="https://www.glfw.org/docs/latest/group__input.html">GLFW documentation</a> 
  */
 static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+/**
+ * @brief Mouse button callback function for GLFW.
+ * 
+ * @param window The window that the mouse button event is triggered on.
+ * @param button The button that is pressed.
+ * @param action The action that is triggered.
+ * @param mods The modifier bits. @see <a href="https://www.glfw.org/docs/latest/group__input.html">GLFW documentation</a> 
+ */
+static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -338,6 +350,8 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         return NULL;
     }
     glfwSetKeyCallback(window->glfw_window_instance, CGGLFWKeyCallback);
+    glfwSetMouseButtonCallback(window->glfw_window_instance, CGGLFWMouseButtonCallback);
+
     CGCreateViewport(window);
     CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
     CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
@@ -355,8 +369,21 @@ static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int act
         CG_WARNING("Failed to find window instance in window list.");
         return;
     }
-    CGWindow* cg_window = (CGWindow*)(p->data);
-    cg_key_callback(cg_window, key, action, mods);
+    cg_key_callback((CGWindow*)(p->data), key, action);
+}
+
+static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (cg_mouse_button_callback == NULL)
+        return;
+    CGWindowListNode* p = cg_window_list->next;
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    if (p == NULL)
+    {
+        CG_WARNING("Failed to find window instance in window list.");
+        return;
+    }
+    cg_mouse_button_callback((CGWindow*)(p->data), button, action);
 }
 
 static void CGDestroyWindow(CGWindow* window)
@@ -383,6 +410,23 @@ void CGSetKeyCallback(CGKeyCallbackFunction callback)
 CGKeyCallbackFunction CGGetKeyCallback()
 {
     return cg_key_callback;
+}
+
+void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback)
+{
+    cg_mouse_button_callback = callback;
+}
+
+CGMouseButtonCallbackFunction CGGetMouseButtonCallback()
+{
+    return cg_mouse_button_callback;
+}
+
+CGVector2 CGGetCursorPosition(CGWindow* window)
+{
+    double x, y;
+    glfwGetCursorPos((GLFWwindow*)window->glfw_window_instance, &x, &y);
+    return CGConstructVector2(x, y);
 }
 
 void CGCreateViewport(CGWindow* window)

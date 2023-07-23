@@ -8,6 +8,7 @@ typedef char CG_BOOL;
 #define CG_TRUE 1
 #define CG_FALSE 0
 
+/********************************************************************************/
 /*
  * Key defs. Tese defines are copied from glfw3.h.
  * All the original prefixes, "GLFW," are replaced to "CG" to avoid name conflict.
@@ -137,9 +138,24 @@ typedef char CG_BOOL;
 #define CG_KEY_RIGHT_SUPER        347
 #define CG_KEY_MENU               348
 
+#define CG_MOUSE_BUTTON_1         0
+#define CG_MOUSE_BUTTON_2         1
+#define CG_MOUSE_BUTTON_3         2
+#define CG_MOUSE_BUTTON_4         3
+#define CG_MOUSE_BUTTON_5         4
+#define CG_MOUSE_BUTTON_6         5
+#define CG_MOUSE_BUTTON_7         6
+#define CG_MOUSE_BUTTON_8         7
+#define CG_MOUSE_BUTTON_LAST      CG_MOUSE_BUTTON_8
+#define CG_MOUSE_BUTTON_LEFT      CG_MOUSE_BUTTON_1
+#define CG_MOUSE_BUTTON_RIGHT     CG_MOUSE_BUTTON_2
+#define CG_MOUSE_BUTTON_MIDDLE    CG_MOUSE_BUTTON_3
+
 #define CG_RELEASE                0
 #define CG_PRESS                  1
 #define CG_REPEAT                 2
+
+/********************************************************************************/
 
 // define target platform
 #ifdef __WIN32__

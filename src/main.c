@@ -44,11 +44,14 @@ int main()
 #include <unistd.h>
 #endif
 
-void KeyCallback(CGWindow* window, int key, int action, int mods);
+void KeyCallback(CGWindow* window, int key, int action);
+void MouseButtonCallback(CGWindow* window, int button, int action);
+
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
     CGSetKeyCallback(KeyCallback);
+    CGSetMouseButtonCallback(MouseButtonCallback);
     
     if (window == NULL)
         return 0;
@@ -117,10 +120,16 @@ int main()
     
     return 0;
 }
-void KeyCallback(CGWindow* window, int key, int action, int mods)
+void KeyCallback(CGWindow* window, int key, int action)
 {
     if (key == CG_KEY_ESCAPE && action == CG_PRESS)
-        CG_PRINT("QAQ");
+        CG_PRINT("TEST KEY INPUT");
+}
+
+void MouseButtonCallback(CGWindow* window, int button, int action)
+{
+    if (button == CG_MOUSE_BUTTON_LEFT && action == CG_PRESS)
+        CG_PRINT("TEST MOUSE BUTTON");
 }
 
 #endif
