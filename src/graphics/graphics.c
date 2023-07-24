@@ -272,11 +272,11 @@ void CGTerminateGraphics()
     }
     if (cg_is_glfw_initialized)
     {
+        cg_is_glfw_initialized = CG_FALSE;
         for (CGWindowListNode* p = cg_window_list->next; p != NULL; p = p->next)
             CGFreeResource(p->data);
         glfwTerminate();
         CGDeleteList(cg_window_list);
-        cg_is_glfw_initialized = CG_FALSE;
     }
     if (CGResourceSystemInitialized())
         CGTerminateResourceSystem();
@@ -388,7 +388,8 @@ static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action
 
 static void CGDestroyWindow(CGWindow* window)
 {
-    CGRemoveLinkedListNodeByData(&cg_window_list, window);
+    if (cg_is_glfw_initialized)
+        CGRemoveLinkedListNodeByData(&cg_window_list, window);
     if (cg_is_glad_initialized)
     {
         glDeleteVertexArrays(1, &window->triangle_vao);
@@ -514,12 +515,18 @@ void CGWindowDraw(CGWindow* window)
         {
         case CG_RD_TYPE_TRIANGLE:
             CGRenderTriangle(data->object, data->property, window, assign_z);
+            if (((CGTriangle*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         case CG_RD_TYPE_QUADRANGLE:
             CGRenderQuadrangle(data->object, data->property, window, assign_z);
+            if (((CGQuadrangle*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         case CG_RD_TYPE_VISUAL_IMAGE:
             CGRenderVisualImage(data->object, data->property, window, assign_z);
+            if (((CGVisualImage*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object identifier: %d", draw_obj->identifier);
@@ -941,6 +948,7 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     result.vert_1 = vert_1;
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
+    result.is_temp = CG_FALSE;
     return result;
 }
 
@@ -951,6 +959,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
+    result->is_temp = CG_FALSE;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1044,6 +1053,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
     result.vert_4 = vert_4;
+    result.is_temp = CG_FALSE;
     return result;
 }
 
@@ -1055,6 +1065,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
+    result->is_temp = CG_FALSE;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1132,6 +1143,7 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     visual_image->in_window = window;
+    visual_image->is_temp = CG_FALSE;
     CGImage* image = CGLoadImageFromResource(img_rk);
     CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
     visual_image->img_width = image->width;
@@ -1157,6 +1169,7 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     result->img_width = visual_image->img_width;
     result->img_height = visual_image->img_height;
     result->img_channels = visual_image->img_channels;
+    result->is_temp = CG_FALSE;
     CGWindow* in_window = result->in_window = visual_image->in_window;
     if (glfwGetCurrentContext() != in_window->glfw_window_instance)
         glfwMakeContextCurrent(in_window->glfw_window_instance);

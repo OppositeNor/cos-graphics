@@ -436,6 +436,7 @@ void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVe
  * @brief Register a object to the render list.
  * 
  * @param draw_object the object to be drawn.
+ * @param draw_property the property of the object. You can set this to NULL if you want to use the default property.
  * @param window the window to be draw on.
  * @param object_type the type of the object
  */
@@ -445,6 +446,11 @@ void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* 
  * @brief Triangle
  */
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief first vertex position
      */
@@ -479,6 +485,11 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief first vertex position
      */
@@ -523,6 +534,11 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 /************VISUAL_IMAGES************/
 
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief Texture's OpenGL ID
      */
@@ -575,7 +591,8 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
 
 /**
  * @brief Copy CGVisualImage object
- * 
+ * @note The is_temp property will still be set to CG_FALSE no matter what the original value is.
+ * If you wish it to be a temporary object, you should set is_temp property manually.
  * @param visual_image The visual_image to be copied.
  * @return CGVisualImage* The copied visual_image
  */

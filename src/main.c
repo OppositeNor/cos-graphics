@@ -99,6 +99,15 @@ int main()
         quad1.vert_2 = CGConstructVector2(sin(clock / 0.5) * 30 + 100, sin(clock / 0.7) * 20 + 50);
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
+
+        CGQuadrangle* quad2 = CGCreateQuadrangle(
+            (CGVector2){100, 100},
+            (CGVector2){-100, 100},
+            (CGVector2){-100, -100},
+            (CGVector2){100, -100});
+        quad2->is_temp = CG_TRUE;
+        CGDrawQuadrangle(quad2, quad2_property, window);
+        
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, NULL, window);
         //CGDrawTriangle(&triangle, quad2_property, window);
@@ -117,7 +126,6 @@ int main()
     CGFreeResource(prop);
     //CGFreeResource(window);
     CGTerminateGraphics();
-    
     return 0;
 }
 void KeyCallback(CGWindow* window, int key, int action)

@@ -158,7 +158,7 @@ typedef char CG_BOOL;
 /********************************************************************************/
 
 // define target platform
-#ifdef __WIN32__
+#if (defined __WIN32__) || (defined _WIN32)
     #define CG_TG_WIN              //windows
     #ifdef _WIN64
         #define CG_TG_WIN_64       //windows 64

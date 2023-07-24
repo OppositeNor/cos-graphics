@@ -13,7 +13,7 @@ extern "C" {
 #define CGRW_PATH_BUFF_SIZE 128
 
 // define target platform
-#ifdef __WIN32__
+#if (defined __WIN32__) || (defined _WIN32)
     #define CGRW_TG_WIN              //windows
     #ifdef _WIN64
         #define CGRW_TG_WIN_64       //windows 64

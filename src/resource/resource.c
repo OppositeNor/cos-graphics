@@ -258,6 +258,7 @@ void CGFreeResource(void* resource)
         {
             extract->deleter(extract->data);
             CGRemoveLinkedListNode(&(p->next));
+            free(extract);
             return;
         }
         p = p->next;
