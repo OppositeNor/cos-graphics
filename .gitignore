@@ -2,6 +2,9 @@ build
 export
 bin
 .vscode
+.vs
+out
+CMakeSettings.json
 
 # testing resources
 *.jpg

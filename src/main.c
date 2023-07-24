@@ -45,11 +45,14 @@ int main()
 #include <unistd.h>
 #endif
 
-void KeyCallback(CGWindow* window, int key, int action, int mods);
+void KeyCallback(CGWindow* window, int key, int action);
+void MouseButtonCallback(CGWindow* window, int button, int action);
+
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
     CGSetKeyCallback(KeyCallback);
+    CGSetMouseButtonCallback(MouseButtonCallback);
     
     if (window == NULL)
         return 0;
@@ -97,6 +100,15 @@ int main()
         quad1.vert_2 = CGConstructVector2(sin(clock / 0.5) * 30 + 100, sin(clock / 0.7) * 20 + 50);
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
+
+        CGQuadrangle* quad2 = CGCreateQuadrangle(
+            (CGVector2){100, 100},
+            (CGVector2){-100, 100},
+            (CGVector2){-100, -100},
+            (CGVector2){100, -100});
+        quad2->is_temp = CG_TRUE;
+        CGDrawQuadrangle(quad2, quad2_property, window);
+        
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, NULL, window);
         //CGDrawTriangle(&triangle, quad2_property, window);
@@ -115,13 +127,18 @@ int main()
     CGFreeResource(prop);
     //CGFreeResource(window);
     CGTerminateGraphics();
-    
     return 0;
 }
-void KeyCallback(CGWindow* window, int key, int action, int mods)
+void KeyCallback(CGWindow* window, int key, int action)
 {
     if (key == CG_KEY_ESCAPE && action == CG_PRESS)
-        CG_PRINT("QAQ");
+        CG_PRINT("TEST KEY INPUT");
+}
+
+void MouseButtonCallback(CGWindow* window, int button, int action)
+{
+    if (button == CG_MOUSE_BUTTON_LEFT && action == CG_PRESS)
+        CG_PRINT("TEST MOUSE BUTTON");
 }
 
 #endif

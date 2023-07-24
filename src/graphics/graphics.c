@@ -29,7 +29,9 @@ CGRenderObjectProperty* cg_default_visual_image_property;
 
 static unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
 static unsigned int cg_buffer_count;
+
 static CGKeyCallbackFunction cg_key_callback = NULL;
+static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
 
 /**
  * @brief vertex shader resource key for a geometry
@@ -202,9 +204,19 @@ static void CGDeleteVisualImage(CGVisualImage* visual_image);
  * @param window The window that the key event is triggered on
  * @param key The key that is pressed
  * @param action 
- * @param mods 
+ * @param mods The modifier bits. @see <a href="https://www.glfw.org/docs/latest/group__input.html">GLFW documentation</a> 
  */
 static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+/**
+ * @brief Mouse button callback function for GLFW.
+ * 
+ * @param window The window that the mouse button event is triggered on.
+ * @param button The button that is pressed.
+ * @param action The action that is triggered.
+ * @param mods The modifier bits. @see <a href="https://www.glfw.org/docs/latest/group__input.html">GLFW documentation</a> 
+ */
+static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
@@ -260,11 +272,11 @@ void CGTerminateGraphics()
     }
     if (cg_is_glfw_initialized)
     {
+        cg_is_glfw_initialized = CG_FALSE;
         for (CGWindowListNode* p = cg_window_list->next; p != NULL; p = p->next)
             CGFreeResource(p->data);
         glfwTerminate();
         CGDeleteList(cg_window_list);
-        cg_is_glfw_initialized = CG_FALSE;
     }
     if (CGResourceSystemInitialized())
         CGTerminateResourceSystem();
@@ -338,6 +350,8 @@ CGWindow* CGCreateWindow(int width, int height, const char* title, CG_BOOL use_f
         return NULL;
     }
     glfwSetKeyCallback(window->glfw_window_instance, CGGLFWKeyCallback);
+    glfwSetMouseButtonCallback(window->glfw_window_instance, CGGLFWMouseButtonCallback);
+
     CGCreateViewport(window);
     CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
     CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
@@ -355,13 +369,27 @@ static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int act
         CG_WARNING("Failed to find window instance in window list.");
         return;
     }
-    CGWindow* cg_window = (CGWindow*)(p->data);
-    cg_key_callback(cg_window, key, action, mods);
+    cg_key_callback((CGWindow*)(p->data), key, action);
+}
+
+static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (cg_mouse_button_callback == NULL)
+        return;
+    CGWindowListNode* p = cg_window_list->next;
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    if (p == NULL)
+    {
+        CG_WARNING("Failed to find window instance in window list.");
+        return;
+    }
+    cg_mouse_button_callback((CGWindow*)(p->data), button, action);
 }
 
 static void CGDestroyWindow(CGWindow* window)
 {
-    CGRemoveLinkedListNodeByData(&cg_window_list, window);
+    if (cg_is_glfw_initialized)
+        CGRemoveLinkedListNodeByData(&cg_window_list, window);
     if (cg_is_glad_initialized)
     {
         glDeleteVertexArrays(1, &window->triangle_vao);
@@ -383,6 +411,23 @@ void CGSetKeyCallback(CGKeyCallbackFunction callback)
 CGKeyCallbackFunction CGGetKeyCallback()
 {
     return cg_key_callback;
+}
+
+void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback)
+{
+    cg_mouse_button_callback = callback;
+}
+
+CGMouseButtonCallbackFunction CGGetMouseButtonCallback()
+{
+    return cg_mouse_button_callback;
+}
+
+CGVector2 CGGetCursorPosition(CGWindow* window)
+{
+    double x, y;
+    glfwGetCursorPos((GLFWwindow*)window->glfw_window_instance, &x, &y);
+    return CGConstructVector2(x, y);
 }
 
 void CGCreateViewport(CGWindow* window)
@@ -470,12 +515,18 @@ void CGWindowDraw(CGWindow* window)
         {
         case CG_RD_TYPE_TRIANGLE:
             CGRenderTriangle(data->object, data->property, window, assign_z);
+            if (((CGTriangle*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         case CG_RD_TYPE_QUADRANGLE:
             CGRenderQuadrangle(data->object, data->property, window, assign_z);
+            if (((CGQuadrangle*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         case CG_RD_TYPE_VISUAL_IMAGE:
             CGRenderVisualImage(data->object, data->property, window, assign_z);
+            if (((CGVisualImage*)(data->object))->is_temp)
+                CGFreeResource(data->object);
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, "Cannot find render object identifier: %d", draw_obj->identifier);
@@ -897,6 +948,7 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     result.vert_1 = vert_1;
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
+    result.is_temp = CG_FALSE;
     return result;
 }
 
@@ -907,6 +959,7 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
+    result->is_temp = CG_FALSE;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1000,6 +1053,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     result.vert_2 = vert_2;
     result.vert_3 = vert_3;
     result.vert_4 = vert_4;
+    result.is_temp = CG_FALSE;
     return result;
 }
 
@@ -1011,6 +1065,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
+    result->is_temp = CG_FALSE;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1088,6 +1143,7 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window)
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     visual_image->in_window = window;
+    visual_image->is_temp = CG_FALSE;
     CGImage* image = CGLoadImageFromResource(img_rk);
     CG_ERROR_COND_RETURN(image == NULL, NULL, "Failed to create visual_image.");
     visual_image->img_width = image->width;
@@ -1113,6 +1169,7 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     result->img_width = visual_image->img_width;
     result->img_height = visual_image->img_height;
     result->img_channels = visual_image->img_channels;
+    result->is_temp = CG_FALSE;
     CGWindow* in_window = result->in_window = visual_image->in_window;
     if (glfwGetCurrentContext() != in_window->glfw_window_instance)
         glfwMakeContextCurrent(in_window->glfw_window_instance);

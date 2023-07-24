@@ -83,12 +83,11 @@ typedef struct CGWindow{
  * @brief The callback function for key event
  * @param window The window that the event is triggered
  * @param key The key that is pressed
- * @param action The action of the key. See 
- *  <a href="https://www.glfw.org/docs/latest/group__input.html#ga2485743d0b59df3791c45951c4195265">GLFW documentation</a> 
- * for more information.
- * @param mods The mods of the key
+ * @param action The action of the key. It can be CG_PRESS, CG_RELEASE, or CG_REPEAT
  */
-typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action, int mods);
+typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action);
+
+typedef void (*CGMouseButtonCallbackFunction)(CGWindow* window, int button, int action);
 
 /**
  * @brief Viewport
@@ -150,7 +149,7 @@ CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_fu
 /**
  * @brief Set the callback function for key events.
  * 
- * @param callback The callback function.
+ * @param callback The callback function for key events.
  */
 void CGSetKeyCallback(CGKeyCallbackFunction callback);
 
@@ -160,6 +159,28 @@ void CGSetKeyCallback(CGKeyCallbackFunction callback);
  * @return CGKeyCallbackFunction The callback function.
  */
 CGKeyCallbackFunction CGGetKeyCallback();
+
+/**
+ * @brief Set the callback function for mouse button events.
+ * 
+ * @param callback The callback function for mouse button events.
+ */
+void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback);
+
+/**
+ * @brief Get the callback function for mouse button events.
+ * 
+ * @return CGMouseButtonCallbackFunction The callback function.
+ */
+CGMouseButtonCallbackFunction CGGetMouseButtonCallback();
+
+/**
+ * @brief Get the cursor position.
+ * 
+ * @param window The window that the cursor position is going to be get.
+ * @return CGVector2 The position of the cursor.
+ */
+CGVector2 CGGetCursorPosition(CGWindow* window);
 
 /**
  * @brief Create viewport object
@@ -415,6 +436,7 @@ void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVe
  * @brief Register a object to the render list.
  * 
  * @param draw_object the object to be drawn.
+ * @param draw_property the property of the object. You can set this to NULL if you want to use the default property.
  * @param window the window to be draw on.
  * @param object_type the type of the object
  */
@@ -424,6 +446,11 @@ void CGDraw(void* draw_object, CGRenderObjectProperty* draw_property, CGWindow* 
  * @brief Triangle
  */
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief first vertex position
      */
@@ -458,6 +485,11 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief first vertex position
      */
@@ -502,6 +534,11 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
 /************VISUAL_IMAGES************/
 
 typedef struct{
+    /**
+     * @brief Is this a temporary triangle. If true, the triangle will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
     /**
      * @brief Texture's OpenGL ID
      */
@@ -554,7 +591,8 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
 
 /**
  * @brief Copy CGVisualImage object
- * 
+ * @note The is_temp property will still be set to CG_FALSE no matter what the original value is.
+ * If you wish it to be a temporary object, you should set is_temp property manually.
  * @param visual_image The visual_image to be copied.
  * @return CGVisualImage* The copied visual_image
  */
