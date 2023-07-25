@@ -427,7 +427,7 @@ CGVector2 CGGetCursorPosition(CGWindow* window)
 {
     double x, y;
     glfwGetCursorPos((GLFWwindow*)window->glfw_window_instance, &x, &y);
-    return CGConstructVector2(x, y);
+    return CGConstructVector2(x - window->width / 2, -1 * (y - window->height / 2));
 }
 
 void CGCreateViewport(CGWindow* window)
@@ -1006,8 +1006,8 @@ static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectPro
     free(triangle_vertices);
 
     CGSetPropertyUniforms(cg_geo_shader_program, property);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width / 2.0f);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height / 2.0f);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glBindVertexArray(0);
@@ -1088,8 +1088,8 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     free(vertices);
     
     CGSetPropertyUniforms(cg_geo_shader_program, property);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width);
-    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width / 2.0f);
+    CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height / 2.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     
     glBindVertexArray(0);
@@ -1202,8 +1202,8 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     free(vertices);
     glBindTexture(GL_TEXTURE_2D, visual_image->texture_id);
     CGSetPropertyUniforms(cg_visual_image_shader_program, property);
-    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width);
-    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height);
+    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width / 2.0f);
+    CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height / 2.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
