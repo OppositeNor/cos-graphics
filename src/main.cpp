@@ -68,6 +68,7 @@ void KeyCallback(CGWindow* window, int key, int action)
         case CG_KEY_R:
             if (sprite2)
                 sprite2->GetTransform().rotation += 0.1f;
+            break;
         case CG_KEY_Q:
             if (sprite2)
                 sprite2->GetTransform().scale.x += 0.1f;

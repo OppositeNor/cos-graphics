@@ -39,7 +39,15 @@ public:
         return list;
     }
 
-    static inline CGVector2 GetVectorRotatedPosition(const CGVector2& p_position, float p_rotation, const CGVector2 p_center) noexcept
+    /**
+     * @brief Get the position of a vector which rotated by a certain angle according to a center.
+     * 
+     * @param p_position The position of the vector to be rotated.
+     * @param p_rotation The angle to rotate.
+     * @param p_center The center of the rotation.
+     * @return CGVector2 The position of the vector after rotation.
+     */
+    static inline CGVector2 GetVectorRotatedPosition(const CGVector2& p_position, float p_rotation, const CGVector2 p_center)
     {
         CGVector2 result;
         float sin_theta = sin(p_rotation);

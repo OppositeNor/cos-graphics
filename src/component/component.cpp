@@ -54,13 +54,12 @@ CGComponent::CGTransform CGComponent::GetGlobalTransform() const
     global_transform.position += transform.position;
     global_transform.rotation += transform.rotation;
     
-    global_transform.position = CGUtils::GetVectorRotatedPosition(global_transform.position, parent_transform.rotation, parent_transform.position);
-    
     global_transform.position.x *= parent_transform.scale.x;
     global_transform.position.y *= parent_transform.scale.y;
     global_transform.scale.x *= parent_transform.scale.x;
     global_transform.scale.y *= parent_transform.scale.y;
-
+    
+    global_transform.position = CGUtils::GetVectorRotatedPosition(global_transform.position, parent_transform.rotation, parent_transform.position);
     return global_transform;
 }
 
