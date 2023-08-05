@@ -26,16 +26,6 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map,
     current_animation = p_default_animation;
 }
 
-void CGAnimationSprite::CGAddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation)
-{
-    animation_map.insert(std::make_pair(p_animation_name, p_animation));
-}
-
-void CGAnimationSprite::CGAddAnimation(const CGAnimationPair& p_animation_pair)
-{
-    animation_map.insert(p_animation_pair);
-}
-
 CGAnimationSprite::~CGAnimationSprite()
 {
     // Free all the textures
@@ -46,6 +36,16 @@ CGAnimationSprite::~CGAnimationSprite()
             CGFreeResource(frame);
         }
     }
+}
+
+void CGAnimationSprite::AddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation)
+{
+    animation_map.insert(std::make_pair(p_animation_name, p_animation));
+}
+
+void CGAnimationSprite::AddAnimation(const CGAnimationPair& p_animation_pair)
+{
+    animation_map.insert(p_animation_pair);
 }
 
 void CGAnimationSprite::Play()
@@ -67,31 +67,37 @@ void CGAnimationSprite::PlayFromStart(std::string p_animation_name)
     clock = 0.0f;
 }
 
-void CGAnimationSprite::SetAnimationFinishCallback(void (*p_animation_finish_callback)(CGAnimationSprite*))
+void CGAnimationSprite::SetAnimationFinishCallback(const std::function<void(CGAnimationSprite*)>& p_animation_finish_callback)
 {
     animation_finish_callback = p_animation_finish_callback;
 }
 
+void CGAnimationSprite::SetAnimationFinishCallback(const std::function<void(CGAnimationSprite*)>&& p_animation_finish_callback)
+{
+    animation_finish_callback = std::move(p_animation_finish_callback);
+}
+
 void CGAnimationSprite::Draw(float p_delta)
 {
-    if (animation_map.size() == 0)
+    if (current_animation == "" || animation_map.size() == 0)
         return;
     if (animation_map.find(current_animation) == animation_map.end())
     {
         CG_WARNING("Animation %s not found.", current_animation.c_str());
         return;
     }
-    auto animation_played = animation_map[current_animation];
+    auto& animation_played = animation_map[current_animation];
     if (animation_played.size() == 0)
         return;
     if (is_playing)
         clock += p_delta;
-    int current_frame = (int)(frame_duration / clock);
+    int current_frame = (int)(clock / frame_duration);
     if (current_frame >= animation_played.size())
     {
         if (animation_finish_callback != nullptr)
             animation_finish_callback(this);
         current_frame = 0;
+        clock = 0.0f;
     }
     auto frame_displayed = *(animation_played.begin() + current_frame);
 

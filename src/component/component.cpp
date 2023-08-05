@@ -95,7 +95,7 @@ void CGComponent::RemoveChild(CGComponent* p_child)
         CG_WARNING("Trying to remove a null child from a component.");
         return;
     }
-    for (auto child = children.begin(); child != children.end(); child++)
+    for (auto child = children.begin(); child != children.end(); ++child)
     {
         if (*child == p_child)
         {
@@ -114,6 +114,26 @@ void CGComponent::SetParent(CGComponent* p_parent)
         CG_WARNING("Trying to set a null parent to a component.");
         return;
     }
-    parent = p_parent;
-    p_parent->children.push_back(this);
+    if (parent != nullptr)
+        parent->DetachChild(this);
+    p_parent->AddChild(this);
+}
+
+void CGComponent::DetachChild(CGComponent* p_child)
+{
+    if (p_child == nullptr)
+    {
+        CG_WARNING("Trying to detach a null child from a component.");
+        return;
+    }
+    for (auto child = children.begin(); child != children.end(); ++child)
+    {
+        if (*child == p_child)
+        {
+            children.erase(child);
+            p_child->parent = nullptr;
+            return;
+        }
+    }
+    CG_WARNING("Trying to detach a child that doesn't exist.");
 }

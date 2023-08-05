@@ -8,3 +8,23 @@
     key = "test2";
     path = "./test2.png";
 };
+["image"]
+{
+    key = "test3";
+    path = "./test1.png";
+};
+["image"]
+{
+    key = "test4";
+    path = "./test2.png";
+};
+["image"]
+{
+    key = "test5";
+    path = "./test1.png";
+};
+["image"]
+{
+    key = "test6";
+    path = "./test2.png";
+};

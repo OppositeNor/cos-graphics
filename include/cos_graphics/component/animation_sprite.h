@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <functional>
 
 using CGAnimationMap = std::map<std::string, std::vector<CGVisualImage*>>;
 using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
@@ -50,7 +51,7 @@ protected:
      * @brief The function that will be called after the animation is finished.
      * @param CGAnimationSprite* The animation that is finished.
      */
-    void (*animation_finish_callback)(CGAnimationSprite*) = nullptr;
+    std::function<void(CGAnimationSprite*)> animation_finish_callback;
 
 public:
 
@@ -92,14 +93,14 @@ public:
      * @param p_animation_name The name of the animation.
      * @param p_animation The list of textures of the animation.
      */
-    void CGAddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation);
+    void AddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation);
 
     /**
      * @brief Add an animation to the animation map.
      * 
      * @param p_animation_pair The pair of the animation name and the list of textures of the animation.
      */
-    void CGAddAnimation(const CGAnimationPair& p_animation_pair);
+    void AddAnimation(const CGAnimationPair& p_animation_pair);
     
     /**
      * @brief Play the current animation.
@@ -121,5 +122,12 @@ public:
      * 
      * @param animation_finish_callback The function that will be called after the animation is finished.
      */
-    void SetAnimationFinishCallback(void (*p_animation_finish_callback)(CGAnimationSprite*));
+    void SetAnimationFinishCallback(const std::function<void(CGAnimationSprite*)>& p_animation_finish_callback);
+
+    /**
+     * @brief Set the animation finish callback function.
+     * 
+     * @param animation_finish_callback The function that will be called after the animation is finished.
+     */
+    void SetAnimationFinishCallback(const std::function<void(CGAnimationSprite*)>&& p_animation_finish_callback);
 };

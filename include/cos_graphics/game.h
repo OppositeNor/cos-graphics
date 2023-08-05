@@ -1,6 +1,7 @@
 #pragma once
 #include "cos_graphics/graphics.h"
 #include <vector>
+#include <functional>
 
 class CGComponent;
 class CGCamera;
