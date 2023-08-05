@@ -926,14 +926,14 @@ static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRender
     else
         memcpy(result, cg_normal_matrix, sizeof(float) * 16);
 
-    tmp_mat = CGCreateScaleMatrix(property->scale);
+    tmp_mat = CGCreateRotateMatrix(property->rotation);
     if (tmp_mat != NULL)
     {
         CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
     }
 
-    tmp_mat = CGCreateRotateMatrix(property->rotation);
+    tmp_mat = CGCreateScaleMatrix(property->scale);
     if (tmp_mat != NULL)
     {
         CGMatMultiply(result, tmp_mat, result, 4, 4);

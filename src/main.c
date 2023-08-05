@@ -48,6 +48,8 @@ int main()
 void KeyCallback(CGWindow* window, int key, int action);
 void MouseButtonCallback(CGWindow* window, int button, int action);
 
+CGRenderObjectProperty* g_prop = NULL;
+
 int main()
 {
     CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
@@ -89,6 +91,8 @@ int main()
     double tick_end_time = CGGetCurrentTime();
     const double fixed_delta = 1.0 / 60;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, -100}, (CGVector2){1, 1}, 0);
+    g_prop = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, -100}, (CGVector2){1, 1}, 0);
+    
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -115,7 +119,7 @@ int main()
         CGRotateRenderObject(prop, delta, (CGVector2){100, 100});
         CGDrawVisualImage(sprite, prop, window);
         CGRenderObjectProperty* prop2 = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 100}, (CGVector2){1, 1}, 0);
-        CGDrawVisualImage(sprite1, prop2, window);
+        CGDrawVisualImage(sprite1, g_prop, window);
         //quad2_property->rotation = clock * 0.2;
         CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
@@ -131,8 +135,46 @@ int main()
 }
 void KeyCallback(CGWindow* window, int key, int action)
 {
-    if (key == CG_KEY_ESCAPE && action == CG_PRESS)
-        CG_PRINT("TEST KEY INPUT");
+    if (action == CG_PRESS)
+    {
+        switch(key)
+        {
+            case CG_KEY_W:
+                if (g_prop)
+                    g_prop->transform.y += 10;
+                break;
+            case CG_KEY_A:
+                if (g_prop)
+                    g_prop->transform.x -= 10;
+                break;
+            case CG_KEY_S:
+                if (g_prop)
+                    g_prop->transform.y -= 10;
+                break;
+            case CG_KEY_D:
+                if (g_prop)
+                    g_prop->transform.x += 10;
+                break;
+            case CG_KEY_R:
+                if (g_prop)
+                    g_prop->rotation += 0.1;
+                break;
+            case CG_KEY_T:
+                if (g_prop)
+                    g_prop->rotation -= 0.1;
+                break;
+            case CG_KEY_Q:
+                if (g_prop)
+                    g_prop->scale.x += 0.1;
+                break;
+            case CG_KEY_E:
+                if (g_prop)
+                    g_prop->scale.x -= 0.1;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void MouseButtonCallback(CGWindow* window, int button, int action)
