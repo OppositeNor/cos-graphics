@@ -5,6 +5,7 @@
 #include <cos_graphics/component/camera.h>
 
 CGSprite* sprite2 = nullptr;
+CGSprite* sprite = nullptr;
 void KeyCallback(CGWindow* window, int key, int action);
 
 int main()
@@ -16,25 +17,26 @@ int main()
         CGGame::GetInstance()->GetGameWindow());
     sprite2 = new CGSprite(image);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, 100.0f);
-    CGSprite* sprite = new CGSprite(std::move(image));
+    sprite = new CGSprite(std::move(image));
     sprite->GetTransform().position = CGConstructVector2(-100.0f, 100.0f);
 
     sprite->SetParent(sprite2);
 
-    CGAnimationSprite* animation_sprite = new CGAnimationSprite(1.0f);
+    CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
     animation_sprite->AddAnimation("test", std::vector<CGVisualImage*>{
         CGCreateVisualImage("test1", CGGame::GetInstance()->GetGameWindow()),
         CGCreateVisualImage("test2", CGGame::GetInstance()->GetGameWindow()),
-        CGCreateVisualImage("test3", CGGame::GetInstance()->GetGameWindow()),
-        CGCreateVisualImage("test4", CGGame::GetInstance()->GetGameWindow())});
-
-    //animation_sprite->PlayFromStart("test");
+        CGCreateVisualImage("test3", CGGame::GetInstance()->GetGameWindow())});
+    animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
+    animation_sprite->PlayFromStart("test");
     animation_sprite->SetAnimationFinishCallback([](CGAnimationSprite* p_animation_sprite)
     {
         static int i = 0;
         CG_PRINT("Animation finished %d", i++);
     });
-    CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.0f, 0.0f, 0.0f, 1.0f));
+    animation_sprite->PlayFromStart("test");
+    //animation_sprite->SetParent(sprite);
+    CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
     
     CGGame::StartGame();
     return 0;
@@ -42,7 +44,7 @@ int main()
 
 void KeyCallback(CGWindow* window, int key, int action)
 {
-    if (action == CG_PRESS)
+    if (action == CG_REPEAT || action == CG_PRESS)
     {
         switch(key)
         {
@@ -71,11 +73,27 @@ void KeyCallback(CGWindow* window, int key, int action)
             break;
         case CG_KEY_Q:
             if (sprite2)
-                sprite2->GetTransform().scale.x += 0.1f;
+                sprite2->GetTransform().scale.x += 0.05f;
             break;
         case CG_KEY_E:
             if (sprite2)
-                sprite2->GetTransform().scale.x -= 0.1f;
+                sprite2->GetTransform().scale.x -= 0.05f;
+            break;
+        case CG_KEY_UP:
+            if (sprite)
+                sprite->GetTransform().position.y += 10.0f;
+            break;
+        case CG_KEY_DOWN:
+            if (sprite)
+                sprite->GetTransform().position.y -= 10.0f;
+            break;
+        case CG_KEY_LEFT:
+            if (sprite)
+                sprite->GetTransform().position.x -= 10.0f;
+            break;
+        case CG_KEY_RIGHT:
+            if (sprite)
+                sprite->GetTransform().position.x += 10.0f;
             break;
         default:
             break;

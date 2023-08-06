@@ -94,8 +94,7 @@ void CGAnimationSprite::Draw(float p_delta)
     int current_frame = (int)(clock / frame_duration);
     if (current_frame >= animation_played.size())
     {
-        if (animation_finish_callback != nullptr)
-            animation_finish_callback(this);
+        animation_finish_callback(this);
         current_frame = 0;
         clock = 0.0f;
     }
