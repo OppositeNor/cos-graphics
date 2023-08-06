@@ -29,11 +29,6 @@ int main()
         CGCreateVisualImage("test3", CGGame::GetInstance()->GetGameWindow())});
     animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     animation_sprite->PlayFromStart("test");
-    animation_sprite->SetAnimationFinishCallback([](CGAnimationSprite* p_animation_sprite)
-    {
-        static int i = 0;
-        CG_PRINT("Animation finished %d", i++);
-    });
     animation_sprite->PlayFromStart("test");
     //animation_sprite->SetParent(sprite);
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
@@ -70,6 +65,10 @@ void KeyCallback(CGWindow* window, int key, int action)
         case CG_KEY_R:
             if (sprite2)
                 sprite2->GetTransform().rotation += 0.1f;
+            break;
+        case CG_KEY_T:
+            if (sprite2)
+                sprite2->GetTransform().rotation -= 0.1f;
             break;
         case CG_KEY_Q:
             if (sprite2)

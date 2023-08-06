@@ -7,7 +7,7 @@
 CGAnimationSprite::CGAnimationSprite(float p_fps)
     : frame_duration(CGUtils::GetReciprocal(p_fps)), CGVisualComponent()
 {
-    
+    animation_finish_callback = [](CGAnimationSprite*){};
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
