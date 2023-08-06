@@ -88,3 +88,13 @@ static inline CGVector2& operator-=(CGVector2& p_vec1, const CGVector2& p_vec2) 
     p_vec1.y -= p_vec2.y;
     return p_vec1;
 }
+
+static inline CGVector2 operator*(const CGVector2& p_vec, float p_num) noexcept
+{
+    return {p_vec.x * p_num, p_vec.y * p_num};
+}
+
+static inline CGVector2 operator/(const CGVector2& p_vec, float p_num)
+{
+    return {p_vec.x / p_num, p_vec.y / p_num};
+}

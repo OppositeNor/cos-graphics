@@ -56,15 +56,15 @@ public:
     struct CGTransform
     {
         /**
-         * @brief The position of the component
+         * @brief The position of the component.
          */
         CGVector2 position;
         /**
-         * @brief The rotation of the component 
+         * @brief The rotation of the component.
          */
         float rotation;
         /**
-         * @brief The scale of the component 
+         * @brief The scale of the component.
          */
         CGVector2 scale;
 
@@ -74,11 +74,11 @@ public:
         float depth = 0.0f;
 
         /**
-         * @brief Construct a new Transform object
+         * @brief Construct a new Transform object.
          * 
-         * @param p_position The position of the component
-         * @param p_rotation The rotation of the component
-         * @param p_scale The scale of the component 
+         * @param p_position The position of the component.
+         * @param p_rotation The rotation of the component.
+         * @param p_scale The scale of the component.
          */
         CGTransform(const CGVector2& p_position = {0.0f, 0.0f}, float p_rotation = 0.0f, const CGVector2& p_scale = {1.0f, 1.0f});
         virtual ~CGTransform() {}
@@ -97,13 +97,15 @@ protected:
      */
     virtual void Update(double p_delta_time) {}
 
+    /**
+     * @brief The transform of the component.
+     */
     CGTransform transform;
 
 public:
 
     /**
-     * @brief Construct a new CGComponent object
-     * 
+     * @brief Construct a new CGComponent object.
      */
     CGComponent();
 
@@ -112,35 +114,42 @@ public:
     /**
      * @brief Called every frame by the engine.
      * 
-     * @param p_delta_time The difference in time between frames
+     * @param p_delta_time The difference in time between frames.
      */
     virtual void Tick(double p_delta_time);
     
     /**
-     * @brief Get the Transform object
+     * @brief Get the Transform object.
      * 
-     * @return CGTransform& The transform of the component
+     * @return CGTransform& The transform of the component.
      */
     const CGTransform& GetTransform() const noexcept;
 
     /**
-     * @brief Get the reference of the Transform object
+     * @brief Get the reference of the Transform object.
      * 
-     * @return CGComponent::CGTransform& The reference of the transform object
+     * @return CGComponent::CGTransform& The reference of the transform object.
      */
     CGTransform& GetTransform() noexcept;
 
     /**
-     * @brief Get the global transform of the component
+     * @brief Get the global position of the component.
      * 
-     * @return CGTransform The global transform of the component
+     * @return CGVector2 The global position of the component.
+     */
+    CGVector2 GetGlobalPosition() const;
+
+    /**
+     * @brief Get the global transform of the component.
+     * 
+     * @return CGTransform The global transform of the component.
     */
     CGTransform GetGlobalTransform() const;
 
     /**
-     * @brief Set the Depth object
+     * @brief Set the Depth object.
      * 
-     * @param p_depth The new depth to be set to
+     * @param p_depth The new depth to be set to.
      */
     void SetDepth(float p_depth);
 

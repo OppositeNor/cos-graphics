@@ -29,7 +29,6 @@ int main()
         CGCreateVisualImage("test3", CGGame::GetInstance()->GetGameWindow())});
     animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     animation_sprite->PlayFromStart("test");
-    animation_sprite->PlayFromStart("test");
     //animation_sprite->SetParent(sprite);
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
     

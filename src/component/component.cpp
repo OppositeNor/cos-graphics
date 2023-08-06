@@ -45,6 +45,18 @@ CGComponent::CGTransform& CGComponent::GetTransform() noexcept
     return transform;
 }
 
+CGVector2 CGComponent::GetGlobalPosition() const
+{
+    if (parent == nullptr)
+        return transform.position;
+    const CGTransform& parent_transform = parent->GetTransform();
+    CGVector2 global_position = transform.position;
+    global_position.x += parent_transform.position.x;
+    global_position.y += parent_transform.position.y;
+    global_position = CGUtils::GetVectorRotatedPosition(global_position, parent_transform.rotation, parent_transform.position);
+    return global_position;
+}
+
 CGComponent::CGTransform CGComponent::GetGlobalTransform() const
 {
     if (parent == nullptr)
