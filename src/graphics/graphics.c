@@ -316,8 +316,6 @@ void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
     
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glGenBuffers(5, cg_buffers);
     cg_buffer_count = 5;
     cg_is_glad_initialized = CG_TRUE;
@@ -1101,6 +1099,8 @@ static void CGSetTextureValue(unsigned int texture_id, CGImage* texture)
     CG_ERROR_CONDITION(texture == NULL, "Cannot bind a NULL texture.");
     CGGladInitializeCheck();
     glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     switch(texture->channels)
     {
     case 3:
