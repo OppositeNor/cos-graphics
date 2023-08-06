@@ -105,13 +105,13 @@ int main()
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
 
-        CGQuadrangle* quad2 = CGCreateQuadrangle(
-            (CGVector2){100, 100},
-            (CGVector2){-100, 100},
-            (CGVector2){-100, -100},
-            (CGVector2){100, -100});
-        quad2->is_temp = CG_TRUE;
-        CGDrawQuadrangle(quad2, quad2_property, window);
+        // CGQuadrangle* quad2 = CGCreateQuadrangle(
+        //     (CGVector2){100, 100},
+        //     (CGVector2){-100, 100},
+        //     (CGVector2){-100, -100},
+        //     (CGVector2){100, -100});
+        // quad2->is_temp = CG_TRUE;
+        // CGDrawQuadrangle(quad2, quad2_property, window);
         
         CGTickRenderStart(window);
         //CGDrawTriangle(&triangle, NULL, window);
@@ -120,8 +120,10 @@ int main()
         CGDrawVisualImage(sprite, prop, window);
         CGRenderObjectProperty* prop2 = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 100}, (CGVector2){1, 1}, 0);
         CGDrawVisualImage(sprite1, g_prop, window);
+        g_prop->scale.x = 3.0f;
+        g_prop->scale.y = 3.0f;
         //quad2_property->rotation = clock * 0.2;
-        CGDrawQuadrangle(&quad1, quad1_property, window);
+        //CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
