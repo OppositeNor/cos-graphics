@@ -9,14 +9,26 @@ extern "C" {
 #endif
 
 #ifdef CGRW_USE_WCHAR
-    #include <wchar.h>
-    typedef wchar_t CGRWChar;
+    #ifdef CGRW_TG_WIN
+        #include <wchar.h>
+        typedef wchar_t CGRWChar;
 
-    #define CGRW_STRLEN wcslen
-    #define CGRW_PRINTF wprintf
-    #define CGRW_VPRINTF vwprintf
+        #define CGRW_STRLEN wcslen
+        #define CGRW_PRINTF wprintf
+        #define CGRW_VPRINTF vwprintf
 
-    #define CGSTR(str) L##str
+        #define CGSTR(str) L##str
+    #else
+        typedef char CGRWChar;
+
+        #define CGRW_STRLEN strlen
+        #define CGRW_PRINTF printf
+        #define CGRW_VPRINTF vprintf
+
+        #define CGSTR(str) str
+
+        #undef CGRW_USE_WCHAR
+    #endif
 #else
     typedef char CGRWChar;
 

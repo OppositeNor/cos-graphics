@@ -122,7 +122,6 @@ void CGRWInit(int argc, char* argv[])
 #ifdef CGRW_USE_WCHAR
     CGRWChar buff[256];
     CharToCGRWChar(argv[1], buff);
-    CGRW_PRINT(CGSTR("宽字符测试"));
     CGRW_PRINT(CGSTR("Resource path: %ls"), buff);
     unsigned int cgrw_buffer_length = (CGRW_STRLEN(buff) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
     cgrw_resource_file_path = (CGRWChar*)malloc(cgrw_buffer_length);
@@ -328,7 +327,6 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
     CGRWDeleteComments(file_data);
 
     CGRWResourceData* data_head = (CGRWResourceData*)malloc(sizeof(CGRWResourceData));
-
     CGRWPhraseData(file_data, data_head);
     free(file_data);
 
@@ -384,21 +382,20 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
     data_head->next = NULL;
     
     CGRWResourceData* data = data_head;
-    
     for (CGRWChar* p = (CGRWChar*)file_data;;++p)
     {
         CGRWSkipSpaces(&p, &line_count);
         switch(*p)
         {
-        case '\0':
+        case (CGRWChar)'\0':
             CGRW_PRINT_VERBOSE(CGSTR("Data successfully phrased."));
             return;
-        case ';':
+        case (CGRWChar)';':
             break;
-        case '\"':
+        case (CGRWChar)'\"':
             CGRWGoToNext(&p, &line_count, '\"');
             break;
-        case '[':
+        case (CGRWChar)'[':
             {
                 CGRW_PRINT_VERBOSE(CGSTR("Found resource at line: %d"), line_count);
                 if (data != data_head || data->type[0] != '\0' || data->key[0] != '\0' || data->path[0] != '\0')
@@ -422,7 +419,7 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
                 CGRW_PRINT_VERBOSE(CGSTR("Resource type: \"%s\"."), data->type);
 #endif
             }break;
-        case '{':
+        case (CGRWChar)'{':
             CGRW_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Invalid resource file format at line: %d."), line_count);
             CGRWPhraseChunk(p, line_count, data);
             CGRWGoToNext(&p, &line_count, '}');

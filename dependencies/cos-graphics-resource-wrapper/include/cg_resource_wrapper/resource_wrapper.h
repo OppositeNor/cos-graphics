@@ -42,14 +42,28 @@ extern "C" {
 
 #include <wchar.h>
 #ifdef CGRW_USE_WCHAR
-    typedef wchar_t CGRWChar;
+    #ifdef CGRW_TG_WIN
+        typedef wchar_t CGRWChar;
 
-    #define CGRW_STRLEN wcslen
-    #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) swprintf(buffer, buffer_size, fmt, __VA_ARGS__)
-    #define CGRW_STRCPY wcscpy
-    #define CGRW_STRCMP wcscmp
-    #define CGRW_FGETC fgetwc
-    #define CGRW_EOF WEOF
+        #define CGRW_STRLEN wcslen
+        #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) swprintf(buffer, buffer_size, fmt, __VA_ARGS__)
+        #define CGRW_STRCPY wcscpy
+        #define CGRW_STRCMP wcscmp
+        #define CGRW_FGETC fgetwc
+        #define CGRW_EOF WEOF
+    #else
+        #warning "CGRW wide character is not supported for your current platform. Using char instead."
+        typedef char CGRWChar;
+        #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) sprintf(buffer, fmt, __VA_ARGS__)
+
+        #define CGRW_STRLEN strlen
+        #define CGRW_STRCPY strcpy
+        #define CGRW_STRCMP strcmp
+        #define CGRW_FGETC fgetc
+        #define CGRW_EOF EOF
+
+        #undef CGRW_USE_WCHAR
+    #endif
 #else
     typedef char CGRWChar;
     #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) sprintf(buffer, fmt, __VA_ARGS__)
