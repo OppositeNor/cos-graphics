@@ -13,6 +13,10 @@ if (CGRW_NO_VERBOSE MATCHES ON)
     add_definitions(-DCGRW_NO_VERBOSE)
 endif()
 
+if (USE_WCHAR)
+    add_definitions(-DCGRW_USE_WCHAR)
+endif()
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 include_directories(

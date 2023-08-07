@@ -37,6 +37,69 @@ extern "C" {
     #error "Unknown target platform."
 #endif
 
+#include <stdio.h>
+
+
+#include <wchar.h>
+#ifdef CGRW_USE_WCHAR
+    typedef wchar_t CGRWChar;
+
+    #define CGRW_STRLEN wcslen
+    #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) swprintf(buffer, buffer_size, fmt, __VA_ARGS__)
+    #define CGRW_STRCPY wcscpy
+    #define CGRW_STRCMP wcscmp
+#else
+    typedef char CGRWChar;
+    #define CGRW_SPRINTF(buffer, buffer_size, fmt, ...) sprintf(buffer, fmt, __VA_ARGS__)
+
+    #define CGRW_STRLEN strlen
+    #define CGRW_STRCPY strcpy
+    #define CGRW_STRCMP strcmp
+
+
+#endif
+/**
+ * @brief Cast CGRWChar to char.
+ * 
+ * @param str The string to be casted.
+ * @param buffer The buffer to store the result.
+ */
+void CGRWCharToChar(const CGRWChar* str, char* buffer);
+
+/**
+ * @brief Cast char to CGRWChar.
+ * 
+ * @param str The string to be casted.
+ * @param buffer The buffer to store the result.
+ */
+void CharToCGRWChar(const char* str, CGRWChar* buffer);
+
+#ifdef CGRW_USE_WCHAR
+    static inline FILE* CGRWFOpen(const CGRWChar* file_path, const char* mode)
+    {
+        char buffer[256];
+        CGRWCharToChar(file_path, buffer);
+        return fopen(buffer, mode);
+    }
+
+    static inline void CGRWRemove(const CGRWChar* file_path)
+    {
+        char buffer[256];
+        CGRWCharToChar(file_path, buffer);
+        remove(buffer);
+    }
+#else
+    static inline FILE* CGRWFOpen(const CGRWChar* file_path, const char* mode)
+    {
+        return fopen(file_path, mode);
+    }
+
+    static inline void CGRWRemove(const CGRWChar* file_path)
+    {
+        remove(file_path);
+    }
+#endif
+
 typedef char* CGRWResourceIdentifier;
 
 /**
@@ -44,9 +107,9 @@ typedef char* CGRWResourceIdentifier;
  */
 typedef struct CGRWResourceData
 {
-    char type[CGRW_TYPE_BUFF_SIZE];     /*The type of the resource.*/
-    char key[CGRW_KEY_BUFF_SIZE];      /*The key of the resource.*/
-    char path[CGRW_PATH_BUFF_SIZE];     /*The path of the resource.*/
+    CGRWChar type[CGRW_TYPE_BUFF_SIZE];     /*The type of the resource.*/
+    CGRWChar key[CGRW_KEY_BUFF_SIZE];      /*The key of the resource.*/
+    CGRWChar path[CGRW_PATH_BUFF_SIZE];     /*The path of the resource.*/
     struct CGRWResourceData* next; /*The next resource data.*/
 }CGRWResourceData;
 
@@ -71,9 +134,9 @@ void CGRWAddResource(CGRWResourceData* res_data);
  * @param resource_key The resource key
  * @return char* The loaded data. This needs to be freed manually.
  */
-char* CGRWLoadResource(const char* resource_key);
+CGRWChar* CGRWLoadResource(const CGRWChar* resource_key);
 
-CGRWResourceData* CGRWPhraseUsedResource(const char* file_path);
+CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path);
 
 /**
  * @brief Terminate CG resource wrapper.

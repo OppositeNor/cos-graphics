@@ -17,6 +17,9 @@ set (USE_TEST_EXE ON)
 # set this to OFF if you don't want to export the library
 set (USE_SHARED_LIB ON)
 
+# use wide character
+set (USE_WCHAR OFF)
+
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 
@@ -34,6 +37,10 @@ add_subdirectory(src/resource)
 
 add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
+
+if (USE_WCHAR)
+    add_definitions(-DCG_USE_WCHAR)
+endif()
 
 # opengl
 find_package(OpenGL REQUIRED)
