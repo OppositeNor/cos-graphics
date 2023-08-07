@@ -122,7 +122,8 @@ void CGRWInit(int argc, char* argv[])
 #ifdef CGRW_USE_WCHAR
     CGRWChar buff[256];
     CharToCGRWChar(argv[1], buff);
-    CGRW_PRINT(CGSTR("Resource path: %ls\n"), buff);
+    CGRW_PRINT(CGSTR("宽字符测试"));
+    CGRW_PRINT(CGSTR("Resource path: %ls"), buff);
     unsigned int cgrw_buffer_length = (CGRW_STRLEN(buff) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
     cgrw_resource_file_path = (CGRWChar*)malloc(cgrw_buffer_length);
     CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL, -1, CGSTR("Failed to allocate memory for resource file path."));
@@ -312,8 +313,10 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
 #else
     CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %s."), file_path);
 #endif
-    fseek(file, 0, SEEK_END);
-    unsigned int file_size = ftell(file) / sizeof(CGRWChar);
+    unsigned int file_size = 0;
+    while (CGRW_FGETC(file) != CGRW_EOF)
+        ++file_size;
+    file_size /= sizeof(CGRWChar);
     rewind(file);
     CGRWChar* file_data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
     CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
@@ -422,6 +425,7 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
         case '{':
             CGRW_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Invalid resource file format at line: %d."), line_count);
             CGRWPhraseChunk(p, line_count, data);
+            CGRWGoToNext(&p, &line_count, '}');
             break;
 
         default:
@@ -516,11 +520,11 @@ static void CGRWSkipSpaces(CGRWChar** p, unsigned int* line_count)
     {
         switch (**p)
         {
+        case 0x0d:
         case ' ':
-        case 0x000D:
         case '\t':
             break;
-        case '\n':
+        case 0x0a:
             ++(*line_count);
             break;
         default:

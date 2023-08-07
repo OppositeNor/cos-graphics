@@ -27,7 +27,8 @@ set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 set(CGRW_NO_VERBOSE OFF)
 
 # add your resource by appending them to cg_resources list. The default "resource.cgures" should not be included in the list.
-list(APPEND CG_RESOURCES image_resource.cgures)
+# example:
+# list(APPEND CG_RESOURCES image_resource.cgures)
 
 
 set_property(GLOBAL PROPERTY CG_RESOURCES ${CG_RESOURCES})
@@ -35,6 +36,9 @@ add_subdirectory(src/graphics)
 add_subdirectory(src/log)
 add_subdirectory(src/resource)
 
+if (USE_TEST_EXE)
+    list(APPEND CG_RESOURCES image_resource.cgures)
+endif()
 add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
 

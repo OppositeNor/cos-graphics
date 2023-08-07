@@ -5,6 +5,7 @@ bin
 .vs
 out
 CMakeSettings.json
+CppProperties.json
 
 # testing resources
 *.jpg
