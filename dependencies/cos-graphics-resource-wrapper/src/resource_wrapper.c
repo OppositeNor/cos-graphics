@@ -120,31 +120,32 @@ void CGRWInit(int argc, char* argv[])
     }
     CGRW_ERROR_COND_EXIT(argc < 2, -1, CGSTR("No resource path specified."));
 #ifdef CGRW_USE_WCHAR
-    CGRW_PRINT(CGSTR("Resource path: %ls\n"), argv[1]);
+    CGRWChar buff[256];
+    CharToCGRWChar(argv[1], buff);
+    CGRW_PRINT(CGSTR("Resource path: %ls\n"), buff);
 #else
     CGRW_PRINT(CGSTR("Resource path: %s\n"), argv[1]);
 #endif
-
-    cgrw_resource_file_path = (CGRWChar*)malloc((strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar));
+    unsigned int cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
+    cgrw_resource_file_path = (CGRWChar*)malloc(cgrw_buffer_length);
     CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL, -1, CGSTR("Failed to allocate memory for resource file path."));
     
 #ifdef CGRW_USE_WCHAR
-    CGRWChar buff[256];
-    CharToCGRWChar(argv[1], buff);
-    CGRW_SPRINTF(cgrw_resource_file_path, sizeof(cgrw_resource_file_path), CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_file_name);
+    CGRW_PRINT(CGSTR("buff: %ls"), buff);
+    CGRW_SPRINTF(cgrw_resource_file_path, cgrw_buffer_length, CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_file_name);
     CGRW_PRINT(CGSTR("Resource file path: %ls"), cgrw_resource_file_path);
 #else
-    CGRW_SPRINTF(cgrw_resource_file_path, sizeof(cgrw_resource_file_path), CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_file_name);
+    CGRW_SPRINTF(cgrw_resource_file_path, cgrw_buffer_length, CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_file_name);
     CGRW_PRINT(CGSTR("Resource file path: %s"), cgrw_resource_file_path);
 #endif
-
-    cgrw_resource_finder_path = (CGRWChar*)malloc((strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_finder_name) + 2) * sizeof(CGRWChar));
+    cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_finder_name) + 2) * sizeof(CGRWChar);
+    cgrw_resource_finder_path = (CGRWChar*)malloc(cgrw_buffer_length);
     CGRW_ERROR_COND_EXIT(cgrw_resource_finder_path == NULL, -1, CGSTR("Failed to allocate memory for resource finder path."));
 #ifdef CGRW_USE_WCHAR
-    CGRW_SPRINTF(cgrw_resource_finder_path, sizeof(cgrw_resource_finder_path), CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_finder_name);
+    CGRW_SPRINTF(cgrw_resource_finder_path, cgrw_buffer_length, CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_finder_name);
     CGRW_PRINT(CGSTR("Resource finder path: %ls"), cgrw_resource_finder_path);
 #else
-    CGRW_SPRINTF(cgrw_resource_finder_path, sizeof(cgrw_resource_finder_path), CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_finder_name);
+    CGRW_SPRINTF(cgrw_resource_finder_path, cgrw_buffer_length, CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_finder_name);
     CGRW_PRINT(CGSTR("Resource finder path: %s"), cgrw_resource_finder_path);
 #endif
     CGRWRemove(cgrw_resource_file_path);
@@ -179,7 +180,7 @@ static CGRWByteArray CGRWLoadFile(const CGRWChar* file_path)
         CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to allocate memory for file data."));
     }
     rewind(file);
-    fread(file_data.data, 1, file_size, file);
+    fread(file_data.data, sizeof(CGRWChar), file_size, file);
     file_data.data[file_size] = '\0';
     file_data.size = file_size;
     fclose(file);
@@ -238,7 +239,7 @@ CGRWChar* CGRWLoadResource(const CGRWChar* resource_key)
     rewind(file);
     for(;;)
     {
-        fread(&buff[i], 1, 1, file);
+        fread(&buff[i], sizeof(CGRWChar), 1, file);
         if (ftell(file) >= file_size)
         {
             fclose(file);
@@ -265,7 +266,7 @@ CGRWChar* CGRWLoadResource(const CGRWChar* resource_key)
             fseek(file, data_location, SEEK_SET);
             CGRWChar* data = (CGRWChar*)malloc(data_size * sizeof(CGRWChar) + 1);
             CGRW_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Failed to allocate memory for resource data."));
-            fread(data, 1, data_size, file);
+            fread(data, sizeof(CGRWChar), data_size, file);
             data[data_size] = '\0';
             fclose(file);
             return data;
@@ -273,7 +274,7 @@ CGRWChar* CGRWLoadResource(const CGRWChar* resource_key)
         for (;;)
         {
             CGRWChar p;
-            fread(&p, 1, 1, file);
+            fread(&p, sizeof(CGRWChar), 1, file);
             if (p == '\n')
                 break;
             if (ftell(file) == file_size)
@@ -304,14 +305,17 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
     CGRW_ERROR_COND_EXIT(file_path == NULL, -1, CGSTR("Cannot phrase resource: File path is NULL."));
     FILE* file = CGRWFOpen(file_path, "r");
     CGRW_PRINT_VERBOSE(CGSTR("Opening file at path: %s"), file_path);
+#ifdef CGRW_USE_WCHAR
+    CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %ls."), file_path);
+#else
     CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %s."), file_path);
-    unsigned int file_size = 0;
-    while (fgetc(file) != EOF)
-        ++file_size;
+#endif
+    fseek(file, 0, SEEK_END);
+    unsigned int file_size = ftell(file) / sizeof(CGRWChar);
     rewind(file);
     CGRWChar* file_data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
     CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
-    fread(file_data, 1, file_size, file);
+    fread(file_data, sizeof(CGRWChar), file_size, file);
     file_data[file_size] = '\0';
     CGRW_PRINT_VERBOSE(CGSTR("File loaded with size: %d"), file_size);
     fclose(file);
@@ -403,7 +407,11 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
                 CGRWGoToNext(&p, &line_count, ']');
                 CGRW_ERROR_COND_EXIT(t_p == p, -1, CGSTR("Data type cannot be empty."), line_count);
                 CGRWGetSubString(t_p, 1, p - t_p - 1, data->type);
+#ifdef CGRW_USE_WCHAR
+                CGRW_PRINT_VERBOSE(CGSTR("Resource type: \"%ls\"."), data->type);
+#else
                 CGRW_PRINT_VERBOSE(CGSTR("Resource type: \"%s\"."), data->type);
+#endif
             }break;
         case '{':
             CGRW_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Invalid resource file format at line: %d."), line_count);
@@ -594,9 +602,9 @@ static void CGRWGoToNext(CGRWChar** p, unsigned int* line_count, CGRWChar identi
     {
         ++(*p);
 #ifdef CGRW_USE_WCHAR
-        CGRW_ERROR_COND_EXIT(**p == '\0', -1, CGSTR("Error, line: %d, Segment is expected to be closed with: \"%lc\"."), temp_line_count, identifier);
+        CGRW_ERROR_COND_EXIT(**p == '\0', -1, CGSTR("Line: %d, Segment is expected to be closed with: \"%lc\"."), temp_line_count, identifier);
 #else
-        CGRW_ERROR_COND_EXIT(**p == '\0', -1, CGSTR("Error, line: %d, Segment is expected to be closed with: \"%c\"."), temp_line_count, identifier);
+        CGRW_ERROR_COND_EXIT(**p == '\0', -1, CGSTR("Line: %d, Segment is expected to be closed with: \"%c\"."), temp_line_count, identifier);
 #endif
         if (**p == identifier)
             return;
@@ -609,14 +617,18 @@ void CGRWCharToChar(const CGRWChar* str, char* buffer)
 {
     CGRW_ERROR_COND_EXIT(str == NULL, -1, CGSTR("Cannot convert CGRWChar to char with string pointer \"NULL\"."));
     CGRW_ERROR_COND_EXIT(buffer == NULL, -1, CGSTR("Cannot convert CGRWChar to char with buffer pointer \"NULL\"."));
-    for (unsigned int i = 0; str[i] != '\0'; ++i)
+    unsigned int i = 0;
+    for (; str[i] != (CGRWChar)'\0'; ++i)
         buffer[i] = (char)str[i];
+    buffer[i] = '\0';
 }
 
 void CharToCGRWChar(const char* str, CGRWChar* buffer)
 {
     CGRW_ERROR_COND_EXIT(str == NULL, -1, CGSTR("Cannot convert char to CGRWChar with string pointer \"NULL\"."));
     CGRW_ERROR_COND_EXIT(buffer == NULL, -1, CGSTR("Cannot convert char to CGRWChar with buffer pointer \"NULL\"."));
-    for (unsigned int i = 0; str[i] != '\0'; ++i)
+    unsigned int i = 0;
+    for (; str[i] != '\0'; ++i)
         buffer[i] = (CGRWChar)str[i];
+    buffer[i] = (CGRWChar)'\0';
 }
