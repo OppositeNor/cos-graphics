@@ -123,28 +123,26 @@ void CGRWInit(int argc, char* argv[])
     CGRWChar buff[256];
     CharToCGRWChar(argv[1], buff);
     CGRW_PRINT(CGSTR("Resource path: %ls\n"), buff);
-#else
-    CGRW_PRINT(CGSTR("Resource path: %s\n"), argv[1]);
-#endif
-    unsigned int cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
+    unsigned int cgrw_buffer_length = (CGRW_STRLEN(buff) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
     cgrw_resource_file_path = (CGRWChar*)malloc(cgrw_buffer_length);
     CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL, -1, CGSTR("Failed to allocate memory for resource file path."));
-    
-#ifdef CGRW_USE_WCHAR
-    CGRW_PRINT(CGSTR("buff: %ls"), buff);
     CGRW_SPRINTF(cgrw_resource_file_path, cgrw_buffer_length, CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_file_name);
     CGRW_PRINT(CGSTR("Resource file path: %ls"), cgrw_resource_file_path);
-#else
-    CGRW_SPRINTF(cgrw_resource_file_path, cgrw_buffer_length, CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_file_name);
-    CGRW_PRINT(CGSTR("Resource file path: %s"), cgrw_resource_file_path);
-#endif
-    cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_finder_name) + 2) * sizeof(CGRWChar);
+    cgrw_buffer_length = (CGRW_STRLEN(buff) + CGRW_STRLEN(cgrw_resource_finder_name) + 2) * sizeof(CGRWChar);
     cgrw_resource_finder_path = (CGRWChar*)malloc(cgrw_buffer_length);
     CGRW_ERROR_COND_EXIT(cgrw_resource_finder_path == NULL, -1, CGSTR("Failed to allocate memory for resource finder path."));
-#ifdef CGRW_USE_WCHAR
     CGRW_SPRINTF(cgrw_resource_finder_path, cgrw_buffer_length, CGSTR("%ls%lc%ls"), buff, FILE_SPLITTER, cgrw_resource_finder_name);
     CGRW_PRINT(CGSTR("Resource finder path: %ls"), cgrw_resource_finder_path);
 #else
+    CGRW_PRINT(CGSTR("Resource path: %s\n"), argv[1]);
+    unsigned int cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_file_name) + 2) * sizeof(CGRWChar);
+    cgrw_resource_file_path = (CGRWChar*)malloc(cgrw_buffer_length);
+    CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL, -1, CGSTR("Failed to allocate memory for resource file path."));
+    CGRW_SPRINTF(cgrw_resource_file_path, cgrw_buffer_length, CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_file_name);
+    CGRW_PRINT(CGSTR("Resource file path: %s"), cgrw_resource_file_path);
+    cgrw_buffer_length = (strlen(argv[1]) + CGRW_STRLEN(cgrw_resource_finder_name) + 2) * sizeof(CGRWChar);
+    cgrw_resource_finder_path = (CGRWChar*)malloc(cgrw_buffer_length);
+    CGRW_ERROR_COND_EXIT(cgrw_resource_finder_path == NULL, -1, CGSTR("Failed to allocate memory for resource finder path."));
     CGRW_SPRINTF(cgrw_resource_finder_path, cgrw_buffer_length, CGSTR("%s%c%s"), argv[1], FILE_SPLITTER, cgrw_resource_finder_name);
     CGRW_PRINT(CGSTR("Resource finder path: %s"), cgrw_resource_finder_path);
 #endif
@@ -300,7 +298,11 @@ CGRWChar* CGRWLoadResource(const CGRWChar* resource_key)
 
 CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
 {
-    CGRW_PRINT(CGSTR("Phrasing resource..."));
+#ifdef CGRW_USE_WCHAR
+    CGRW_PRINT(CGSTR("Phrasing resource at path: %ls"), file_path);
+#else
+    CGRW_PRINT(CGSTR("Phrasing resource at path: %s"), file_path);
+#endif
     CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL || cgrw_resource_finder_path == NULL, -1, CGSTR("Cannot phrase resource: Resource wrapper is not initialized."));
     CGRW_ERROR_COND_EXIT(file_path == NULL, -1, CGSTR("Cannot phrase resource: File path is NULL."));
     FILE* file = CGRWFOpen(file_path, "r");
@@ -327,6 +329,7 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
     CGRWPhraseData(file_data, data_head);
     free(file_data);
 
+    CGRW_PRINT(CGSTR("Resource phrase finished."));
     CGRWResourceData* p = data_head;
 
     // check is resource valid
@@ -362,13 +365,15 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
 #endif
         ++i;
     }
+    CGRW_PRINT_VERBOSE(CGSTR("All resources are valid."));
     return data_head;
 }
 
 static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_head)
 {
+    CGRW_PRINT_VERBOSE(CGSTR("Phrasing data..."));
     unsigned int line_count = 1;
-    // head should be kept empty
+    
     CGRW_ERROR_COND_EXIT(data_head == NULL, -1, CGSTR("Cannot phrase resource with data_head valued \"NULL\"."));
     data_head->type[0] = '\0';
     data_head->key[0] = '\0';
@@ -383,6 +388,7 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
         switch(*p)
         {
         case '\0':
+            CGRW_PRINT_VERBOSE(CGSTR("Data successfully phrased."));
             return;
         case ';':
             break;
@@ -444,16 +450,28 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             {
                 ++p;
                 CGRWSkipSpaces(&p, &line_count);
+#ifdef CGRW_USE_WCHAR
+                CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%lc\' instead."), line_count, *p);
+#else
                 CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead."), line_count, *p);
+#endif
                 return;
             }
+#ifdef CGRW_USE_WCHAR
+            CGRW_ERROR_COND_EXIT(!CGRWIsLetter(*p) && *p != '\"' && *p != ';', -1, CGSTR("Invalid resource file format at line: %d, unexpected character: \'%lc\'."), line_count, *p);
+#else
             CGRW_ERROR_COND_EXIT(!CGRWIsLetter(*p) && *p != '\"' && *p != ';', -1, CGSTR("Invalid resource file format at line: %d, unexpected character: \'%c\'."), line_count, *p);
+#endif
             CGRWChar buff[256];
             CGRWGetFirstWord(p, buff);
             p += CGRW_STRLEN(buff);
             CGRWSkipSpaces(&p, &line_count);
             if (*p != '=')
+#ifdef CGRW_USE_WCHAR
+                CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Invalid resource file format at line: %d, expected character: \'=\', but get \'%lc\' instead."), line_count, *p);
+#else
                 CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Invalid resource file format at line: %d, expected character: \'=\', but get \'%c\' instead."), line_count, *p);
+#endif
             ++p;
             CGRWSkipSpaces(&p, &line_count);
             CGRWChar* t_p = p;
@@ -478,7 +496,11 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             }
             p = t_p + 1;
             CGRWSkipSpaces(&p, &line_count);
+#ifdef CGRW_USE_WCHAR
+            CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%lc\' instead."), line_count, *p);
+#else
             CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead."), line_count, *p);
+#endif
             }break;
         };
     }
@@ -495,6 +517,7 @@ static void CGRWSkipSpaces(CGRWChar** p, unsigned int* line_count)
         switch (**p)
         {
         case ' ':
+        case 0x000D:
         case '\t':
             break;
         case '\n':
@@ -531,6 +554,7 @@ static void CGRWDeleteComments(CGRWChar* str)
         switch(*p)
         {
         case '\0':
+            CGRW_PRINT_VERBOSE(CGSTR("Comments removed"));
             return;
         case '\n':
             ++line_count;
@@ -548,7 +572,6 @@ static void CGRWDeleteComments(CGRWChar* str)
             break;
         }
     }
-    CGRW_PRINT_VERBOSE(CGSTR("Comments removed"));
 }
 
 static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar* sub_string)
@@ -564,9 +587,8 @@ static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned i
         --end;
     CGRW_ERROR_COND_EXIT(start > end, -1, CGSTR("Start string index cannot be greater than end string index."));
     CGRW_ERROR_COND_EXIT(sub_string == NULL, -1, CGSTR("Cannot get substring with substring pointer \"NULL\"."));
-
-    
-    memcpy(sub_string, str + start, end - start + 1);
+    for (unsigned int i = 0; i <= end - start; ++i)
+        sub_string[i] = str[start + i];
     sub_string[end - start + 1] = '\0';
 }
 
@@ -596,7 +618,6 @@ static void CGRWGoToNext(CGRWChar** p, unsigned int* line_count, CGRWChar identi
 {
     CGRW_ERROR_COND_EXIT(p == NULL, -1, CGSTR("Cannot go to next with string pointer \"NULL\"."));
     CGRW_ERROR_COND_EXIT(*p == NULL, -1, CGSTR("Cannot go to next with string pointer \"NULL\"."));
-    
     unsigned int temp_line_count = *line_count;
     for (;;)
     {
