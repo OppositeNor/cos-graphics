@@ -567,7 +567,6 @@ static CGRWChar *CGRWGetFileData(FILE *file)
         file_data[i] = (CGRWChar)file_data_16[i];
     }
     file_data[file_size] = '\0';
-    CGRW_PRINT(CGSTR("file_data: %ls"), file_data);
     free(file_data_16);
     CGRW_PRINT_VERBOSE(CGSTR("File loaded with size: %d"), file_size);
     return file_data;

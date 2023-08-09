@@ -20,7 +20,7 @@ set (USE_SHARED_LIB ON)
 # use utf16 to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
 # stored as 4 bytes instead of 2 (in Windows).
-set (USE_UTF16 ON)
+set (USE_UTF16 OFF)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
