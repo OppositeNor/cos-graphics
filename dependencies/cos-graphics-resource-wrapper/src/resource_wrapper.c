@@ -33,11 +33,13 @@ static CGRWChar* cgrw_resource_file_path = NULL;
 static const CGRWChar* cgrw_resource_finder_name = CGSTR("finder.qaq");
 static CGRWChar* cgrw_resource_finder_path = NULL;
 
+typedef char CGRWByte;
+
 /**
  * @brief Byte array.
  */
 typedef struct {
-    CGRWChar* data;         /*The data of the array.*/
+    CGRWByte* data;         /*The data of the array.*/
     unsigned int size;  /*The size of the array.*/
 }CGRWByteArray;
 
@@ -65,7 +67,23 @@ static void CGRWReadValue(CGRWChar* str, CGRWChar* buff, unsigned int line_count
  */
 static void CGRWDeleteComments(CGRWChar* str);
 
+/**
+ * @brief Get the sub string from a string.
+ * 
+ * @param str The string to get the sub string from.
+ * @param start The start index.
+ * @param end The end index.
+ * @param sub_string The buffer to store the sub string.
+ */
 static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar* sub_string);
+
+/**
+ * @brief Get the data from a file.
+ * 
+ * @param file The file to get the data from.
+ * @return CGRWChar* The data of the file. Need to be freed manually.
+ */
+static CGRWChar* CGRWGetFileData(FILE* file);
 
 /**
  * @brief Skip spaces.
@@ -171,14 +189,14 @@ static CGRWByteArray CGRWLoadFile(const CGRWChar* file_path)
     fseek(file, 0, SEEK_END);
     unsigned int file_size = ftell(file);
     CGRWByteArray file_data;
-    file_data.data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
+    file_data.data = (CGRWByte*)malloc((file_size + 1) * sizeof(CGRWByte));
     if (file_data.data == NULL)
     {
         fclose(file);
         CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to allocate memory for file data."));
     }
     rewind(file);
-    fread(file_data.data, sizeof(CGRWChar), file_size, file);
+    fread(file_data.data, sizeof(CGRWByte), file_size, file);
     file_data.data[file_size] = '\0';
     file_data.size = file_size;
     fclose(file);
@@ -204,7 +222,7 @@ void CGRWAddResource(CGRWResourceData* res_data)
     }
     fseek(file, 0, SEEK_END);
     unsigned int data_location = ftell(file);
-    fwrite(data.data, 1, data.size, file);
+    fwrite(data.data, sizeof(CGRWByte), data.size, file);
     fclose(file);
     free(data.data);
     
@@ -212,7 +230,7 @@ void CGRWAddResource(CGRWResourceData* res_data)
     file = CGRWFOpen(cgrw_resource_finder_path, "ab");
     
     fwrite(res_data->key, 1, sizeof(CGRWChar) * CGRW_STRLEN(res_data->key) + 1, file);
-    fwrite(&data_location, sizeof(unsigned int), 1, file);
+    fwrite(&data_location, sizeof(data_location), 1, file);
     fwrite(&data.size, sizeof(data.size), 1, file);
     fwrite(&res_data->type, sizeof(CGRWChar) * CGRW_STRLEN(res_data->type), 1, file);
     CGRWChar end = '\n';
@@ -221,107 +239,24 @@ void CGRWAddResource(CGRWResourceData* res_data)
     fclose(file);
 }
 
-CGRWChar* CGRWLoadResource(const CGRWChar* resource_key)
-{
-    FILE* file = CGRWFOpen(cgrw_resource_finder_path, "rb");
-#ifdef CGRW_USE_WCHAR
-    CGRW_PRINT(CGSTR("Loading resource: %ls."), resource_key);
-#else
-    CGRW_PRINT(CGSTR("Loading resource: %s."), resource_key);
-#endif
-    CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to open resource finder file."));
-    CGRWChar buff[256];
-    unsigned int i = 0;
-    fseek(file, 0, SEEK_END);
-    int file_size = ftell(file);
-    rewind(file);
-    for(;;)
-    {
-        fread(&buff[i], sizeof(CGRWChar), 1, file);
-        if (ftell(file) >= file_size)
-        {
-            fclose(file);
-#ifdef CGRW_USE_WCHAR
-            CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
-            CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
-        }
-        if (buff[i] != '\0')
-        {
-            ++i;
-            continue;
-        }
-        if (CGRW_STRCMP(buff, resource_key) == 0)
-        {
-            unsigned int data_location;
-            fread(&data_location, sizeof(unsigned int), 1, file);
-            unsigned int data_size;
-            fread(&data_size, sizeof(unsigned int), 1, file);
-            fclose(file);
-            file = CGRWFOpen(cgrw_resource_file_path, "rb");
-            CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to open resource file."));
-            fseek(file, data_location, SEEK_SET);
-            CGRWChar* data = (CGRWChar*)malloc(data_size * sizeof(CGRWChar) + 1);
-            CGRW_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Failed to allocate memory for resource data."));
-            fread(data, sizeof(CGRWChar), data_size, file);
-            data[data_size] = '\0';
-            fclose(file);
-            return data;
-        }
-        for (;;)
-        {
-            CGRWChar p;
-            fread(&p, sizeof(CGRWChar), 1, file);
-            if (p == '\n')
-                break;
-            if (ftell(file) == file_size)
-            {
-                fclose(file);
-#ifdef CGRW_USE_WCHAR
-                CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
-                CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
-            }
-        }
-        i = 0;
-    }
-
-    fclose(file);
-#ifdef CGRW_USE_WCHAR
-    CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
-    CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
-}
-
 CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
 {
 #ifdef CGRW_USE_WCHAR
     CGRW_PRINT(CGSTR("Phrasing resource at path: %ls"), file_path);
+    CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL || cgrw_resource_finder_path == NULL, -1, CGSTR("Cannot phrase resource: Resource wrapper is not initialized."));
+    CGRW_ERROR_COND_EXIT(file_path == NULL, -1, CGSTR("Cannot phrase resource: File path is NULL."));
+    FILE* file = CGRWFOpen(file_path, "rb");
+    CGRW_PRINT_VERBOSE(CGSTR("Opening file at path: %s"), file_path);
+    CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %ls."), file_path);
 #else
     CGRW_PRINT(CGSTR("Phrasing resource at path: %s"), file_path);
-#endif
     CGRW_ERROR_COND_EXIT(cgrw_resource_file_path == NULL || cgrw_resource_finder_path == NULL, -1, CGSTR("Cannot phrase resource: Resource wrapper is not initialized."));
     CGRW_ERROR_COND_EXIT(file_path == NULL, -1, CGSTR("Cannot phrase resource: File path is NULL."));
     FILE* file = CGRWFOpen(file_path, "r");
     CGRW_PRINT_VERBOSE(CGSTR("Opening file at path: %s"), file_path);
-#ifdef CGRW_USE_WCHAR
-    CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %ls."), file_path);
-#else
     CGRW_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to find resource file: %s."), file_path);
 #endif
-    unsigned int file_size = 0;
-    while (CGRW_FGETC(file) != CGRW_EOF)
-        ++file_size;
-    file_size /= sizeof(CGRWChar);
-    rewind(file);
-    CGRWChar* file_data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
-    CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
-    fread(file_data, sizeof(CGRWChar), file_size, file);
-    file_data[file_size] = '\0';
-    CGRW_PRINT_VERBOSE(CGSTR("File loaded with size: %d"), file_size);
+    CGRWChar* file_data = CGRWGetFileData(file);
     fclose(file);
 
     CGRWDeleteComments(file_data);
@@ -591,6 +526,52 @@ static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned i
     for (unsigned int i = 0; i <= end - start; ++i)
         sub_string[i] = str[start + i];
     sub_string[end - start + 1] = '\0';
+}
+
+static CGRWChar *CGRWGetFileData(FILE *file)
+{
+#if defined CGRW_TG_WIN || !defined CGRW_USE_UTF16
+    fseek(file, 0, SEEK_END);
+    unsigned int file_size = ftell(file) / sizeof(CGRWChar);
+    rewind(file);
+    CGRWChar* file_data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
+    CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
+    fread(file_data, sizeof(CGRWChar), file_size, file);
+
+    file_data[file_size] = '\0';
+    CGRW_PRINT_VERBOSE(CGSTR("File loaded with size: %d"), file_size);
+    return file_data;
+#else
+    fseek(file, 0, SEEK_END);
+    unsigned int file_size = ftell(file);
+    rewind(file);
+    unsigned short *file_data_16 = (unsigned short*)malloc((file_size) * sizeof(char));
+    CGRW_ERROR_COND_EXIT(file_data_16 == NULL, -1, CGSTR("Failed to allocate memory for file data."));
+    fread(file_data_16, sizeof(char), file_size, file);
+
+    file_size /= 2;
+    // remove 0x000d
+    for (unsigned int i = 0; i < file_size; ++i)
+    {
+        if (file_data_16[i] == 0x000d)
+        {
+            for (unsigned int j = i; j < file_size; ++j)
+                file_data_16[j] = file_data_16[j + 1];
+            --file_size;
+        }
+    }
+    CGRWChar* file_data = (CGRWChar*)malloc((file_size + 1) * sizeof(CGRWChar));
+    CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
+    for (unsigned int i = 0; i < file_size; ++i)
+    {
+        file_data[i] = (CGRWChar)file_data_16[i];
+    }
+    file_data[file_size] = '\0';
+    CGRW_PRINT(CGSTR("file_data: %ls"), file_data);
+    free(file_data_16);
+    CGRW_PRINT_VERBOSE(CGSTR("File loaded with size: %d"), file_size);
+    return file_data;
+#endif
 }
 
 static void CGRWGetFirstWord(const CGRWChar* str, CGRWChar* sub_string)

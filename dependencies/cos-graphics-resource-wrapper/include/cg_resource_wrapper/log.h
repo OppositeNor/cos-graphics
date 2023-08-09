@@ -8,27 +8,17 @@
 extern "C" {
 #endif
 
-#ifdef CGRW_USE_WCHAR
-    #ifdef CGRW_TG_WIN
-        #include <wchar.h>
-        typedef wchar_t CGRWChar;
+#ifdef CGRW_USE_UTF16
+    #include <wchar.h>
+    typedef wchar_t CGRWChar;
 
-        #define CGRW_STRLEN wcslen
-        #define CGRW_PRINTF wprintf
-        #define CGRW_VPRINTF vwprintf
+    #define CGRW_STRLEN wcslen
+    #define CGRW_PRINTF wprintf
+    #define CGRW_VPRINTF vwprintf
 
-        #define CGSTR(str) L##str
-    #else
-        typedef char CGRWChar;
+    #define CGSTR(str) L##str
 
-        #define CGRW_STRLEN strlen
-        #define CGRW_PRINTF printf
-        #define CGRW_VPRINTF vprintf
-
-        #define CGSTR(str) str
-
-        #undef CGRW_USE_WCHAR
-    #endif
+    #define CGRW_USE_WCHAR
 #else
     typedef char CGRWChar;
 
