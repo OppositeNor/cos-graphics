@@ -17,10 +17,10 @@ set (USE_TEST_EXE ON)
 # set this to OFF if you don't want to export the library
 set (USE_SHARED_LIB ON)
 
-# use utf16 to read files
+# use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
 # stored as 4 bytes instead of 2 (in Windows).
-set (USE_UTF16 OFF)
+set (USE_UTF16LE ON)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
@@ -37,6 +37,7 @@ set_property(GLOBAL PROPERTY CG_RESOURCES ${CG_RESOURCES})
 add_subdirectory(src/graphics)
 add_subdirectory(src/log)
 add_subdirectory(src/resource)
+add_subdirectory(src/utils)
 
 if (USE_TEST_EXE)
     list(APPEND CG_RESOURCES image_resource.cgures)
@@ -87,6 +88,10 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
             list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
         endif()
     endif()
+endif()
+
+if (USE_UTF16LE MATCHES ON)
+    add_definitions(-DCG_USE_UTF16LE)
 endif()
 
 include_directories(

@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#ifdef CGRW_USE_UTF16
+#ifdef CGRW_USE_UTF16LE
     #include <wchar.h>
     typedef wchar_t CGRWChar;
 

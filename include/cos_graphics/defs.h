@@ -8,6 +8,47 @@ typedef char CG_BOOL;
 #define CG_TRUE 1
 #define CG_FALSE 0
 
+typedef char CGByte;
+typedef unsigned char CGUByte;
+
+#include <wchar.h>
+#ifdef CG_USE_UTF16LE
+    typedef wchar_t CGChar;
+    #define CG_USE_WCHAR
+
+    #define CG_STRLEN wcslen
+    #define CG_SPRINTF(buffer, buffer_size, fmt, ...) swprintf(buffer, buffer_size, fmt, __VA_ARGS__)
+    #define CG_STRCPY wcscpy
+    #define CG_STRCMP wcscmp
+    #define CG_FGETC fgetwc
+    #define CG_EOF WEOF
+    #define CG_STRLEN wcslen
+    #define CG_PRINTF wprintf
+    #define CG_VPRINTF vwprintf
+    
+    #define CGFRead(buff, size, count, file)\
+        CG_ERROR_COND_EXIT(fread(buff, size, count, file) != count, -1, CGSTR("Failed to read file at line: %d, with location: %d. with count: %d."), __LINE__, ftell(file), count)
+
+    #define CGSTR(str) L##str
+#else
+    
+    typedef char CGChar;
+
+    #define CG_STRLEN strlen
+    #define CG_SPRINTF(buffer, buffer_size, fmt, ...) sprintf(buffer, fmt, __VA_ARGS__)
+    #define CG_STRCPY strcpy
+    #define CG_STRCMP strcmp
+    #define CG_FGETC fgetc
+    #define CG_EOF EOF
+    #define CG_STRLEN strlen
+    #define CG_PRINTF printf
+    #define CG_VPRINTF vprintf
+
+    #define CGFRead(buff, size, count, file) CG_ERROR_COND_EXIT(fread(buff, size, count, file) != count, -1, CGSTR("Failed to read file at path: %s."), cg_resource_file_path)
+
+    #define CGSTR(str) str
+#endif
+
 /********************************************************************************/
 /*
  * Key defs. Tese defines are copied from glfw3.h.

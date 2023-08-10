@@ -1,37 +1,4 @@
-
 #if 0
-#include "cos_graphics/graphics.h"
-#include "cos_graphics/log.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-int main()
-{
-    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_FALSE);
-    if (window == NULL)
-        return 0;
-    CGTriangle *triangle = CGCreateTriangle( 
-        (CGVector2){100, 100},
-        (CGVector2){100, -100},
-        (CGVector2){-100, 100});
-    
-    while(!CGShouldWindowClose(window))
-    {
-        CGTickRenderStart(window);
-        CGDrawTriangle(triangle, window);
-        CGWindowDraw(window);
-
-        CGTickRenderEnd(window);
-    }
-    free(triangle->property);
-    free(triangle);
-    CGTerminateGraphics();
-    free(window);
-    return 0;
-}
-#endif
-
-#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -51,7 +18,7 @@ CGRenderObjectProperty* g_prop = NULL;
 
 int main()
 {
-    CGWindow* window = CGCreateWindow(640, 480, "Graphics test", CG_FALSE, CG_TRUE);
+    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), CG_FALSE, CG_TRUE);
     CGSetKeyCallback(KeyCallback);
     CGSetMouseButtonCallback(MouseButtonCallback);
     
@@ -84,7 +51,7 @@ int main()
         rotation
     );
     
-    CGVisualImage* sprite = CGCreateVisualImage("test1", window);
+    CGVisualImage* sprite = CGCreateVisualImage(CGSTR("test1"), window);
     CGVisualImage* sprite1 = CGCopyVisualImage(sprite);
     quad2_property->z = -3;
     double tick_end_time = CGGetCurrentTime();
@@ -104,26 +71,31 @@ int main()
         quad1.vert_3 = CGConstructVector2(sin(clock / 2) * 30 - 150, sin(clock / 0.3 - 3) * 20 + 50);
         quad1.vert_4 = CGConstructVector2(sin(clock / 0.8) * 30 - 100, sin(clock / 0.9 + 5) * 20 - 50);
 
-        // CGQuadrangle* quad2 = CGCreateQuadrangle(
-        //     (CGVector2){100, 100},
-        //     (CGVector2){-100, 100},
-        //     (CGVector2){-100, -100},
-        //     (CGVector2){100, -100});
-        // quad2->is_temp = CG_TRUE;
-        // CGDrawQuadrangle(quad2, quad2_property, window);
+        CGQuadrangle* quad2 = CGCreateQuadrangle(
+            (CGVector2){100, 100},
+            (CGVector2){-100, 100},
+            (CGVector2){-100, -100},
+            (CGVector2){100, -100});
+        quad2->is_temp = CG_TRUE;
+        CGDrawQuadrangle(quad2, quad2_property, window);
         
         CGTickRenderStart(window);
-        //CGDrawTriangle(&triangle, NULL, window);
-        //CGDrawTriangle(&triangle, quad2_property, window);
+        CGDrawTriangle(&triangle, NULL, window);
+        CGDrawTriangle(&triangle, quad2_property, window);
         CGRotateRenderObject(prop, delta, (CGVector2){100, 100});
         CGDrawVisualImage(sprite, prop, window);
         CGRenderObjectProperty* prop2 = CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 1.0f}, (CGVector2){0, 100}, (CGVector2){1, 1}, 0);
         CGDrawVisualImage(sprite1, g_prop, window);
         g_prop->scale.x = 3.0f;
         g_prop->scale.y = 3.0f;
-        //quad2_property->rotation = clock * 0.2;
-        //CGDrawQuadrangle(&quad1, quad1_property, window);
+        quad2_property->rotation = clock * 0.2;
+        CGDrawQuadrangle(&quad1, quad1_property, window);
         CGWindowDraw(window);
+
+        CGVisualImage* visual_image = CGCreateVisualImage(CGSTR("test1"), window);
+        CGDraw(visual_image, NULL, window, CG_RD_TYPE_VISUAL_IMAGE);
+
+
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
@@ -181,54 +153,57 @@ void KeyCallback(CGWindow* window, int key, int action)
 void MouseButtonCallback(CGWindow* window, int button, int action)
 {
     if (button == CG_MOUSE_BUTTON_LEFT && action == CG_PRESS)
-        CG_PRINT("TEST MOUSE BUTTON");
+        CG_PRINT(CGSTR("TEST MOUSE BUTTON"));
 }
 
 #endif
 
-#if 0
+#if 1
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#ifdef CG_TG_WIN
+#include<windows.h>
+#include<conio.h>
+#elif defined CG_TG_LINUX
+#include <unistd.h>
+#endif
 int main()
 {
-    CGWindow* window = CGCreateWindow(1920, 1080, "Graphics test", CG_FALSE, CG_FALSE);
-    CGSetClearScreenColor((CGColor){1.0f, 1.0f, 1.0f, 1.0f});
-    window->width = 1920;
-    window->height = 1080;
+    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), CG_FALSE, CG_TRUE);
+    
     if (window == NULL)
         return 0;
-    float rotation = 0.0f;
-    CGVisualImage* sprite = CGCreateVisualImage("./test2.png", 
-        CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){0, 0}, (CGVector2){1, 1}, 0), window);
-    CGVisualImage* sprite3 = CGCreateVisualImage("./test2.png", 
-        CGCreateRenderObjectProperty((CGColor){1.0f, 1.0f, 1.0f, 0.5f}, (CGVector2){300, 600}, (CGVector2){1, 1}, 0), window);
+    CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
+        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
+        (CGVector2){-50, 0},
+        (CGVector2){1, 1},
+        0.0f);
+    
+    
     double tick_end_time = CGGetCurrentTime();
-    const double fixed_delta = 1.0 / 60;
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
         static double delta = 0.01;
         tick_start_time = CGGetCurrentTime();
-
+        static float clock = 0;
+        clock += delta * 3;
         CGTickRenderStart(window);
-        CGDrawVisualImage(sprite3, window);
-        CGDrawVisualImage(sprite, window);
+
+        CGVisualImage* visual_image = CGCreateVisualImage(CGSTR("test1"), window);
+        visual_image->is_temp = CG_TRUE;
+        CGDrawVisualImage(visual_image, prop, window);
+
         CGWindowDraw(window);
+
         CGTickRenderEnd();
-        while(CGGetCurrentTime() < tick_start_time + fixed_delta);
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        CG_PRINT("%f", delta);
     }
-    free(sprite->property);
-    CGDeleteVisualImage(sprite);
-    CGDestroyWindow(window);
     CGTerminateGraphics();
-    window = NULL;
     return 0;
 }
 #endif

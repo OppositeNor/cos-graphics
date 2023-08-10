@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     {
 #ifdef CGRW_USE_WCHAR
         CGRWChar buff[256];
-        CharToCGRWChar(argv[i], buff);
+        CharToCGRWChar(argv[i], buff, 256);
         CGRWResourceData* res_data = CGRWPhraseUsedResource(buff);
 #else
         CGRWResourceData* res_data = CGRWPhraseUsedResource(argv[i]);

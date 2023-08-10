@@ -67,7 +67,7 @@ typedef struct {
  * @brief Window
  */
 typedef struct CGWindow{
-    char title[256];
+    CGChar title[256];
     int width;
     int height;
     CG_BOOL use_full_screen;
@@ -144,7 +144,7 @@ CGVector2 CGConstructVector2(float x, float y);
  * will change instead. You will find the window not scalling, but the content inside the window
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
-CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen, CG_BOOL resizable);
+CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CG_BOOL use_full_screen, CG_BOOL resizable);
 
 /**
  * @brief Set the callback function for key events.
@@ -268,6 +268,9 @@ typedef struct{
 /**
  * @brief Create a shader source object
  * 
+ * @warning If you are using wide character, the shader souces will still needs to be in char type (8 bits) 
+ * instead of w_char type. Thus you shouldent wirte your shader in UTF-16 but in UTF-8 instead.
+ * 
  * @param vertex vertex source. If you want to set this manually, you can set this parameter to NULL.
  * @param fragment fragment source If you want to set this manually, you can set this parameter to NULL.
  * @param geometry geometry source If you want to set this manually, you can set this parameter to NULL.
@@ -286,8 +289,8 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
  * @param use_geometry use geometry source
  * @return CGShaderSource* 
  */
-CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_rk, const char* fragment_rk, 
-    const char* geometry_rk, CG_BOOL use_geometry);
+CGShaderSource* CGCreateShaderSourceFromPath(const CGChar* vertex_rk, const CGChar* fragment_rk, 
+    const CGChar* geometry_rk, CG_BOOL use_geometry);
 
 /**
  * @brief Shaders
@@ -587,7 +590,7 @@ void CGDeleteTexture(unsigned int texture_id);
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
 
 /**
  * @brief Copy CGVisualImage object

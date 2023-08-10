@@ -36,14 +36,14 @@ void CGInitResourceSystem();
 /// Disk functions ///
 
 /**
- * @brief Load file from disk
+ * @brief Load binary file from disk.
  * 
- * @param file_path file path
+ * @param file_path file path.
  * 
  * @returns file data.
  * @returns NULL if failed to load file.
  */
-char* CGLoadFile(const char* file_path);
+CGByte* CGLoadFile(const CGChar* file_path);
 
 /**
  * @brief Get texture resource.
@@ -55,7 +55,7 @@ char* CGLoadFile(const char* file_path);
  * @returns The OpenGL texture id.
  * @returns 0 if the file_rk is not valid.
  */
-unsigned int CGGetTextureResource(const char* file_rk);
+unsigned int CGGetTextureResource(const CGChar* file_rk);
 
 /**
  * @brief Copy texture resource.
@@ -79,7 +79,7 @@ void CGFreeTextureResource(unsigned int texture_id);
 
 typedef struct{
     int width, height, channels;
-    unsigned char* data;
+    CGUByte* data;
 }CGImage;
 
 /**
@@ -100,7 +100,7 @@ CGImage* CGCreateImage(int width, int height, int channels, unsigned char* data)
  * @returns The image data created.
  * @returns NULL if failed to load image.
  */
-CGImage* CGLoadImage(const char* file_path);
+CGImage* CGLoadImage(const CGChar* file_path);
 
 /**
  * @brief Load image from resource.
@@ -109,7 +109,7 @@ CGImage* CGLoadImage(const char* file_path);
  * @returns The image data created.
  * @returns NULL if failed to load image.
  */
-CGImage* CGLoadImageFromResource(const char* file_rk);
+CGImage* CGLoadImageFromResource(const CGChar* file_rk);
 
 /**
  * @brief Delete image object.
@@ -167,9 +167,9 @@ void CGTerminateResourceSystem();
  * 
  * @param resource_key The key of the resource.
  * @returns The data of the resource.
- * @returns NULL if failed to load resource.
+ * @returns The resource data. NULL if failed to load resource.
  */
-char* CGLoadResource(const char* resource_key, int* size, char* type);
+CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type);
 
 #ifdef __cplusplus
 }

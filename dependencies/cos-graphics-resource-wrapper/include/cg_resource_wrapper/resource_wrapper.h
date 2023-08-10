@@ -41,7 +41,7 @@ extern "C" {
 
 
 #include <wchar.h>
-#ifdef CGRW_USE_UTF16
+#ifdef CGRW_USE_UTF16LE
     typedef wchar_t CGRWChar;
     #define CGRW_USE_WCHAR
 
@@ -71,7 +71,7 @@ extern "C" {
  * @param str The string to be casted.
  * @param buffer The buffer to store the result.
  */
-void CGRWCharToChar(const CGRWChar* str, char* buffer);
+void CGRWCharToChar(const CGRWChar* str, char* buffer, unsigned int buffer_size);
 
 /**
  * @brief Cast char to CGRWChar.
@@ -79,20 +79,20 @@ void CGRWCharToChar(const CGRWChar* str, char* buffer);
  * @param str The string to be casted.
  * @param buffer The buffer to store the result.
  */
-void CharToCGRWChar(const char* str, CGRWChar* buffer);
+void CharToCGRWChar(const char* str, CGRWChar* buffer, unsigned int buffer_size); 
 
 #ifdef CGRW_USE_WCHAR
     static inline FILE* CGRWFOpen(const CGRWChar* file_path, const char* mode)
     {
         char buffer[256];
-        CGRWCharToChar(file_path, buffer);
+        CGRWCharToChar(file_path, buffer, 256);
         return fopen(buffer, mode);
     }
 
     static inline void CGRWRemove(const CGRWChar* file_path)
     {
         char buffer[256];
-        CGRWCharToChar(file_path, buffer);
+        CGRWCharToChar(file_path, buffer, 256);
         remove(buffer);
     }
 #else

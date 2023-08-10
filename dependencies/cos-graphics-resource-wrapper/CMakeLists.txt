@@ -13,8 +13,8 @@ if (CGRW_NO_VERBOSE MATCHES ON)
     add_definitions(-DCGRW_NO_VERBOSE)
 endif()
 
-if (USE_UTF16)
-    add_definitions(-DCGRW_USE_UTF16)
+if (USE_UTF16LE MATCHES ON)
+    add_definitions(-DCGRW_USE_UTF16LE)
 endif()
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME})
