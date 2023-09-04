@@ -43,12 +43,15 @@
         char* temp = (char*)malloc(size * sizeof(char));
         CG_ERROR_COND_EXIT(temp == NULL, -1, CGSTR("Failed to allocate memory for temp buffer."));
         readlink("/proc/self/exe", temp, size - 1);
+        char* p = temp + size - 1;
+        for (; *p != '/' && p > temp; p--);
+        *p = '\0';
         CharToCGChar(temp, buff, size);
         free(temp);
 #else
         readlink("/proc/self/exe", buff, size - 1);
         char* p = buff + size - 1;
-        for (; *p != '/'; p--);
+        for (; *p != '/' && p > buff; p--);
         *p = '\0';
 #endif
     }
@@ -116,15 +119,16 @@ void CGInitResourceSystem()
 {
     CGChar buff[256];
     CGGetExecDir(buff, 256);
-    unsigned int temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_file_name) + 2);
-    cg_resource_file_path = (CGChar*)malloc(sizeof(CGChar) * temp_size);
+    CG_PRINT(CGSTR("buff: %ls"), buff);
+    unsigned int temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_file_name) + sizeof(CGChar));
+    cg_resource_file_path = (CGChar*)malloc(temp_size);
     CG_ERROR_CONDITION(cg_resource_file_path == NULL, CGSTR("Failed to allocate memory for resource file path."));
 #ifdef CG_USE_WCHAR
     CG_SPRINTF(cg_resource_file_path, temp_size, CGSTR("%ls%lc%ls"), buff, CG_FILE_SPLITTER, cg_resource_file_name);
 #else
     CG_SPRINTF(cg_resource_file_path, temp_size, CGSTR("%s%c%s"), buff, CG_FILE_SPLITTER, cg_resource_file_name);
 #endif
-    temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_finder_name) + 2);
+    temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_finder_name) + sizeof(CGChar));
     cg_resource_finder_path = (CGChar*)malloc(temp_size);
     if (cg_resource_finder_path == NULL)
     {
