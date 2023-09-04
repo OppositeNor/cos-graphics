@@ -172,8 +172,12 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 #endif
 int main()
 {
-    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), CG_FALSE, CG_TRUE);
-    
+    CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    window_property.transparent = CG_TRUE;
+    window_property.boarderless = CG_TRUE;
+    window_property.topmost = CG_TRUE;
+    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
+    CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)
         return 0;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
@@ -190,13 +194,14 @@ int main()
         static double delta = 0.01;
         tick_start_time = CGGetCurrentTime();
         static float clock = 0;
-        clock += delta * 3;
+        clock += (float)delta * 3;
         CGTickRenderStart(window);
 
         CGVisualImage* visual_image = CGCreateVisualImage(CGSTR("test1"), window);
         visual_image->is_temp = CG_TRUE;
+        prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(visual_image, prop, window);
-
+        CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
 
         CGTickRenderEnd();

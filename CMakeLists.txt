@@ -19,7 +19,7 @@ set (USE_SHARED_LIB ON)
 
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
-# stored as 4 bytes instead of 2 (in Windows).
+# stored as 4 bytes instead of 2.
 set (USE_UTF16LE ON)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
@@ -72,13 +72,17 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message("Building for: x64")
         list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/include")
+        list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/include")
         if (MINGW)
             list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
+            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/mingw/freetype.a")
         elseif (MSVC)
             add_definitions(-D_CRT_SECURE_NO_WARNINGS)
             list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-vc2022/glfw3.lib")
+            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/msvc/freetype.lib")
         endif()
     else()
+    #todo: add freetype 32 bit support
         message("Building for: x86")
         list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/include")
         if (MINGW)

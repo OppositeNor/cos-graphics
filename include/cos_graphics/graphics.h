@@ -64,19 +64,52 @@ typedef struct {
 } CGVector2;
 
 /**
+ * @brief Window subproperty.
+ */
+typedef struct{
+    /**
+     * @brief Is the window resizable.
+     * @default CG_FALSE
+     */
+    CG_BOOL resizable;
+    /**
+     * @brief Is the window full screen.
+     * @default CG_FALSE
+     */
+    CG_BOOL use_full_screen;
+    /**
+     * @brief Is the window boarderless.
+     * @default CG_FALSE
+     */
+    CG_BOOL boarderless;
+    /**
+     * @brief Is the window transparent.
+     * @default CG_FALSE
+     */
+    CG_BOOL transparent;
+    /**
+     * @brief Is the window topmost (always on top of other windows)
+     * @default CG_FALSE
+     */
+    CG_BOOL topmost;
+} CGWindowSubProperty;
+
+/**
  * @brief Window
  */
-typedef struct CGWindow{
+typedef struct{
+    /**
+     * @brief The title of the window.
+     */
     CGChar title[256];
     int width;
     int height;
-    CG_BOOL use_full_screen;
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int visual_image_vao;
     CGRenderNode* render_list;
-    
+    CGWindowSubProperty sub_property;
 } CGWindow;
 
 /**
@@ -136,7 +169,7 @@ CGVector2 CGConstructVector2(float x, float y);
  * @param width width of the window.
  * @param height height of the window
  * @param title title of the window
- * @param use_full_screen use full screen
+ * @param property window sub property
  * @return CGWindow* The window instance. Returns NULL if failed to create window. 
  * The "width" property and "height" property is set to to the paramiter automatically; however
  * you can set it manually if you don't like the render size of the window. Note that if you 
@@ -144,7 +177,22 @@ CGVector2 CGConstructVector2(float x, float y);
  * will change instead. You will find the window not scalling, but the content inside the window
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
-CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CG_BOOL use_full_screen, CG_BOOL resizable);
+CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property);
+
+/**
+ * @brief Construct a default window property object.
+ * 
+ * @return CGWindowSubProperty The default window property object.
+ */
+CGWindowSubProperty CGConstructDefaultWindowSubProperty();
+
+/**
+ * @brief Set the position of the window.
+ * 
+ * @param window The window that the position is going to be set.
+ * @param position The position of the upper left corner of the window in screen cordnate to be set to.
+ */
+void CGSetWindowPosition(CGWindow* window, CGVector2 position);
 
 /**
  * @brief Set the callback function for key events.
@@ -601,6 +649,199 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
  */
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
+/************TEXT************/
+
+/**
+ * @brief Text horizontal align state left. The left side of the text will be aligned to its position.
+*/
+#define CG_TEXT_H_ALIGN_STATE_LEFT         0x00
+/**
+ * @brief Text horizontal align state right. The right side of the text will be aligned to its position.
+*/
+#define CG_TEXT_H_ALIGN_STATE_RIGHT        0x01
+/**
+ * @brief Text horizontal align state center. The center of the text will be aligned to its position.
+*/
+#define CG_TEXT_H_ALIGN_STATE_CENTER       0x02
+/**
+ * @brief Text vertical align state top. The top side of the text will be aligned to its position.
+*/
+#define CG_TEXT_V_ALIGN_STATE_TOP          0x00
+/**
+ * @brief Text vertical align state bottom. The bottom side of the text will be aligned to its position.
+*/
+#define CG_TEXT_V_ALIGN_STATE_BOTTOM       0x10
+/**
+ * @brief Text vertical align state center. The center of the text will be aligned to its position.
+*/
+#define CG_TEXT_V_ALIGN_STATE_CENTER       0x20
+/**
+ * @brief Align the left top of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_TOP @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_LEFT_TOP       0x00
+/**
+ * @brief Align the left bottom of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_LEFT_BOTTOM    0x10
+/**
+ * @brief Align the left center of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_LEFT_CENTER    0x20
+/**
+ * @brief Align the center top of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_TOP @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_CENTER_TOP     0x01
+/**
+ * @brief Align the center of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_CENTER         0x11
+/**
+ * @brief Align the center bottom of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_CENTER_BOTTOM  0x21
+/**
+ * @brief Align the right top of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_TOP @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_RIGHT_TOP      0x02
+/**
+ * @brief Align the right center of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_RIGHT_CENTER   0x12
+/**
+ * @brief Align the right bottom of the text to its position. This is equivalent as 
+ * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
+ */
+#define CG_TEXT_ALIGN_STATE_RIGHT_BOTTOM   0x22
+
+/**
+ * @brief A static text. Static text should NOT be changed in the entire program.
+ * @details Low flexibility, high performance.
+ */
+#define CG_TEXT_STATIC 0
+/**
+ * @brief A regular text. Regular text can be changed by calling function CGChangeText.
+ * @details Moderate flexibility, moderate performance.
+ */
+#define CG_TEXT_REGULAR 1
+/**
+ * @brief A dynamic text. Dynamic text should be changed frequently in the program, and it is allowed to be 
+ * updated by directly changing "text" property.
+ * @details High flexibility, low performance.
+ */
+#define CG_TEXT_DYNAMIC 2
+
+typedef struct {
+    /**
+     * @brief The size of the font.
+     */
+    unsigned int font_size;
+    /**
+     * @brief The x value of the displacement from the 
+     * starting of one character to the next. This will 
+     * be set to the default advance if it is set to 0.
+     */
+    int advance_x;
+    /**
+     * @brief The y value of the displacement from the 
+     * starting of one character to the next. This will 
+     * be set to the default advance if it is set to 0.
+     */
+    int advance_y;
+    /**
+     * @brief The resource key of the font file.
+     */
+    CGChar* font_res_key;
+
+
+}CGTextFormat;
+
+typedef struct {
+    /**
+     * @brief The align state of the text. The align state can be calculated by bit calculations.
+     * @example If you want to align the left bottom of the text to its position, you can set this
+     * value to @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode, or simply
+     * @code CG_TEXT_ALIGN_STATE_LEFT_BOTTOM @endcode
+     */
+    CGUByte align_state;
+    /**
+     * @brief The type of the text. It can be set to CG_TEXT_STATIC, CG_TEXT_REGULAR or CG_TEXT_DYNAMIC.
+     * Different type of text will cause difference in performance.
+     */
+    CGUByte text_type;
+    /**
+     * @brief The number of textures in texture_ids.
+     * 
+     */
+    unsigned int texture_count;
+    /**
+     * @brief The ids of the texture of the text. The value may vary according to text_type.
+     */
+    unsigned int* texture_ids;
+    /**
+     * @brief The string of the text, or the key of the text. If this string is the key of the text,
+     * This string should be started with a "+" sign.
+     * @details For static text, changing of this value will be ignored. For regular text, you should
+     * change this value by calling function CGChangeText. For dynamic text, you can change this value directly.
+     * @details If you wish the string to start with a "+" sign without being recognized as key, you should
+     * start the string with a '\\' sign. Note that the '\\' will be ignored.
+     */
+    CGChar* text;
+
+    /**
+     * @brief The format of the text
+     * @details For static text, changing of this value will be ignored. For other types, you should change this
+     * value by calling function CGChangeTextFormat.
+     */
+    CGTextFormat* format;
+}CGText;
+
+/**
+ * @brief Create a text format object.
+ * 
+ * @param font_size The size of the font.
+ * @param advance_x The x value of the displacement from the starting of one character to the next. This will 
+ * be set to the default advance if it is set to 0.
+ * @param advance_y The y value of the displacement from the starting of one character to the next. This will
+ * be set to the default advance if it is set to 0.
+ * @param font_res_key The resource key of the font file.
+ * @return CGTextFormat* The created text format object.
+ */
+CGTextFormat* CGCreateTextFormat(unsigned int font_size, int advance_x, int advance_y, CGChar* font_res_key);
+
+/**
+ * @brief Create a text object.
+ * 
+ * @param align_state The align state of the text.
+ * @param text_type The type of the text.
+ * @param text The string of the text, or the key of the text. If this string is the key of the text,
+ * This string should be started with a "+" sign. If you wish the string to start with a "+" sign without being recognized as key, you should
+ * start the string with a '\\' sign. Note that the '\\' will be ignored.
+ * @param format The format of the text.
+ * @return CGText* The created text object.
+ */
+CGText* CGCreateText(CGUByte align_state, CGUByte text_type, CGChar* text, CGTextFormat* format);
+
+/**
+ * @brief Change the text of a text object.
+ * @note If the text is a static text, this function will do nothing.
+ * @param text The text object to be changed.
+ * @param new_text The text to be changed.
+ */
+void CGChangeTextValue(CGText* text, CGChar* new_text);     // todo: finish this function
+
+/**
+ * @brief Change the format of a text object.
+ * 
+ */
+void CGChangeTextFormat(CGText* text);                      // todo: finish this function
 #ifdef __cplusplus
 }
 #endif

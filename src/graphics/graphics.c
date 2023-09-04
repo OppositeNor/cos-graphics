@@ -8,6 +8,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #define CG_MAX_BUFFER_SIZE 256
 
 #define CGGladInitializeCheck()                                 \
@@ -16,11 +19,15 @@
         CGInitGLAD();                                           \
     }((void)0)
 
-CG_BOOL cg_is_glfw_initialized = CG_FALSE;
-CG_BOOL cg_is_glad_initialized = CG_FALSE;
+static CG_BOOL cg_is_glfw_initialized = CG_FALSE;
+static CG_BOOL cg_is_glad_initialized = CG_FALSE;
+static CG_BOOL cg_is_freetype_initialized = CG_FALSE;
 
-CGRenderObjectProperty* cg_default_geo_property;
-CGRenderObjectProperty* cg_default_visual_image_property;
+static FT_Library cg_ft_library;
+static FT_Face cg_ft_default_face;
+
+static CGRenderObjectProperty* cg_default_geo_property;
+static CGRenderObjectProperty* cg_default_visual_image_property;
 
 #define CG_BUFFERS_TRIANGLE_VBO 0
 #define CG_BUFFERS_QUADRANGLE_VBO 1
@@ -92,6 +99,18 @@ typedef CGLinkedListNode CGWindowListNode;
 
 // The list that contains windows that are currently listenning to events.
 static CGWindowListNode* cg_window_list = NULL;
+
+// initialize glad
+static void CGInitGLAD();
+
+// framebuffer size callback
+static void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height);
+
+// initialize glfw
+static void CGInitGLFW(CGWindowSubProperty window_property);
+
+// initialize freetype
+static void CGInitFreeType();
 
 // compile one specific shader from source
 static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source);
@@ -193,11 +212,25 @@ static void CGDeleteShader(CGShader* shader);
 static void CGDeleteShaderProgram(CGShaderProgram program);
 
 /**
- * @brief Delete CGVisualImage object. Note that you have to free the visual_image's property manually.
+ * @brief Delete CGVisualImage object.
  * 
  * @param visual_image visual_image object instance to be deleted
  */
 static void CGDeleteVisualImage(CGVisualImage* visual_image);
+
+/**
+ * @brief Delete CGText object.
+ * 
+ * @param visual_image visual_image object instance to be deleted
+ */
+static void CGDeleteText(CGText* text);
+
+/**
+ * @brief Delete CGTextFormat object.
+ * 
+ * @param text_format The text format object to be deleted.
+ */
+static void CGDeleteTextFormat(CGTextFormat* text_format);
 
 /**
  * @brief Key callback function for GLFW
@@ -237,23 +270,31 @@ CGVector2 CGConstructVector2(float x, float y)
     return vector;
 }
 
-void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
+static void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     if (window != glfwGetCurrentContext())
         glfwMakeContextCurrent(window);
     glViewport(0, 0, width, height);
 }
 
-void CGInitGLFW(CG_BOOL window_resizable)
+static void CGInitGLFW(CGWindowSubProperty window_sub_property)
 {
     CG_ERROR_COND_EXIT(glfwInit() != GLFW_TRUE, -1, CGSTR("GLFW initialization failed"));
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, window_resizable);
+    glfwWindowHint(GLFW_DECORATED, window_sub_property.boarderless ? GLFW_FALSE : GLFW_TRUE);
+    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, window_sub_property.transparent);
+    glfwWindowHint(GLFW_RESIZABLE, window_sub_property.resizable);
     glfwSwapInterval(0);
     cg_window_list = CGCreateLinkedListNode(NULL, 0);
     cg_is_glfw_initialized = CG_TRUE;
+}
+
+static void CGInitFreeType()
+{
+    CG_ERROR_CONDITION(FT_Init_FreeType(&cg_ft_library), CGSTR("FreeType initialization failed."));
+    cg_is_freetype_initialized = CG_TRUE;
 }
 
 void CGTerminateGraphics()
@@ -296,7 +337,7 @@ static void CGInitDefaultShader(const CGChar* shader_v_rk, const CGChar* shader_
     CGFreeResource(shader);
 }
 
-void CGInitGLAD()
+static void CGInitGLAD()
 {
     CG_ERROR_COND_EXIT(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), -1, CGSTR("GLAD setup OpenGL loader failed"));
     CGInitDefaultShader(cg_default_geo_vshader_rk, cg_default_geo_fshader_rk, &cg_default_geo_shader_program);
@@ -322,32 +363,34 @@ void CGInitGLAD()
     cg_is_glad_initialized = CG_TRUE;
 }
 
-CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CG_BOOL use_full_screen, CG_BOOL resizable)
+CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property)
 {
     if (!cg_is_glfw_initialized)
-        CGInitGLFW(resizable);
+        CGInitGLFW(sub_property);
 
     if (!CGResourceSystemInitialized())
         CGInitResourceSystem();
 
+    if (!cg_is_freetype_initialized)
+        CGInitFreeType();
     CGWindow* window = (CGWindow*)malloc(sizeof(CGWindow));
     CG_ERROR_COND_RETURN(window == NULL, NULL, CGSTR("Failed to allocate memory for window."));
     window->width = width;
     window->height = height;
     CG_STRCPY(window->title, title);
-    window->use_full_screen = use_full_screen;
+    window->sub_property = sub_property;
 #ifdef CG_USE_WCHAR
     {
         char title_c[256];
         CGCharToChar(title, title_c, 256);
         window->glfw_window_instance = glfwCreateWindow(width, height, title_c, 
-            use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
+            sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
     }
 #else
     window->glfw_window_instance = glfwCreateWindow(width, height, title,
-        use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
+        sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
 #endif
-    
+    glfwSetWindowAttrib((GLFWwindow*)window->glfw_window_instance, GLFW_FLOATING, sub_property.topmost);
     window->render_list = NULL;
     CGCreateRenderList(window);
     if (window->glfw_window_instance == NULL)
@@ -364,6 +407,23 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CG_BOOL use
     CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
     CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
     return window;
+}
+
+CGWindowSubProperty CGConstructDefaultWindowSubProperty()
+{
+    CGWindowSubProperty property;
+    property.boarderless = CG_FALSE;
+    property.resizable = CG_FALSE;
+    property.use_full_screen = CG_FALSE;
+    property.transparent = CG_FALSE;
+    property.topmost = CG_FALSE;
+    return property;
+}
+
+void CGSetWindowPosition(CGWindow* window, CGVector2 position)
+{
+    CG_ERROR_CONDITION(window == NULL, CGSTR("Attempting to set window position on a NULL window."));
+    glfwSetWindowPos((GLFWwindow*)window->glfw_window_instance, (int)position.x, (int)position.y);
 }
 
 static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -435,7 +495,7 @@ CGVector2 CGGetCursorPosition(CGWindow* window)
 {
     double x, y;
     glfwGetCursorPos((GLFWwindow*)window->glfw_window_instance, &x, &y);
-    return CGConstructVector2(x - window->width / 2, -1 * (y - window->height / 2));
+    return CGConstructVector2((float)x - window->width / 2, -1 * ((float)y - window->height / 2));
 }
 
 void CGCreateViewport(CGWindow* window)
@@ -450,7 +510,7 @@ void CGCreateViewport(CGWindow* window)
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glClearColor(0.2, 0.2, 0.2, 1.0);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glViewport(0, 0, window->width, window->height);
     float temp_vertices[20] = {0};
 
@@ -517,7 +577,7 @@ void CGWindowDraw(CGWindow* window)
     float assign_z = CG_RENDER_FAR;
     while (draw_obj != NULL)
     {
-        assign_z -= 0.1;
+        assign_z -= 0.1f;
         data = (CGRenderNodeData*)(draw_obj->data);
         switch (draw_obj->identifier)
         {
@@ -819,8 +879,8 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
 void CGRotateRenderObject(CGRenderObjectProperty* property, float rotation, CGVector2 center)
 {
     property->rotation += rotation;
-    float sin_theta = sin(rotation);
-    float cos_theta = cos(rotation);
+    float sin_theta = (float)sin(rotation);
+    float cos_theta = (float)cos(rotation);
     float delta_x = property->transform.x - center.x;
     float delta_y = property->transform.y - center.y;
     property->transform.x = delta_x * cos_theta - delta_y * sin_theta + center.x;
@@ -855,7 +915,7 @@ static float* CGCreateRotateMatrix(float rotate)
     memcpy(result, cg_normal_matrix, sizeof(float) * 16);
     if (rotate == 0)
         return result;
-    float sin_theta = sin(rotate), cos_theta = cos(rotate);
+    float sin_theta = (float)sin(rotate), cos_theta = (float)cos(rotate);
     result[0] = cos_theta;
     result[1] = sin_theta;
     result[4] = -1 * sin_theta;
@@ -968,7 +1028,7 @@ static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, CGSTR("Cannot make vertices array out of a triangle of value NULL."));
     float* result = (float*)malloc(sizeof(float) * 9);
     CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle vertexes."));
-    static const double denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
+    static const float denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (assigned_z - CG_RENDER_NEAR) / denom;
     CGSetFloatArrayValue(9, result,
         triangle->vert_1.x, triangle->vert_1.y, depth,
@@ -1209,4 +1269,93 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+CGTextFormat* CGCreateTextFormat(unsigned int font_size, int advance_x, int advance_y, CGChar* font_res_key)
+{
+    CG_ERROR_COND_RETURN(font_res_key == NULL, NULL, CGSTR("Failed to create text format: Font resource key must be specified to a non-null string."));
+    CGTextFormat* result = (CGTextFormat*)malloc(sizeof(CGTextFormat));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text format."));
+    result->font_size = font_size;
+    result->advance_x = advance_x;
+    result->advance_y = advance_y;
+    result->font_res_key = (CGChar*)malloc((CG_STRLEN(font_res_key) + 1) * sizeof(CGChar));
+    CG_ERROR_COND_RETURN(result->font_res_key == NULL, NULL, CGSTR("Failed to allocate memory for font resource key."));
+    CG_STRCPY(result->font_res_key, font_res_key);
+    CGRegisterResource(result, CG_DELETER(CGDeleteTextFormat));
+    return result;
+}
+
+static void CGDeleteTextFormat(CGTextFormat* text_format)
+{
+    free(text_format->font_res_key);
+    free(text_format);
+}
+
+CGText* CGCreateText(CGUByte align_state, CGUByte text_type, CGChar* text, CGTextFormat* format)
+{
+    if (!cg_is_freetype_initialized)
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create text: FreeType is not initialized."));
+    CGText* result = (CGText*)malloc(sizeof(CGText));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text."));
+    result->align_state = align_state;
+    result->text_type = text_type;
+
+    if (text != NULL)
+    {
+        result->text = (CGChar*)malloc((CG_STRLEN(text) + 1) * sizeof(CGChar));
+        if (result->text == NULL)
+        {
+            free(result);
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Filed to allocate memory for text."));
+        }
+        CG_STRCPY(result->text, text);
+    }
+    else
+        result->text = NULL;
+    
+    switch(text_type)
+    {
+    case CG_TEXT_STATIC:
+        // static text only have one texture
+        // todo: generate text texture.
+        result->texture_count = 1;
+        result->texture_ids = (unsigned int*)malloc(sizeof(unsigned int));
+        glGenTextures(1, result->texture_ids);
+        
+        break;
+    case CG_TEXT_REGULAR:
+        // regular text's number of text is equivalent to its string length
+        if (result->text == NULL)
+        {
+            result->texture_count = 0;
+            break;
+        }
+        // todo: generate text texture.
+        result->texture_count = CG_STRLEN(result->text);
+        result->texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * result->texture_count);
+        
+        glGenTextures(result->texture_count, result->texture_ids);
+        break;
+    case CG_TEXT_DYNAMIC:
+        // dynamic text will not create texture when created.
+        result->texture_count = 0;
+        result->texture_ids = NULL;
+        break;
+    default:
+        free(result->text);
+        free(result);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create text: Unknown text type"));
+        break;
+    }
+    CGRegisterResource(result, CG_DELETER(CGDeleteText));
+    return result;
+}
+
+static void CGDeleteText(CGText* text)
+{
+    glDeleteTextures(text->texture_count, text->texture_ids);
+    free(text->text);
+    free(text->texture_ids);
+    free(text);
 }
