@@ -119,8 +119,7 @@ void CGInitResourceSystem()
 {
     CGChar buff[256];
     CGGetExecDir(buff, 256);
-    CG_PRINT(CGSTR("buff: %ls"), buff);
-    unsigned int temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_file_name) + sizeof(CGChar));
+    unsigned int temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_file_name) + 2);
     cg_resource_file_path = (CGChar*)malloc(temp_size);
     CG_ERROR_CONDITION(cg_resource_file_path == NULL, CGSTR("Failed to allocate memory for resource file path."));
 #ifdef CG_USE_WCHAR
@@ -128,7 +127,7 @@ void CGInitResourceSystem()
 #else
     CG_SPRINTF(cg_resource_file_path, temp_size, CGSTR("%s%c%s"), buff, CG_FILE_SPLITTER, cg_resource_file_name);
 #endif
-    temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_finder_name) + sizeof(CGChar));
+    temp_size = sizeof(CGChar) * (CG_STRLEN(buff) + CG_STRLEN(cg_resource_finder_name) + 2);
     cg_resource_finder_path = (CGChar*)malloc(temp_size);
     if (cg_resource_finder_path == NULL)
     {
@@ -145,6 +144,8 @@ void CGInitResourceSystem()
     mem_res_head = CGCreateLinkedListNode(NULL, CG_MEM_RES_TYPE_HEAD);
     cg_texture_res_head = (CGTextureResource*)malloc(sizeof(CGTextureResource));
     CG_ERROR_CONDITION(cg_texture_res_head == NULL, CGSTR("Failed to allocate memory for texture resource head."));
+    cg_texture_res_head->key = NULL;
+    cg_texture_res_head->texture_id = 0;
     cg_texture_res_head->next = NULL;
 }
 
@@ -350,10 +351,10 @@ void CGTerminateResourceSystem()
     CGClearResource();
     free(mem_res_head);
     mem_res_head = NULL;
-    free(cg_resource_finder_path);
-    cg_resource_finder_path = NULL;
     free(cg_resource_file_path);
     cg_resource_file_path = NULL;
+    free(cg_resource_finder_path);
+    cg_resource_finder_path = NULL;
     free(cg_texture_res_head);
     cg_texture_res_head = NULL;
 }
@@ -454,13 +455,16 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
 
 unsigned int CGGetTextureResource(const CGChar* file_rk)
 {
-    CGTextureResource* p = cg_texture_res_head;
-    for (; p->next != NULL; p = p->next)
+    CGTextureResource* p = cg_texture_res_head->next;
+    if (p != NULL)
     {
-        if (CG_STRCMP(p->key, file_rk) == 0)
+        for (; p->next != NULL; p = p->next)
         {
-            ++p->reference_count;
-            return p->texture_id;
+            if (CG_STRCMP(p->key, file_rk) == 0)
+            {
+                ++p->reference_count;
+                return p->texture_id;
+            }
         }
     }
 
@@ -483,13 +487,16 @@ unsigned int CGGetTextureResource(const CGChar* file_rk)
     result->texture_id = CGCreateTexture(temp_image);
     if (result->texture_id == 0)
     {
+        free(result->key);
         free(result);
         CGFreeResource(temp_image);
-        free(result->key);
         CG_ERROR_COND_RETURN(CG_TRUE, 0, CGSTR("Failed to create texture."));
     }
     result->reference_count = 0;
-    p->next = result;
+    if (p != NULL)
+        p->next = result;
+    else
+        cg_texture_res_head->next = result;
     result->next = NULL;
     return result->texture_id;
 }
@@ -502,7 +509,7 @@ unsigned int CGCopyTextureResource(unsigned int texture_id)
     {
         if (p->next->texture_id == texture_id)
         {
-            ++p->next->reference_count;
+            ++(p->next->reference_count);
             return p->next->texture_id;
         }
     }
@@ -542,6 +549,7 @@ void CGClearTextureResource()
         free(temp->key);
         free(temp);
     }
+
 }
 
 #ifdef CG_USE_WCHAR

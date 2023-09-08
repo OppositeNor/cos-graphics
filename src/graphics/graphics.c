@@ -40,6 +40,7 @@ static unsigned int cg_buffer_count;
 
 static CGKeyCallbackFunction cg_key_callback = NULL;
 static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
+static CGCursorPositionCallbackFunction cg_cursor_position_callback = NULL;
 
 /**
  * @brief vertex shader resource key for a geometry
@@ -252,6 +253,15 @@ static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int act
  */
 static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
+/**
+ * @brief Cursor position callback function for GLFW.
+ * 
+ * @param window The window that the cursor position event is triggered on.
+ * @param x The x position of the cursor.
+ * @param y The y position of the cursor.
+ */
+static void CGGLFWCursorPositionCallback(GLFWwindow* window, double x, double y);
+
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
     CGColor color;
@@ -264,10 +274,7 @@ CGColor CGConstructColor(float r, float g, float b, float alpha)
 
 CGVector2 CGConstructVector2(float x, float y)
 {
-    CGVector2 vector;
-    vector.x = x;
-    vector.y = y;
-    return vector;
+    return (CGVector2){x, y};
 }
 
 static void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
@@ -402,6 +409,7 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSub
     }
     glfwSetKeyCallback(window->glfw_window_instance, CGGLFWKeyCallback);
     glfwSetMouseButtonCallback(window->glfw_window_instance, CGGLFWMouseButtonCallback);
+    glfwSetCursorPosCallback(window->glfw_window_instance, CGGLFWCursorPositionCallback);
 
     CGCreateViewport(window);
     CGAppendListNode(cg_window_list, CGCreateLinkedListNode(window, 1));
@@ -424,6 +432,14 @@ void CGSetWindowPosition(CGWindow* window, CGVector2 position)
 {
     CG_ERROR_CONDITION(window == NULL, CGSTR("Attempting to set window position on a NULL window."));
     glfwSetWindowPos((GLFWwindow*)window->glfw_window_instance, (int)position.x, (int)position.y);
+}
+
+CGVector2 CGGetWindowPosition(CGWindow* window)
+{
+    CG_ERROR_COND_RETURN(window == NULL, CGConstructVector2(0.0f, 0.0f), CGSTR("Attempting to get window position on a NULL window."));
+    int x, y;
+    glfwGetWindowPos((GLFWwindow*)window->glfw_window_instance, &x, &y);
+    return CGConstructVector2((float)x, (float)y);
 }
 
 static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -452,6 +468,20 @@ static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action
         return;
     }
     cg_mouse_button_callback((CGWindow*)(p->data), button, action);
+}
+
+static void CGGLFWCursorPositionCallback(GLFWwindow* window, double x, double y)
+{
+    if (cg_cursor_position_callback == NULL)
+        return;
+    CGWindowListNode* p = cg_window_list->next;
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    if (p == NULL)
+    {
+        CG_WARNING(CGSTR("Failed to find window instance in window list."));
+        return;
+    }
+    cg_cursor_position_callback((CGWindow*)(p->data), (float)x, (float)y);
 }
 
 static void CGDestroyWindow(CGWindow* window)
@@ -489,6 +519,16 @@ void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback)
 CGMouseButtonCallbackFunction CGGetMouseButtonCallback()
 {
     return cg_mouse_button_callback;
+}
+
+void CGSetCursorPositionCallback(CGCursorPositionCallbackFunction callback)
+{
+    cg_cursor_position_callback = callback;
+}
+
+CGCursorPositionCallbackFunction CGGetCursorPositionCallback()
+{
+    return cg_cursor_position_callback;
 }
 
 CGVector2 CGGetCursorPosition(CGWindow* window)

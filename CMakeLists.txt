@@ -20,7 +20,7 @@ set (USE_SHARED_LIB ON)
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
 # stored as 4 bytes instead of 2.
-set (USE_UTF16LE ON)
+set (USE_UTF16LE OFF)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
@@ -51,7 +51,7 @@ endif()
 
 # opengl
 find_package(OpenGL REQUIRED)
-list(APPEND libs OpenGL::GL)
+list(APPEND libs "OpenGL::GL")
 
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/include
@@ -62,11 +62,10 @@ message("System: ${CMAKE_SYSTEM_NAME}")
 
 #linux
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    # GLFW
     find_package(glfw3 REQUIRED)
-    list(APPEND libs glfw)
+    list(APPEND libs "glfw")
 
-    list(APPEND libs m)
+    list(APPEND libs "m")
 #windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -119,7 +118,7 @@ if (USE_TEST_EXE)
     add_executable(${EXE_OUTPUT_NAME}
         src/main.c
     )
-    target_link_libraries(${EXE_OUTPUT_NAME}
+    target_link_libraries(${EXE_OUTPUT_NAME} PUBLIC
         ${LIB_OUTPUT_NAME}
     )
 endif()

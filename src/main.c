@@ -173,9 +173,6 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
-    window_property.transparent = CG_TRUE;
-    window_property.boarderless = CG_TRUE;
-    window_property.topmost = CG_TRUE;
     CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)

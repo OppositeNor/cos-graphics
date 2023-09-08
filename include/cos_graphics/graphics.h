@@ -122,6 +122,8 @@ typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action);
 
 typedef void (*CGMouseButtonCallbackFunction)(CGWindow* window, int button, int action);
 
+typedef void (*CGCursorPositionCallbackFunction)(CGWindow* window, double x, double y);
+
 /**
  * @brief Viewport
  */
@@ -195,6 +197,14 @@ CGWindowSubProperty CGConstructDefaultWindowSubProperty();
 void CGSetWindowPosition(CGWindow* window, CGVector2 position);
 
 /**
+ * @brief Get the position of the window.
+ * 
+ * @param window The window to get position.
+ * @return CGVector2 The position of the window.
+ */
+CGVector2 CGGetWindowPosition(CGWindow* window);
+
+/**
  * @brief Set the callback function for key events.
  * 
  * @param callback The callback function for key events.
@@ -216,11 +226,25 @@ CGKeyCallbackFunction CGGetKeyCallback();
 void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback);
 
 /**
- * @brief Get the callback function for mouse button events.
+ * @brief Get the callback function for cursor button events.
  * 
- * @return CGMouseButtonCallbackFunction The callback function.
+ * @return CGCursorButtonCallbackFunction The callback function.
  */
 CGMouseButtonCallbackFunction CGGetMouseButtonCallback();
+
+/**
+ * @brief Set the callback function for cursor position events.
+ * 
+ * @param callback The callback function for cursor position events.
+ */
+void CGSetCursorPositionCallback(CGCursorPositionCallbackFunction callback);
+
+/**
+ * @brief Get the callback function for cursor position events.
+ * 
+ * @return CGCursorPositionCallbackFunction The callback function.
+ */
+CGCursorPositionCallbackFunction CGGetCursorPositionCallback();
 
 /**
  * @brief Get the cursor position.

@@ -417,6 +417,20 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             CGRWSkipSpaces(&p, &line_count);
             CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%lc\' instead."), line_count, *p);
 #else
+            if (*p == '}')
+            {
+                ++p;
+                CGRWSkipSpaces(&p, &line_count);
+                CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead."), line_count, *p);
+                return;
+            }
+            CGRW_ERROR_COND_EXIT(!CGRWIsLetter(*p) && *p != '\"' && *p != ';', -1, CGSTR("Invalid resource file format at line: %d, unexpected character: \'%c\'."), line_count, *p);
+            CGRWChar buff[256];
+            CGRWGetFirstWord(p, buff);
+            p += CGRW_STRLEN(buff);
+            CGRWSkipSpaces(&p, &line_count);
+            if (*p != '=')
+                CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Invalid resource file format at line: %d, expected character: \'=\', but get \'%c\' instead."), line_count, *p);
             ++p;
             CGRWSkipSpaces(&p, &line_count);
             CGRWChar* t_p = p;
@@ -434,20 +448,6 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             p = t_p + 1;
             CGRWSkipSpaces(&p, &line_count);
             CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead."), line_count, *p);
-            if (*p == '}')
-            {
-                ++p;
-                CGRWSkipSpaces(&p, &line_count);
-                CGRW_ERROR_COND_EXIT(*p != ';', -1, CGSTR("Invalid resource file format at line: %d, expected character: \';\', but get \'%c\' instead."), line_count, *p);
-                return;
-            }
-            CGRW_ERROR_COND_EXIT(!CGRWIsLetter(*p) && *p != '\"' && *p != ';', -1, CGSTR("Invalid resource file format at line: %d, unexpected character: \'%c\'."), line_count, *p);
-            CGRWChar buff[256];
-            CGRWGetFirstWord(p, buff);
-            p += CGRW_STRLEN(buff);
-            CGRWSkipSpaces(&p, &line_count);
-            if (*p != '=')
-                CGRW_ERROR_COND_EXIT(CGRW_TRUE, -1, CGSTR("Invalid resource file format at line: %d, expected character: \'=\', but get \'%c\' instead."), line_count, *p);
 #endif
             }break;
         };
