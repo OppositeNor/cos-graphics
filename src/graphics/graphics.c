@@ -4,6 +4,12 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#ifdef CG_TG_WIN
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #include <GLFW/glfw3native.h>
+#endif
+
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -220,20 +226,6 @@ static void CGDeleteShaderProgram(CGShaderProgram program);
 static void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 /**
- * @brief Delete CGText object.
- * 
- * @param visual_image visual_image object instance to be deleted
- */
-static void CGDeleteText(CGText* text);
-
-/**
- * @brief Delete CGTextFormat object.
- * 
- * @param text_format The text format object to be deleted.
- */
-static void CGDeleteTextFormat(CGTextFormat* text_format);
-
-/**
  * @brief Key callback function for GLFW
  * 
  * @param window The window that the key event is triggered on
@@ -416,6 +408,13 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSub
     CGRegisterResource(window, CG_DELETER(CGDestroyWindow));
     return window;
 }
+
+#ifdef CG_TG_WIN
+HWND CGGetWindowHandle(CGWindow* window)
+{
+    return glfwGetWin32Window((GLFWwindow*)(window->glfw_window_instance));
+}
+#endif
 
 CGWindowSubProperty CGConstructDefaultWindowSubProperty()
 {
@@ -841,6 +840,22 @@ void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_na
     glUniform1f(uniform_location, value);
 }
 
+void CGSetShaderUniform1i(CGShaderProgram shader_program, const char* uniform_name, CG_BOOL value)
+{
+    CG_ERROR_CONDITION(uniform_name == NULL, CGSTR("Attempting to set a uniform with a NULL name."));
+    CGGladInitializeCheck();
+    GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
+    glUniform1i(uniform_location, value);
+}
+
+void CGSetShaderUniformVec2f(CGShaderProgram shader_program, const char* uniform_name, CGVector2 value)
+{
+    CG_ERROR_CONDITION(uniform_name == NULL, CGSTR("Attempting to set a uniform with a NULL name."));
+    CGGladInitializeCheck();
+    GLint uniform_location = glGetUniformLocation(shader_program, uniform_name);
+    glUniform2f(uniform_location, value.x, value.y);
+}
+
 void CGSetShaderUniformVec4f(
     CGShaderProgram shader_program, const char* uniform_name,
     float val_1, float val_2, float val_3, float val_4)
@@ -1063,6 +1078,18 @@ CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_
     return result;
 }
 
+CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
+{
+    CGTriangle* result = (CGTriangle*)malloc(sizeof(CGTriangle));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle."));
+    result->vert_1 = vert_1;
+    result->vert_2 = vert_2;
+    result->vert_3 = vert_3;
+    result->is_temp = CG_TRUE;
+    CGRegisterResource(result, free);
+    return result;
+}
+
 static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, CGSTR("Cannot make vertices array out of a triangle of value NULL."));
@@ -1169,6 +1196,19 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     return result;
 }
 
+CGQuadrangle* CGCreateTQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
+{
+    CGQuadrangle* result = (CGQuadrangle*)malloc(sizeof(CGQuadrangle));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for CGQuadrangle object"));
+    result->vert_1 = vert_1;
+    result->vert_2 = vert_2;
+    result->vert_3 = vert_3;
+    result->vert_4 = vert_4;
+    result->is_temp = CG_TRUE;
+    CGRegisterResource(result, free);
+    return result;
+}
+
 static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObjectProperty* property, const CGWindow* window, float assigned_z)
 {
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, CGSTR("Cannot draw quadrangle on a NULL window."));
@@ -1250,6 +1290,39 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window)
     visual_image->img_width = image->width;
     visual_image->img_height = image->height;
     visual_image->img_channels = image->channels;
+    visual_image->clamp_top_left = (CGVector2){0.0f, 0.0f};
+    visual_image->clamp_bottom_right = (CGVector2){image->width, image->height};
+    visual_image->is_clamped = CG_FALSE;
+    if (image == NULL)
+    {
+        free(visual_image);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to allocate memory for visual_image texture."));
+    }
+    visual_image->texture_id = CGGetTextureResource(img_rk);
+    CGFreeResource(image);
+    CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
+    return visual_image;
+}
+
+CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window)
+{
+    CG_ERROR_COND_RETURN(img_rk == NULL, NULL, CGSTR("Cannot create image with NULL texture path."));
+    CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, CGSTR("Cannot create image with NULL window."));
+    CGGladInitializeCheck();
+    CGVisualImage* visual_image = (CGVisualImage*)malloc(sizeof(CGVisualImage));
+    CG_ERROR_COND_RETURN(visual_image == NULL, NULL, CGSTR("Failed to allocate memory for visual_image."));
+    if (glfwGetCurrentContext() != window->glfw_window_instance)
+        glfwMakeContextCurrent(window->glfw_window_instance);
+    visual_image->in_window = window;
+    visual_image->is_temp = CG_TRUE;
+    CGImage* image = CGLoadImageFromResource(img_rk);
+    CG_ERROR_COND_RETURN(image == NULL, NULL, CGSTR("Failed to create visual_image."));
+    visual_image->img_width = image->width;
+    visual_image->img_height = image->height;
+    visual_image->img_channels = image->channels;
+    visual_image->clamp_top_left = (CGVector2){0.0f, 0.0f};
+    visual_image->clamp_bottom_right = (CGVector2){image->width, image->height};
+    visual_image->is_clamped = CG_FALSE;
     if (image == NULL)
     {
         free(visual_image);
@@ -1270,6 +1343,9 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     result->img_width = visual_image->img_width;
     result->img_height = visual_image->img_height;
     result->img_channels = visual_image->img_channels;
+    result->clamp_top_left = visual_image->clamp_top_left;
+    result->clamp_bottom_right = visual_image->clamp_bottom_right;
+    result->is_clamped = visual_image->is_clamped;
     result->is_temp = CG_FALSE;
     CGWindow* in_window = result->in_window = visual_image->in_window;
     if (glfwGetCurrentContext() != in_window->glfw_window_instance)
@@ -1305,97 +1381,12 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     CGSetPropertyUniforms(cg_visual_image_shader_program, property);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width / 2.0f);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height / 2.0f);
+    CGSetShaderUniform1i(cg_visual_image_shader_program, "is_clamped", visual_image->is_clamped);
+    CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_top_left", visual_image->clamp_top_left);
+    CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_bottom_right", visual_image->clamp_bottom_right);
+    CGSetShaderUniformVec2f(cg_visual_image_shader_program, "image_demention", (CGVector2){visual_image->img_width, visual_image->img_height});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-CGTextFormat* CGCreateTextFormat(unsigned int font_size, int advance_x, int advance_y, CGChar* font_res_key)
-{
-    CG_ERROR_COND_RETURN(font_res_key == NULL, NULL, CGSTR("Failed to create text format: Font resource key must be specified to a non-null string."));
-    CGTextFormat* result = (CGTextFormat*)malloc(sizeof(CGTextFormat));
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text format."));
-    result->font_size = font_size;
-    result->advance_x = advance_x;
-    result->advance_y = advance_y;
-    result->font_res_key = (CGChar*)malloc((CG_STRLEN(font_res_key) + 1) * sizeof(CGChar));
-    CG_ERROR_COND_RETURN(result->font_res_key == NULL, NULL, CGSTR("Failed to allocate memory for font resource key."));
-    CG_STRCPY(result->font_res_key, font_res_key);
-    CGRegisterResource(result, CG_DELETER(CGDeleteTextFormat));
-    return result;
-}
-
-static void CGDeleteTextFormat(CGTextFormat* text_format)
-{
-    free(text_format->font_res_key);
-    free(text_format);
-}
-
-CGText* CGCreateText(CGUByte align_state, CGUByte text_type, CGChar* text, CGTextFormat* format)
-{
-    if (!cg_is_freetype_initialized)
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create text: FreeType is not initialized."));
-    CGText* result = (CGText*)malloc(sizeof(CGText));
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text."));
-    result->align_state = align_state;
-    result->text_type = text_type;
-
-    if (text != NULL)
-    {
-        result->text = (CGChar*)malloc((CG_STRLEN(text) + 1) * sizeof(CGChar));
-        if (result->text == NULL)
-        {
-            free(result);
-            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Filed to allocate memory for text."));
-        }
-        CG_STRCPY(result->text, text);
-    }
-    else
-        result->text = NULL;
-    
-    switch(text_type)
-    {
-    case CG_TEXT_STATIC:
-        // static text only have one texture
-        // todo: generate text texture.
-        result->texture_count = 1;
-        result->texture_ids = (unsigned int*)malloc(sizeof(unsigned int));
-        glGenTextures(1, result->texture_ids);
-        
-        break;
-    case CG_TEXT_REGULAR:
-        // regular text's number of text is equivalent to its string length
-        if (result->text == NULL)
-        {
-            result->texture_count = 0;
-            break;
-        }
-        // todo: generate text texture.
-        result->texture_count = CG_STRLEN(result->text);
-        result->texture_ids = (unsigned int*)malloc(sizeof(unsigned int) * result->texture_count);
-        
-        glGenTextures(result->texture_count, result->texture_ids);
-        break;
-    case CG_TEXT_DYNAMIC:
-        // dynamic text will not create texture when created.
-        result->texture_count = 0;
-        result->texture_ids = NULL;
-        break;
-    default:
-        free(result->text);
-        free(result);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create text: Unknown text type"));
-        break;
-    }
-    CGRegisterResource(result, CG_DELETER(CGDeleteText));
-    return result;
-}
-
-static void CGDeleteText(CGText* text)
-{
-    glDeleteTextures(text->texture_count, text->texture_ids);
-    free(text->text);
-    free(text->texture_ids);
-    free(text);
 }

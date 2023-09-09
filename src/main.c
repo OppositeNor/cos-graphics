@@ -194,11 +194,14 @@ int main()
         clock += (float)delta * 3;
         CGTickRenderStart(window);
 
-        CGVisualImage* visual_image = CGCreateVisualImage(CGSTR("test1"), window);
-        visual_image->is_temp = CG_TRUE;
-        prop->transform.x = sin(clock) * 100;
+        CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
+        visual_image->is_clamped = CG_TRUE;
+        visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
+        prop->scale = (CGVector2){3.0f, 3.0f};
+
+        //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(visual_image, prop, window);
-        CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
+        //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
 
         CGTickRenderEnd();

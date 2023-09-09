@@ -51,7 +51,7 @@ endif()
 
 # opengl
 find_package(OpenGL REQUIRED)
-list(APPEND libs "OpenGL::GL")
+list(APPEND libs OpenGL::GL)
 
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/include

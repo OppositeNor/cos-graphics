@@ -8,6 +8,10 @@
 extern "C" {
 #endif
 
+#ifdef CG_TG_WIN
+    #include <windows.h>
+#endif
+
 #ifndef CG_RENDER_FAR
     /**
      * @brief This value is the smallest assigned z index being started. Note that it does not have any
@@ -180,6 +184,16 @@ CGVector2 CGConstructVector2(float x, float y);
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
 CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property);
+
+#ifdef CG_TG_WIN
+    /**
+     * @brief Get the HWND of the window.
+     * @warning This function is only available on Windows.
+     * @param window The window to get HWND.
+     * @return The HWND of the window.
+     */
+    HWND CGGetWindowHandle(CGWindow* window);
+#endif
 
 /**
  * @brief Construct a default window property object.
@@ -417,7 +431,7 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader);
 void CGUseShaderProgram(CGShaderProgram program);
 
 /**
- * @brief Set opengl shader 1f uniform
+ * @brief Set OpenGL shader 1f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -426,7 +440,25 @@ void CGUseShaderProgram(CGShaderProgram program);
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value);
 
 /**
- * @brief Set opengl shader vector 4f uniform
+ * @brief Set OpenGL shader 1i uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param value value
+ */
+void CGSetShaderUniform1i(CGShaderProgram shader_program, const char* uniform_name, CG_BOOL value);
+
+/**
+ * @brief Set OpenGL shader vector 2f uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param value value
+ */
+void CGSetShaderUniformVec2f(CGShaderProgram shader_program, const char* uniform_name, CGVector2 value);
+
+/**
+ * @brief Set OpenGL shader vector 4f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -441,7 +473,7 @@ void CGSetShaderUniformVec4f(
 );
 
 /**
- * @brief Set opengl shader matrix 4f uniform
+ * @brief Set OpenGL shader matrix 4f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -558,6 +590,15 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
  * @return CGTriangle* triangle instance
  */
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
+/**
+ * @brief Create a temporary triangle
+ * 
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @return CGTriangle* triangle instance
+ */
+CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 
 typedef struct{
     /**
@@ -605,6 +646,17 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
  */
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
+/**
+ * @brief Create a temporary quadrangle object. A temporary quadrangle object will
+ * be automatically deleted after the render.
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @param vert_4 vertex 4
+ * @return CGQuadrangle* created quadrangle object
+ */
+CGQuadrangle* CGCreateTQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+
 
 /************VISUAL_IMAGES************/
 
@@ -614,6 +666,12 @@ typedef struct{
      * This will be set to CG_FALSE by default.
      */
     CG_BOOL is_temp;
+
+    /**
+     * @brief Is the image clamped.
+     */
+    CG_BOOL is_clamped;
+
     /**
      * @brief Texture's OpenGL ID
      */
@@ -637,6 +695,16 @@ typedef struct{
      * @brief The window that the visual_image is created in.
      */
     CGWindow* in_window;
+
+    /**
+     * @brief The top left point where the image is going to be clamped.
+     */
+    CGVector2 clamp_top_left;
+
+    /**
+     * @brief The bottom right point where the image is going to be clamped.
+     */
+    CGVector2 clamp_bottom_right;
 }CGVisualImage;
 
 /**
@@ -658,11 +726,19 @@ void CGDeleteTexture(unsigned int texture_id);
  * @brief Create CGVisualImage object
  * 
  * @param img_rk The resource key of the texture.
- * @param property visual_image property object.
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
 CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
+
+/**
+ * @brief Create a temporary CGVisualImage object. A temporary CGVisualImage object will
+ * be automatically deleted after the render.
+ * @param img_rk The resource key of the texture.
+ * @param window The window that the visual_image is going to be drawn.
+ * @return CGVisualImage* The created CGVisualImage object
+ */
+CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
 
 /**
  * @brief Copy CGVisualImage object
@@ -673,199 +749,7 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
  */
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
-/************TEXT************/
 
-/**
- * @brief Text horizontal align state left. The left side of the text will be aligned to its position.
-*/
-#define CG_TEXT_H_ALIGN_STATE_LEFT         0x00
-/**
- * @brief Text horizontal align state right. The right side of the text will be aligned to its position.
-*/
-#define CG_TEXT_H_ALIGN_STATE_RIGHT        0x01
-/**
- * @brief Text horizontal align state center. The center of the text will be aligned to its position.
-*/
-#define CG_TEXT_H_ALIGN_STATE_CENTER       0x02
-/**
- * @brief Text vertical align state top. The top side of the text will be aligned to its position.
-*/
-#define CG_TEXT_V_ALIGN_STATE_TOP          0x00
-/**
- * @brief Text vertical align state bottom. The bottom side of the text will be aligned to its position.
-*/
-#define CG_TEXT_V_ALIGN_STATE_BOTTOM       0x10
-/**
- * @brief Text vertical align state center. The center of the text will be aligned to its position.
-*/
-#define CG_TEXT_V_ALIGN_STATE_CENTER       0x20
-/**
- * @brief Align the left top of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_TOP @endcode
- */
-#define CG_TEXT_ALIGN_STATE_LEFT_TOP       0x00
-/**
- * @brief Align the left bottom of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
- */
-#define CG_TEXT_ALIGN_STATE_LEFT_BOTTOM    0x10
-/**
- * @brief Align the left center of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
- */
-#define CG_TEXT_ALIGN_STATE_LEFT_CENTER    0x20
-/**
- * @brief Align the center top of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_TOP @endcode
- */
-#define CG_TEXT_ALIGN_STATE_CENTER_TOP     0x01
-/**
- * @brief Align the center of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
- */
-#define CG_TEXT_ALIGN_STATE_CENTER         0x11
-/**
- * @brief Align the center bottom of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_CENTER | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
- */
-#define CG_TEXT_ALIGN_STATE_CENTER_BOTTOM  0x21
-/**
- * @brief Align the right top of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_TOP @endcode
- */
-#define CG_TEXT_ALIGN_STATE_RIGHT_TOP      0x02
-/**
- * @brief Align the right center of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_CENTER @endcode
- */
-#define CG_TEXT_ALIGN_STATE_RIGHT_CENTER   0x12
-/**
- * @brief Align the right bottom of the text to its position. This is equivalent as 
- * @code CG_TEXT_H_ALIGN_STATE_RIGHT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode
- */
-#define CG_TEXT_ALIGN_STATE_RIGHT_BOTTOM   0x22
-
-/**
- * @brief A static text. Static text should NOT be changed in the entire program.
- * @details Low flexibility, high performance.
- */
-#define CG_TEXT_STATIC 0
-/**
- * @brief A regular text. Regular text can be changed by calling function CGChangeText.
- * @details Moderate flexibility, moderate performance.
- */
-#define CG_TEXT_REGULAR 1
-/**
- * @brief A dynamic text. Dynamic text should be changed frequently in the program, and it is allowed to be 
- * updated by directly changing "text" property.
- * @details High flexibility, low performance.
- */
-#define CG_TEXT_DYNAMIC 2
-
-typedef struct {
-    /**
-     * @brief The size of the font.
-     */
-    unsigned int font_size;
-    /**
-     * @brief The x value of the displacement from the 
-     * starting of one character to the next. This will 
-     * be set to the default advance if it is set to 0.
-     */
-    int advance_x;
-    /**
-     * @brief The y value of the displacement from the 
-     * starting of one character to the next. This will 
-     * be set to the default advance if it is set to 0.
-     */
-    int advance_y;
-    /**
-     * @brief The resource key of the font file.
-     */
-    CGChar* font_res_key;
-
-
-}CGTextFormat;
-
-typedef struct {
-    /**
-     * @brief The align state of the text. The align state can be calculated by bit calculations.
-     * @example If you want to align the left bottom of the text to its position, you can set this
-     * value to @code CG_TEXT_H_ALIGN_STATE_LEFT | CG_TEXT_V_ALIGN_STATE_BOTTOM @endcode, or simply
-     * @code CG_TEXT_ALIGN_STATE_LEFT_BOTTOM @endcode
-     */
-    CGUByte align_state;
-    /**
-     * @brief The type of the text. It can be set to CG_TEXT_STATIC, CG_TEXT_REGULAR or CG_TEXT_DYNAMIC.
-     * Different type of text will cause difference in performance.
-     */
-    CGUByte text_type;
-    /**
-     * @brief The number of textures in texture_ids.
-     * 
-     */
-    unsigned int texture_count;
-    /**
-     * @brief The ids of the texture of the text. The value may vary according to text_type.
-     */
-    unsigned int* texture_ids;
-    /**
-     * @brief The string of the text, or the key of the text. If this string is the key of the text,
-     * This string should be started with a "+" sign.
-     * @details For static text, changing of this value will be ignored. For regular text, you should
-     * change this value by calling function CGChangeText. For dynamic text, you can change this value directly.
-     * @details If you wish the string to start with a "+" sign without being recognized as key, you should
-     * start the string with a '\\' sign. Note that the '\\' will be ignored.
-     */
-    CGChar* text;
-
-    /**
-     * @brief The format of the text
-     * @details For static text, changing of this value will be ignored. For other types, you should change this
-     * value by calling function CGChangeTextFormat.
-     */
-    CGTextFormat* format;
-}CGText;
-
-/**
- * @brief Create a text format object.
- * 
- * @param font_size The size of the font.
- * @param advance_x The x value of the displacement from the starting of one character to the next. This will 
- * be set to the default advance if it is set to 0.
- * @param advance_y The y value of the displacement from the starting of one character to the next. This will
- * be set to the default advance if it is set to 0.
- * @param font_res_key The resource key of the font file.
- * @return CGTextFormat* The created text format object.
- */
-CGTextFormat* CGCreateTextFormat(unsigned int font_size, int advance_x, int advance_y, CGChar* font_res_key);
-
-/**
- * @brief Create a text object.
- * 
- * @param align_state The align state of the text.
- * @param text_type The type of the text.
- * @param text The string of the text, or the key of the text. If this string is the key of the text,
- * This string should be started with a "+" sign. If you wish the string to start with a "+" sign without being recognized as key, you should
- * start the string with a '\\' sign. Note that the '\\' will be ignored.
- * @param format The format of the text.
- * @return CGText* The created text object.
- */
-CGText* CGCreateText(CGUByte align_state, CGUByte text_type, CGChar* text, CGTextFormat* format);
-
-/**
- * @brief Change the text of a text object.
- * @note If the text is a static text, this function will do nothing.
- * @param text The text object to be changed.
- * @param new_text The text to be changed.
- */
-void CGChangeTextValue(CGText* text, CGChar* new_text);     // todo: finish this function
-
-/**
- * @brief Change the format of a text object.
- * 
- */
-void CGChangeTextFormat(CGText* text);                      // todo: finish this function
 #ifdef __cplusplus
 }
 #endif
