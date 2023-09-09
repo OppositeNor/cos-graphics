@@ -1,6 +1,7 @@
 #pragma once
 #include "cos_graphics/graphics.h"
 #include <vector>
+#include <string>
 #include <functional>
 
 class CGComponent;
