@@ -8,7 +8,7 @@ extern "C" {
 CGLinkedListNode* CGCreateLinkedListNode(void* data, int type)
 {
     CGLinkedListNode* node = (CGLinkedListNode*)malloc(sizeof(CGLinkedListNode));
-    CG_ERROR_COND_RETURN(node == NULL, NULL, "Failed to allocate memory for linked list node");
+    CG_ERROR_COND_RETURN(node == NULL, NULL, CGSTR("Failed to allocate memory for linked list node"));
     node->data = data;
     node->identifier = type;
     node->next = NULL;
@@ -35,7 +35,7 @@ void CGRemoveLinkedListNode(CGLinkedListNode** node)
 
 void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data)
 {
-    CG_ERROR_CONDITION(head == NULL || *head == NULL, "Failed to remove data from list: The head of the list is null.");
+    CG_ERROR_CONDITION(head == NULL || *head == NULL, CGSTR("Failed to remove data from list: The head of the list is null."));
     CGLinkedListNode* p = *head;
     if (p->data == data)
     {
@@ -53,7 +53,7 @@ void CGRemoveLinkedListNodeByData(CGLinkedListNode** head, void* data)
             return;
         }
     }
-    CG_WARNING("Failed to remove data from list: The data is not in the list.");
+    CG_WARNING(CGSTR("Failed to remove data from list: The data is not in the list."));
 }
 
 void CGAppendListNode(CGLinkedListNode* head, CGLinkedListNode* node)
@@ -70,7 +70,7 @@ CGLinkedListNode* CGFindLinkedListNodeByData(CGLinkedListNode* head, void* data)
         if (p->data == data)
             return p;
     }
-    CG_WARNING("Failed to find data from list: The data is not in the list. Returning NULL...");
+    CG_WARNING(CGSTR("Failed to find data from list: The data is not in the list. Returning NULL..."));
     return NULL;
 }
 
@@ -91,16 +91,16 @@ void CGPrintList(CGLinkedListNode* head)
 {
     if (head == NULL)
         return;
-    CG_PRINT("Print list with head %p: ", head);
+    CG_PRINT(CGSTR("Print list with head %p: "), head);
     CGLinkedListNode* p_node = head;
     unsigned int i = 0;
     while (p_node != NULL)
     {
-        CG_PRINT("Node: %d, Identifier: %d, Data location: %p", i, p_node->identifier, p_node->data);
+        CG_PRINT(CGSTR("Node: %d, Identifier: %d, Data location: %p"), i, p_node->identifier, p_node->data);
         p_node = p_node->next;
         ++i;
     }
-    CG_PRINT("Print list end. Total %d nodes.\n", i);
+    CG_PRINT(CGSTR("Print list end. Total %d nodes.\n"), i);
 }
 
 #ifdef __cplusplus

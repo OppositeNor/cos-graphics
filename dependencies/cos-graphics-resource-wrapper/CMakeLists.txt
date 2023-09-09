@@ -13,13 +13,17 @@ if (CGRW_NO_VERBOSE MATCHES ON)
     add_definitions(-DCGRW_NO_VERBOSE)
 endif()
 
+if (USE_UTF16LE MATCHES ON)
+    add_definitions(-DCGRW_USE_UTF16LE)
+endif()
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 include_directories(
     ${PROJECT_SOURCE_DIR}/include/
 )
 
-if (EXISTS ${EXECUTABLE_OUTPUT_PATH}/${CGRW_EXECUTABLE_NAME})
+if (EXISTS ${EXECUTABLE_OUTPUT_PATH}/${CGRW_EXECUTABLE_NAME} AND USE_TEST_EXE)
     execute_process(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
@@ -36,8 +40,10 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/log.c
 )
 
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
-)
+if (USE_TEST_EXE)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
+    )
+endif()

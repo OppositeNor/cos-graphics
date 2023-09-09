@@ -19,10 +19,11 @@ For Linux Debian you have to install dependencies:
 sudo apt install build-essential cmake libglfw3-dev libgl1-mesa-dev
 ```
 
-For Windows you have to download [MinGW](https://www.mingw-w64.org) and [CMake](https://cmake.org/) to compile this program.
+For Windows you have to download [MinGW](https://www.mingw-w64.org) or [MSVC](https://visualstudio.microsoft.com), and [CMake](https://cmake.org/) to compile this program.
 
 build
 ```
+mkdir build
 cmake --build build
 ```
 

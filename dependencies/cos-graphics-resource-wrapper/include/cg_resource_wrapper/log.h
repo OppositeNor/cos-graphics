@@ -8,17 +8,38 @@
 extern "C" {
 #endif
 
-#define CGRW_PRINT(...) CGRWPrint("CGResourceWrapper", "Output", __VA_ARGS__)
-#define CGRW_ERROR(...) CGRWPrint("CGResourceWrapper", "Error", __VA_ARGS__)
-#define CGRW_WARNING(...) CGRWPrint("CGResourceWrapper", "Warning", __VA_ARGS__)
+#ifdef CGRW_USE_UTF16LE
+    #include <wchar.h>
+    typedef wchar_t CGRWChar;
+
+    #define CGRW_STRLEN wcslen
+    #define CGRW_PRINTF wprintf
+    #define CGRW_VPRINTF vwprintf
+
+    #define CGSTR(str) L##str
+
+    #define CGRW_USE_WCHAR
+#else
+    typedef char CGRWChar;
+
+    #define CGRW_STRLEN strlen
+    #define CGRW_PRINTF printf
+    #define CGRW_VPRINTF vprintf
+
+    #define CGSTR(str) str
+#endif
+
+#define CGRW_PRINT(...) CGRWPrint(CGSTR("CGResourceWrapper"), CGSTR("Output"), __VA_ARGS__)
+#define CGRW_ERROR(...) CGRWPrint(CGSTR("CGResourceWrapper"), CGSTR("Error"), __VA_ARGS__)
+#define CGRW_WARNING(...) CGRWPrint(CGSTR("CGResourceWrapper"), CGSTR("Warning"), __VA_ARGS__)
 
 #ifdef CGRW_NO_VERBOSE
 #define CGRW_PRINT_VERBOSE(...) ((void)0)
 #else
-#define CGRW_PRINT_VERBOSE(...) CGRWPrint("CGResourceWrapper", "OutputVerbose", __VA_ARGS__)
+#define CGRW_PRINT_VERBOSE(...) CGRWPrint(CGSTR("CGResourceWrapper"), CGSTR("OutputVerbose"), __VA_ARGS__)
 #endif
 
-void CGRWPrint(const char* sender, const char* type, const char* fmt, ...);
+void CGRWPrint(const CGRWChar* sender, const CGRWChar* type, const CGRWChar* fmt, ...);
 
 /**
  * @brief Should print out error. If condition is true, then print out error and exit the function. 

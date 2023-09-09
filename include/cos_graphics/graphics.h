@@ -8,6 +8,10 @@
 extern "C" {
 #endif
 
+#ifdef CG_TG_WIN
+    #include <windows.h>
+#endif
+
 #ifndef CG_RENDER_FAR
     /**
      * @brief This value is the smallest assigned z index being started. Note that it does not have any
@@ -64,19 +68,52 @@ typedef struct {
 } CGVector2;
 
 /**
+ * @brief Window subproperty.
+ */
+typedef struct{
+    /**
+     * @brief Is the window resizable.
+     * @default CG_FALSE
+     */
+    CG_BOOL resizable;
+    /**
+     * @brief Is the window full screen.
+     * @default CG_FALSE
+     */
+    CG_BOOL use_full_screen;
+    /**
+     * @brief Is the window boarderless.
+     * @default CG_FALSE
+     */
+    CG_BOOL boarderless;
+    /**
+     * @brief Is the window transparent.
+     * @default CG_FALSE
+     */
+    CG_BOOL transparent;
+    /**
+     * @brief Is the window topmost (always on top of other windows)
+     * @default CG_FALSE
+     */
+    CG_BOOL topmost;
+} CGWindowSubProperty;
+
+/**
  * @brief Window
  */
-typedef struct CGWindow{
-    char title[256];
+typedef struct{
+    /**
+     * @brief The title of the window.
+     */
+    CGChar title[256];
     int width;
     int height;
-    CG_BOOL use_full_screen;
     void* glfw_window_instance;
     unsigned int triangle_vao;
     unsigned int quadrangle_vao;
     unsigned int visual_image_vao;
     CGRenderNode* render_list;
-    
+    CGWindowSubProperty sub_property;
 } CGWindow;
 
 /**
@@ -88,6 +125,8 @@ typedef struct CGWindow{
 typedef void (*CGKeyCallbackFunction)(CGWindow* window, int key, int action);
 
 typedef void (*CGMouseButtonCallbackFunction)(CGWindow* window, int button, int action);
+
+typedef void (*CGCursorPositionCallbackFunction)(CGWindow* window, double x, double y);
 
 /**
  * @brief Viewport
@@ -136,7 +175,7 @@ CGVector2 CGConstructVector2(float x, float y);
  * @param width width of the window.
  * @param height height of the window
  * @param title title of the window
- * @param use_full_screen use full screen
+ * @param property window sub property
  * @return CGWindow* The window instance. Returns NULL if failed to create window. 
  * The "width" property and "height" property is set to to the paramiter automatically; however
  * you can set it manually if you don't like the render size of the window. Note that if you 
@@ -144,7 +183,40 @@ CGVector2 CGConstructVector2(float x, float y);
  * will change instead. You will find the window not scalling, but the content inside the window
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
-CGWindow* CGCreateWindow(int width, int height,const char* title, CG_BOOL use_full_screen, CG_BOOL resizable);
+CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property);
+
+#ifdef CG_TG_WIN
+    /**
+     * @brief Get the HWND of the window.
+     * @warning This function is only available on Windows.
+     * @param window The window to get HWND.
+     * @return The HWND of the window.
+     */
+    HWND CGGetWindowHandle(CGWindow* window);
+#endif
+
+/**
+ * @brief Construct a default window property object.
+ * 
+ * @return CGWindowSubProperty The default window property object.
+ */
+CGWindowSubProperty CGConstructDefaultWindowSubProperty();
+
+/**
+ * @brief Set the position of the window.
+ * 
+ * @param window The window that the position is going to be set.
+ * @param position The position of the upper left corner of the window in screen cordnate to be set to.
+ */
+void CGSetWindowPosition(CGWindow* window, CGVector2 position);
+
+/**
+ * @brief Get the position of the window.
+ * 
+ * @param window The window to get position.
+ * @return CGVector2 The position of the window.
+ */
+CGVector2 CGGetWindowPosition(CGWindow* window);
 
 /**
  * @brief Set the callback function for key events.
@@ -168,11 +240,25 @@ CGKeyCallbackFunction CGGetKeyCallback();
 void CGSetMouseButtonCallback(CGMouseButtonCallbackFunction callback);
 
 /**
- * @brief Get the callback function for mouse button events.
+ * @brief Get the callback function for cursor button events.
  * 
- * @return CGMouseButtonCallbackFunction The callback function.
+ * @return CGCursorButtonCallbackFunction The callback function.
  */
 CGMouseButtonCallbackFunction CGGetMouseButtonCallback();
+
+/**
+ * @brief Set the callback function for cursor position events.
+ * 
+ * @param callback The callback function for cursor position events.
+ */
+void CGSetCursorPositionCallback(CGCursorPositionCallbackFunction callback);
+
+/**
+ * @brief Get the callback function for cursor position events.
+ * 
+ * @return CGCursorPositionCallbackFunction The callback function.
+ */
+CGCursorPositionCallbackFunction CGGetCursorPositionCallback();
 
 /**
  * @brief Get the cursor position.
@@ -268,6 +354,9 @@ typedef struct{
 /**
  * @brief Create a shader source object
  * 
+ * @warning If you are using wide character, the shader souces will still needs to be in char type (8 bits) 
+ * instead of w_char type. Thus you shouldent wirte your shader in UTF-16 but in UTF-8 instead.
+ * 
  * @param vertex vertex source. If you want to set this manually, you can set this parameter to NULL.
  * @param fragment fragment source If you want to set this manually, you can set this parameter to NULL.
  * @param geometry geometry source If you want to set this manually, you can set this parameter to NULL.
@@ -286,8 +375,8 @@ CGShaderSource* CGCreateShaderSource(const char* vertex, const char* fragment,
  * @param use_geometry use geometry source
  * @return CGShaderSource* 
  */
-CGShaderSource* CGCreateShaderSourceFromPath(const char* vertex_rk, const char* fragment_rk, 
-    const char* geometry_rk, CG_BOOL use_geometry);
+CGShaderSource* CGCreateShaderSourceFromPath(const CGChar* vertex_rk, const CGChar* fragment_rk, 
+    const CGChar* geometry_rk, CG_BOOL use_geometry);
 
 /**
  * @brief Shaders
@@ -342,7 +431,7 @@ CGShaderProgram CGCreateShaderProgram(CGShader* shader);
 void CGUseShaderProgram(CGShaderProgram program);
 
 /**
- * @brief Set opengl shader 1f uniform
+ * @brief Set OpenGL shader 1f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -351,7 +440,25 @@ void CGUseShaderProgram(CGShaderProgram program);
 void CGSetShaderUniform1f(CGShaderProgram shader_program, const char* uniform_name, float value);
 
 /**
- * @brief Set opengl shader vector 4f uniform
+ * @brief Set OpenGL shader 1i uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param value value
+ */
+void CGSetShaderUniform1i(CGShaderProgram shader_program, const char* uniform_name, CG_BOOL value);
+
+/**
+ * @brief Set OpenGL shader vector 2f uniform
+ * 
+ * @param shader_program shader program
+ * @param uniform_name uniform name
+ * @param value value
+ */
+void CGSetShaderUniformVec2f(CGShaderProgram shader_program, const char* uniform_name, CGVector2 value);
+
+/**
+ * @brief Set OpenGL shader vector 4f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -366,7 +473,7 @@ void CGSetShaderUniformVec4f(
 );
 
 /**
- * @brief Set opengl shader matrix 4f uniform
+ * @brief Set OpenGL shader matrix 4f uniform
  * 
  * @param shader_program shader program
  * @param uniform_name uniform name
@@ -483,6 +590,15 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
  * @return CGTriangle* triangle instance
  */
 CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
+/**
+ * @brief Create a temporary triangle
+ * 
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @return CGTriangle* triangle instance
+ */
+CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
 
 typedef struct{
     /**
@@ -530,6 +646,17 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
  */
 CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
 
+/**
+ * @brief Create a temporary quadrangle object. A temporary quadrangle object will
+ * be automatically deleted after the render.
+ * @param vert_1 vertex 1
+ * @param vert_2 vertex 2
+ * @param vert_3 vertex 3
+ * @param vert_4 vertex 4
+ * @return CGQuadrangle* created quadrangle object
+ */
+CGQuadrangle* CGCreateTQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+
 
 /************VISUAL_IMAGES************/
 
@@ -539,6 +666,12 @@ typedef struct{
      * This will be set to CG_FALSE by default.
      */
     CG_BOOL is_temp;
+
+    /**
+     * @brief Is the image clamped.
+     */
+    CG_BOOL is_clamped;
+
     /**
      * @brief Texture's OpenGL ID
      */
@@ -562,6 +695,16 @@ typedef struct{
      * @brief The window that the visual_image is created in.
      */
     CGWindow* in_window;
+
+    /**
+     * @brief The top left point where the image is going to be clamped.
+     */
+    CGVector2 clamp_top_left;
+
+    /**
+     * @brief The bottom right point where the image is going to be clamped.
+     */
+    CGVector2 clamp_bottom_right;
 }CGVisualImage;
 
 /**
@@ -583,11 +726,19 @@ void CGDeleteTexture(unsigned int texture_id);
  * @brief Create CGVisualImage object
  * 
  * @param img_rk The resource key of the texture.
- * @param property visual_image property object.
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
+
+/**
+ * @brief Create a temporary CGVisualImage object. A temporary CGVisualImage object will
+ * be automatically deleted after the render.
+ * @param img_rk The resource key of the texture.
+ * @param window The window that the visual_image is going to be drawn.
+ * @return CGVisualImage* The created CGVisualImage object
+ */
+CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
 
 /**
  * @brief Copy CGVisualImage object
@@ -597,6 +748,7 @@ CGVisualImage* CGCreateVisualImage(const char* img_rk, CGWindow* window);
  * @return CGVisualImage* The copied visual_image
  */
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
+
 
 #ifdef __cplusplus
 }

@@ -4,12 +4,16 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-void CGRWPrint(const char* sender, const char* type, const char* fmt, ...)
+void CGRWPrint(const CGRWChar* sender, const CGRWChar* type, const CGRWChar* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    printf("[%s] <%s>: ", sender, type);
-    vprintf(fmt, args);
+#ifdef CGRW_USE_WCHAR
+    CGRW_PRINTF(CGSTR("[%ls] <%ls>: "), sender, type);
+#else
+    CGRW_PRINTF(CGSTR("[%s] <%s>: "), sender, type);
+#endif
+    CGRW_VPRINTF(fmt, args);
     va_end(args);
-    printf("\n");
+    CGRW_PRINTF(CGSTR("\n"));
 }

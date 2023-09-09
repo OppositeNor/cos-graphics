@@ -28,13 +28,22 @@ class CGGame
     {
         unsigned int width;
         unsigned int height;
-        const char* title;
+        std::string title;
         CG_BOOL resizable;
         CG_BOOL fullscreen;
+        CG_BOOL boarderless;
+        CG_BOOL transparent;
+        CG_BOOL topmost;
 
-        WindowProperties(unsigned int p_width = 640, unsigned int p_height = 480, const char* p_title = "", 
-                CG_BOOL p_fullscreen = CG_FALSE, CG_BOOL p_resizable = CG_TRUE) 
-            : width(p_width), height(p_height), title(p_title), resizable(p_resizable), fullscreen(p_fullscreen)
+        WindowProperties(unsigned int p_width, unsigned int p_height, std::string p_title, 
+                CG_BOOL p_fullscreen = CG_FALSE, CG_BOOL p_resizable = CG_TRUE) noexcept
+            : WindowProperties(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE)
+        {}
+
+        WindowProperties(unsigned int p_width, unsigned int p_height, std::string p_title, 
+                CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost) noexcept
+            : width(p_width), height(p_height), title(p_title), resizable(p_resizable), fullscreen(p_fullscreen),
+            boarderless(p_boarderless), transparent(p_transparent), topmost(p_topmost)
         {}
     } window_properties;
 
@@ -74,11 +83,26 @@ public:
     static CGGame* GetInstance();
 
     static void InitGame(
-        unsigned int p_width = 640, 
-        unsigned int p_height = 480, 
-        const char* p_title = "", 
-        CG_BOOL p_fullscreen = false, 
-        CG_BOOL p_resizable = true);
+        unsigned int p_width, 
+        unsigned int p_height, 
+        std::string p_title,
+        CG_BOOL p_fullscreen,
+        CG_BOOL p_resizable,
+        CG_BOOL boarderless, 
+        CG_BOOL transparent, 
+        CG_BOOL topmost);
+    
+    static void InitGame(
+        unsigned int p_width, 
+        unsigned int p_height, 
+        std::string p_title, 
+        CG_BOOL p_fullscreen, 
+        CG_BOOL p_resizable);
+
+    static void InitGame(
+        unsigned int p_width, 
+        unsigned int p_height, 
+        std::string p_title);
 
     /**
      * @brief Start the game.

@@ -3,7 +3,7 @@
 #include "cos_graphics/component/component.h"
 #include "cos_graphics/component/camera.h"
 
-CGGame::CGGame()
+CGGame::CGGame() : window_properties(WindowProperties(640, 480, "", CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE))
 {
     
 }
@@ -24,7 +24,8 @@ CGGame* CGGame::GetInstance()
     return game_instance;
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p_title, CG_BOOL p_fullscreen, CG_BOOL p_resizable)
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title, 
+    CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost)
 {
     CG_PRINT("Initializing game...");
     if (CGGame::game_instance != nullptr)
@@ -33,19 +34,39 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const char* p
         return;
     }
     CGGame::game_instance = new CGGame();
-    CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, p_resizable);
+    CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
+        p_resizable, p_boarderless, p_transparent, p_topmost);
     CG_PRINT("Creating window...");
+    
+    CGWindowSubProperty window_sub_property;
+    window_sub_property.use_full_screen = p_fullscreen;
+    window_sub_property.resizable = p_resizable;
+    window_sub_property.boarderless = p_boarderless;
+    window_sub_property.transparent = p_transparent;
+    window_sub_property.topmost = p_topmost;
+
     CGGame::game_instance->game_window = CGCreateWindow(
-        CGGame::game_instance->window_properties.width, 
-        CGGame::game_instance->window_properties.height, 
-        CGGame::game_instance->window_properties.title, 
-        CGGame::game_instance->window_properties.fullscreen, 
-        CGGame::game_instance->window_properties.resizable);
+        p_width, 
+        p_height, 
+        p_title.c_str(),
+        window_sub_property);
+    
     CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, "Failed to create window");
     CG_PRINT("Window created.");
     CG_PRINT("Game initialized.");
     game_instance->game_initialized = true;
     game_instance->main_camera = new CGCamera();
+}
+
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title, 
+    CG_BOOL p_fullscreen, CG_BOOL p_resizable)
+{
+    InitGame(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE);
+}
+
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title)
+{
+    InitGame(p_width, p_height, p_title, CG_FALSE, CG_TRUE, CG_FALSE, CG_FALSE, CG_FALSE);
 }
 
 void CGGame::StartGame()
