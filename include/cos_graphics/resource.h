@@ -165,8 +165,9 @@ void CGTerminateResourceSystem();
  * @brief Load resource from resource file.
  * 
  * @param resource_key The key of the resource.
- * @returns The data of the resource.
- * @returns The resource data. NULL if failed to load resource.
+ * @param size This buffer will be set to the size of the resource. If you don't need this, you can set it to NULL.
+ * @param type This buffer will be set to the type of the resource. If you don't need this, you can set it to NULL.
+ * @return CGByte* The resource data. NULL if failed to load resource.
  */
 CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type);
 

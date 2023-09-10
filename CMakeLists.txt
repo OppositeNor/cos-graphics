@@ -20,7 +20,7 @@ set (USE_SHARED_LIB ON)
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
 # stored as 4 bytes instead of 2.
-set (USE_UTF16LE OFF)
+set (USE_UTF16LE ON)
 
 set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)

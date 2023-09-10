@@ -1357,6 +1357,25 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     return result;
 }
 
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, CGWindow* window)
+{
+    CG_ERROR_COND_RETURN(text_rk == NULL, NULL, CGSTR("Cannot create text visual_image with NULL text resource key."));
+    CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text visual_image."));
+
+    CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
+    if (text == NULL)
+    {
+        free(result);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource."));
+    }
+
+    // todo: set text.
+    
+    CGRegisterResource(result, CG_DELETER(CGDeleteVisualImage));
+    free(text);
+}
+
 static void CGDeleteVisualImage(CGVisualImage* visual_image)
 {
     if (visual_image == NULL)

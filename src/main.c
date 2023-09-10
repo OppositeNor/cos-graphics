@@ -204,10 +204,13 @@ int main()
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
 
+        
+
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+
     CGTerminateGraphics();
     return 0;
 }

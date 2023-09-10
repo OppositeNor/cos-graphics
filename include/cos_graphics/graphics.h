@@ -749,6 +749,21 @@ CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
  */
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
+typedef struct {
+    CGChar* font_rk;
+    unsigned int font_size;
+    
+}CGTextProperty;
+
+/**
+ * @brief Create a text image.
+ * 
+ * @param text_rk The resource key of the text to be drawn.
+ * @param window The window that the text is going to be drawn.
+ * @return CGVisualImage* The created CGVisualImage object
+ */
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, CGWindow* window);
+
 
 #ifdef __cplusplus
 }
