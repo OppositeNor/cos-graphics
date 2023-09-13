@@ -453,6 +453,52 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
 #endif
 }
 
+void CGRegisterTextureResource(const CGChar* key, unsigned int texture_id)
+{
+    CG_ERROR_CONDITION(cg_texture_res_head == NULL, CGSTR("Texture resource system not initialized."));
+    CGTextureResource* p = cg_texture_res_head->next;
+    if (p != NULL)
+    {
+        for (; p->next != NULL; p = p->next)
+        {
+            if (CG_STRCMP(p->key, key) == 0)
+            {
+                #ifdef CG_USE_WCHAR
+                CG_WARNING(CGSTR("Texture resource with key: %ls already registered."), key);
+                #else
+                CG_WARNING(CGSTR("Texture resource with key: %s already registered."), key);
+                #endif
+                return;
+            }
+            else if (p->next->texture_id == texture_id)
+            {
+                #ifdef CG_USE_WCHAR
+                CG_WARNING(CGSTR("Texture resource with texture id: %d already registered. The key is: \"%ls\"."), texture_id, p->next->key);
+                #else
+                CG_WARNING(CGSTR("Texture resource with texture id: %d already registered. The key is: \"%s\"."), texture_id, p->next->key);
+                #endif
+                return;
+            }
+        }
+    }
+    CGTextureResource* result = (CGTextureResource*)malloc(sizeof(CGTextureResource));
+    CG_ERROR_CONDITION(result == NULL, CGSTR("Failed to allocate memory for texture resource."));
+    result->key = (CGChar*)malloc(sizeof(CGChar) * (CG_STRLEN(key) + 1));
+    if (result->key == NULL)
+    {
+        free(result);
+        CG_ERROR_CONDITION(CG_TRUE, CGSTR("Failed to allocate memory for texture resource key."));
+    }
+    CG_STRCPY(result->key, key);
+    result->texture_id = texture_id;
+    result->reference_count = 0;
+    if (p != NULL)
+        p->next = result;
+    else
+        cg_texture_res_head->next = result;
+    result->next = NULL;
+}
+
 unsigned int CGGetTextureResource(const CGChar* file_rk)
 {
     CGTextureResource* p = cg_texture_res_head->next;

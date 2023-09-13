@@ -45,6 +45,15 @@ void CGInitResourceSystem();
 CGByte* CGLoadFile(const CGChar* file_path);
 
 /**
+ * @brief Register texture resource to the resource system. After registering, 
+ * you can access it with @ref CGGetTextureResource by using the key you entered
+ * as the first parameter (file_rk).
+ * @param key The key of the resource.
+ * @param texture_id The OpenGL texture id.
+ */
+void CGRegisterTextureResource(const CGChar* key, unsigned int texture_id);
+
+/**
  * @brief Get texture resource.
  * @details This function uses references counting to manage the resource. You should call CGFreeTextureResource 
  * to destruct everytime you call this function. Every time you call this function with the same file_rk, this function

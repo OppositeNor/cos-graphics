@@ -750,19 +750,32 @@ CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
 typedef struct {
-    CGChar* font_rk;
-    unsigned int font_size;
-    
+    /**
+     * @brief The width of the text (in pixels)
+     */
+    unsigned int text_width;
+    /**
+     * @brief The height of the text (in pixels)
+     */
+    unsigned int text_height;
+    /**
+     * @brief Space between two characters (in pixels). Set this to 0 to use the default kerning.
+     */
+    unsigned int kerning;
 }CGTextProperty;
+
+CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int kerning);
 
 /**
  * @brief Create a text image.
  * 
  * @param text_rk The resource key of the text to be drawn.
+ * @param font_rk The resource key of the font file.
  * @param window The window that the text is going to be drawn.
- * @return CGVisualImage* The created CGVisualImage object
+ * @param text_property The property of the text.
+ * @return CGVisualImage* The created CGVisualImage object of the image of the text.
  */
-CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, CGWindow* window);
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
 
 
 #ifdef __cplusplus

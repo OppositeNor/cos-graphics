@@ -193,18 +193,23 @@ int main()
         static float clock = 0;
         clock += (float)delta * 3;
         CGTickRenderStart(window);
-
+#if 0
         CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
         visual_image->is_clamped = CG_TRUE;
         visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
+        // visual_image->img_channels = 1;
         prop->scale = (CGVector2){3.0f, 3.0f};
 
         //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(visual_image, prop, window);
+#endif
+#if 1
+        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(30, 30, 0), window);
+        test_text->is_temp = CG_TRUE;
+        CGDrawVisualImage(test_text, prop, window);
+#endif
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
-
-        
 
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();

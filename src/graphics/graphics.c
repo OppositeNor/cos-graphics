@@ -16,6 +16,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include <freetype/ftbitmap.h>
 
 #define CG_MAX_BUFFER_SIZE 256
 
@@ -49,21 +50,25 @@ static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
 static CGCursorPositionCallbackFunction cg_cursor_position_callback = NULL;
 
 /**
- * @brief vertex shader resource key for a geometry
+ * @brief Vertex shader resource key for a geometry.
  */
 static const CGChar* cg_default_geo_vshader_rk = CGSTR("default_geometry_shader_vertex");
 /**
- * @brief fragment shader path for a geometry
+ * @brief Fragment shader resource key for a geometry.
  */
 static const CGChar* cg_default_geo_fshader_rk = CGSTR("default_geometry_shader_fragment");
 /**
- * @brief vertex shader path for a geometry
+ * @brief Vertex shader resource key for a geometry.
  */
 static const CGChar* cg_default_visual_image_vshader_rk = CGSTR("default_visual_image_shader_vertex");
 /**
- * @brief fragment shader path for a geometry
+ * @brief Fragment shader resource key for a geometry.
  */
 static const CGChar* cg_default_visual_image_fshader_rk = CGSTR("default_visual_image_shader_fragment");
+/**
+ * @brief Default font resource key.
+ */
+static const CGChar* cg_default_font_rk = CGSTR("default_font");
 
 /**
  * @brief default shader for geometry
@@ -160,6 +165,28 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
 
 // Set an image data to a texture. Note that if you have a texture that is binded, the texture will be unbinded after you call this function.
 static void CGSetTextureValue(unsigned int texture_id, CGImage* texture);
+
+/**
+ * @brief Get the bitmap from a string of text.
+ * 
+ * @param text The text to get bitmap from.
+ * @param face The face of the font.
+ * @param text_property The property of the text.
+ * @param result This will be set to the bitmap of the text.
+ * @return CG_TRUE if the function succeeds.
+ * @return CG_FALSE if the function fails. 
+ */
+static CG_BOOL CGGetBitmapFromText(const CGChar* text, FT_Face face, const CGTextProperty* text_property, FT_Bitmap* result);
+
+/**
+ * @brief Create freetype face.
+ * 
+ * @param font_rk The resource key of the font.
+ * @param face This will be set to the created face.
+ * @return CG_TRUE if the function succeeds.
+ * @return CG_FALSE if the function fails.
+ */
+static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -293,6 +320,11 @@ static void CGInitGLFW(CGWindowSubProperty window_sub_property)
 static void CGInitFreeType()
 {
     CG_ERROR_CONDITION(FT_Init_FreeType(&cg_ft_library), CGSTR("FreeType initialization failed."));
+    int file_size;
+    CGByte* font_file_data = CGLoadResource(cg_default_font_rk, &file_size, NULL);
+    CG_ERROR_CONDITION(font_file_data == NULL, CGSTR("Failed to load default font data."));
+    CG_ERROR_CONDITION(FT_New_Memory_Face(cg_ft_library, font_file_data, file_size, 0, &cg_ft_default_face), CGSTR("Failed to create freetype face for default font."));
+    free(font_file_data);
     cg_is_freetype_initialized = CG_TRUE;
 }
 
@@ -313,11 +345,16 @@ void CGTerminateGraphics()
     }
     if (cg_is_glfw_initialized)
     {
-        cg_is_glfw_initialized = CG_FALSE;
         for (CGWindowListNode* p = cg_window_list->next; p != NULL; p = p->next)
             CGFreeResource(p->data);
         glfwTerminate();
         CGDeleteList(cg_window_list);
+        cg_is_glfw_initialized = CG_FALSE;
+    }
+    if (cg_is_freetype_initialized)
+    {
+        FT_Done_Face(cg_ft_default_face);
+        
     }
     if (CGResourceSystemInitialized())
         CGTerminateResourceSystem();
@@ -378,17 +415,17 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSub
     window->height = height;
     CG_STRCPY(window->title, title);
     window->sub_property = sub_property;
-#ifdef CG_USE_WCHAR
+    #ifdef CG_USE_WCHAR
     {
         char title_c[256];
         CGCharToChar(title, title_c, 256);
         window->glfw_window_instance = glfwCreateWindow(width, height, title_c, 
             sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
     }
-#else
+    #else
     window->glfw_window_instance = glfwCreateWindow(width, height, title,
         sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
-#endif
+    #endif
     glfwSetWindowAttrib((GLFWwindow*)window->glfw_window_instance, GLFW_FLOATING, sub_property.topmost);
     window->render_list = NULL;
     CGCreateRenderList(window);
@@ -749,13 +786,13 @@ static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source
     if (!success)
     {
         glGetShaderInfoLog(shader_id, CG_INFO_LOG_SIZE, NULL, info_log);
-#ifdef CG_USE_WCHAR
+        #ifdef CG_USE_WCHAR
         CGChar info_log_w[CG_INFO_LOG_SIZE];
         CharToCGChar(info_log, info_log_w, CG_INFO_LOG_SIZE);
         CG_ERROR(CGSTR("Failed to compile shader with id: %d. \nOutput log: %ls."), shader_id, info_log_w);
-#else
+        #else
         CG_ERROR(CGSTR("Failed to compile shader with id: %d. \nOutput log: %s."), shader_id, info_log);
-#endif
+        #endif
         return CG_FALSE;
     }
     return CG_TRUE;
@@ -1244,6 +1281,9 @@ static void CGSetTextureValue(unsigned int texture_id, CGImage* texture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     switch(texture->channels)
     {
+    case 1:
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, texture->width, texture->height, 0, GL_RED, GL_UNSIGNED_BYTE, texture->data);
+        break;
     case 3:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
         break;
@@ -1329,6 +1369,7 @@ CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window)
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to allocate memory for visual_image texture."));
     }
     visual_image->texture_id = CGGetTextureResource(img_rk);
+    
     CGFreeResource(image);
     CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
@@ -1357,23 +1398,138 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     return result;
 }
 
-CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, CGWindow* window)
+static CG_BOOL CGGetBitmapFromText(const CGChar* text, FT_Face face, const CGTextProperty* text_property, FT_Bitmap* result)
+{
+    CG_ERROR_COND_RETURN(text == NULL, CG_FALSE, CGSTR("Cannot get bitmap from NULL text."));
+    CG_ERROR_COND_RETURN(face == NULL, CG_FALSE, CGSTR("Cannot get bitmap from NULL face."));
+    CG_ERROR_COND_RETURN(result == NULL, CG_FALSE, CGSTR("Cannot get bitmap from NULL result."));
+
+    FT_Bitmap result_bitmap;
+    FT_UInt glyph_index;
+    FT_UInt prev_glyph_index = 0;
+    FT_Vector kerning;
+    for (const CGChar* p = text; *p != (CGChar)'\0'; ++p)
+    {
+        glyph_index = FT_Get_Char_Index(face, *p);
+
+        if ((text_property->kerning == 0) && p != text)
+        {
+            CG_ERROR_COND_RETURN(
+                FT_Get_Kerning(face, prev_glyph_index, glyph_index, FT_KERNING_DEFAULT, &kerning), 
+                CG_FALSE, CGSTR("Failed to get kerning."));
+        }
+        else
+        {
+            kerning.x = text_property->kerning;
+            kerning.y = 0;
+        }
+
+        CG_ERROR_COND_RETURN(FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT), CG_FALSE, CGSTR("Failed to load glyph."));
+        CG_ERROR_COND_RETURN(
+            FT_Bitmap_Blend(cg_ft_library, &face->glyph->bitmap, kerning, &result_bitmap, NULL, (FT_Color){0xff, 0xff, 0xff, 0xff}), 
+            CG_FALSE, CGSTR("Failed to blend bitmaps."));
+        
+        prev_glyph_index = glyph_index;
+    }
+    *result = result_bitmap;
+    return CG_TRUE;
+}
+
+static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
+{
+    int resource_size;
+    CGByte* resource = CGLoadResource(font_rk, &resource_size, NULL);
+    #ifdef CG_USE_WCHAR
+    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
+    if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face))
+    {
+        free(resource);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %ls"), font_rk);
+    }
+    #else
+    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %s"), font_rk);
+    if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, &face))
+    {
+        free(resource);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %s"), font_rk);
+    }
+    #endif
+    free(resource);
+}
+
+CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int kerning)
+{
+    return (CGTextProperty){.text_width = text_width, .text_height = text_height, .kerning = kerning};
+}
+
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window)
 {
     CG_ERROR_COND_RETURN(text_rk == NULL, NULL, CGSTR("Cannot create text visual_image with NULL text resource key."));
-    CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for text visual_image."));
-
+    CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, CGSTR("Cannot create text visual_image with NULL window."));
     CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
     if (text == NULL)
     {
-        free(result);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource."));
+        #ifdef CG_USE_WCHAR
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource with rk: %ls."), text_rk);
+        #else
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource with rk: %s."), text_rk);
+        #endif
     }
 
-    // todo: set text.
-    
-    CGRegisterResource(result, CG_DELETER(CGDeleteVisualImage));
+    // create face.
+    FT_Face face;
+    if (font_rk == NULL)
+        face = cg_ft_default_face;
+    else
+    {
+        if (!CGCreateFreetypeFace(font_rk, &face))
+        {
+            free(text);
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: %s"), font_rk);
+        }
+    }
+
+    // get bitmap
+    FT_Bitmap bitmap;
+    if (!CGGetBitmapFromText(text, face, &text_property, &bitmap))
+    {
+        free(text);
+        if (font_rk == NULL)
+            FT_Done_Face(face);
+        #ifdef CG_USE_WCHAR
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to get bitmap from text: %ls"), text);
+        #else
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to get bitmap from text: %s"), text);
+        #endif
+    }
+    FT_Bitmap_Done(cg_ft_library, &bitmap);
     free(text);
+    if (font_rk == NULL)
+        FT_Done_Face(face);
+
+    // create image
+    CGImage* image = CGCreateImage(bitmap.width, bitmap.rows, 1, bitmap.buffer);
+    CG_ERROR_COND_RETURN(image == NULL, NULL, CGSTR("Failed to create image from bitmap."));
+
+    CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
+    if (result == NULL)
+    {
+        free(image);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to allocate memory for visual_image."));
+    }
+    result->in_window = window;
+    result->is_temp = CG_FALSE;
+    result->img_width = image->width;
+    result->img_height = image->height;
+    result->img_channels = image->channels;
+    result->clamp_top_left = (CGVector2){0.0f, 0.0f};
+    result->clamp_bottom_right = (CGVector2){image->width, image->height};
+    result->is_clamped = CG_FALSE;
+    result->texture_id = CGCreateTexture(image);
+
+    CGRegisterResource(result, CG_DELETER(CGDeleteVisualImage));
+    CGFreeResource(image);
+    return result;
 }
 
 static void CGDeleteVisualImage(CGVisualImage* visual_image)
@@ -1400,6 +1556,7 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     CGSetPropertyUniforms(cg_visual_image_shader_program, property);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_width", (float)window->width / 2.0f);
     CGSetShaderUniform1f(cg_visual_image_shader_program, "render_height", (float)window->height / 2.0f);
+    CGSetShaderUniform1i(cg_visual_image_shader_program, "channel_count", visual_image->img_channels);
     CGSetShaderUniform1i(cg_visual_image_shader_program, "is_clamped", visual_image->is_clamped);
     CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_top_left", visual_image->clamp_top_left);
     CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_bottom_right", visual_image->clamp_bottom_right);

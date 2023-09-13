@@ -41,6 +41,7 @@ add_subdirectory(src/utils)
 
 if (USE_TEST_EXE)
     list(APPEND CG_RESOURCES image_resource.cgures)
+    list(APPEND CG_RESOURCES text_resource.cgures)
 endif()
 add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
