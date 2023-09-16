@@ -12,6 +12,10 @@
 #ifdef CG_TG_WIN
     #include <windows.h>
 
+    // test
+    #define _CRTDBG_MAP_ALLOC
+    #include <crtdbg.h>
+
     #define CG_FILE_SPLITTER (CGChar)'\\'
 
     static void CGGetExecDir(CGChar* buff, unsigned int size)
@@ -361,17 +365,17 @@ void CGTerminateResourceSystem()
 
 CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
 {
-#ifdef CG_USE_WCHAR
+    #ifdef CG_USE_WCHAR
     CG_PRINT_VERBOSE(CGSTR("Loading resource with key: %ls"), resource_key);
     CG_ERROR_COND_RETURN(mem_res_head == NULL, NULL, CGSTR("Memory resource system not initialized."));
     FILE* file = CGFOpen(cg_resource_finder_path, "rb");
     CG_ERROR_COND_RETURN(file == NULL, NULL, CGSTR("Failed to open resource finder file at path: %ls."), cg_resource_finder_path);
-#else
+    #else
     CG_PRINT_VERBOSE(CGSTR("Loading resource with key: %s"), resource_key);
     CG_ERROR_COND_RETURN(mem_res_head == NULL, NULL, CGSTR("Memory resource system not initialized."));
     FILE* file = CGFOpen(cg_resource_finder_path, "rb");
     CG_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to open resource finder file at path: %s."), cg_resource_finder_path);
-#endif
+    #endif
     CGChar buff[256];
     fseek(file, 0, SEEK_END);
     unsigned int file_size = ftell(file);
@@ -381,11 +385,11 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
         if (ftell(file) >= file_size - 1)
         {
             fclose(file);
-#ifdef CG_USE_WCHAR
+            #ifdef CG_USE_WCHAR
             CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
+            #else
             CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
+            #endif
         }
 
         CGFRead(&buff[i], sizeof(CGChar), 1, file);
@@ -413,16 +417,16 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
             file = CGFOpen(cg_resource_file_path, "rb");
             CG_ERROR_COND_EXIT(file == NULL, -1, CGSTR("Failed to open resource file."));
             fseek(file, data_location, SEEK_SET);
-            CGByte* data = (CGByte*)malloc(data_size * sizeof(CGByte) + 1);
+            CGByte* data = (CGByte*)malloc((data_size + 1) * sizeof(CGByte));
             CG_ERROR_COND_EXIT(data == NULL, -1, CGSTR("Failed to allocate memory for resource data."));
             CGFRead(data, sizeof(CGByte), data_size, file);
             data[data_size] = '\0';
             fclose(file);
-#ifdef CG_USE_WCHAR
+            #ifdef CG_USE_WCHAR
             CG_PRINT_VERBOSE(CGSTR("Resource with key: %ls is successfully loaded."), resource_key);
-#else
+            #else
             CG_PRINT_VERBOSE(CGSTR("Resource with key: %s is successfully loaded."), resource_key);
-#endif
+            #endif
             return data;
         }
         fseek(file, 2 * sizeof(unsigned int), SEEK_CUR);
@@ -431,11 +435,11 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
             if (ftell(file) >= file_size - 1)
             {
                 fclose(file);
-#ifdef CG_USE_WCHAR
+                #ifdef CG_USE_WCHAR
                 CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
+                #else
                 CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
+                #endif
             }
             static CGChar p = 0;
             CGFRead(&p, sizeof(CGChar), 1, file);
@@ -446,11 +450,11 @@ CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)
     }
 
     fclose(file);
-#ifdef CG_USE_WCHAR
+    #ifdef CG_USE_WCHAR
     CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %ls."), resource_key);
-#else
+    #else
     CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Failed to find resource with key: %s."), resource_key);
-#endif
+    #endif
 }
 
 unsigned int CGGetTextureResource(const CGChar* file_rk)
@@ -537,6 +541,7 @@ void CGFreeTextureResource(unsigned int texture_id)
             return;
         }
     }
+    CGDeleteTexture(texture_id);
 }
 
 void CGClearTextureResource()

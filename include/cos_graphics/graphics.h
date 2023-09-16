@@ -750,10 +750,33 @@ CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
 typedef struct {
-    CGChar* font_rk;
-    unsigned int font_size;
-    
+    /**
+     * @brief The width of a space (in pixels)
+     */
+    unsigned int text_width;
+    /**
+     * @brief The height of the text (in pixels)
+     */
+    unsigned int text_height;
+    /**
+     * @brief The width of a space (in pixels)
+     */
+    unsigned int space_width;
+    /**
+     * @brief The space between characters (in pixels) 
+     */
+    unsigned int kerning;
 }CGTextProperty;
+
+/**
+ * @brief Construct a CGTextProperty object.
+ * 
+ * @param text_width The width of a space (in pixels)
+ * @param text_height The height of the text (in pixels)
+ * @param space_width The widht of a space (in pixels)
+ * @return CGTextProperty The constructed CGTextProperty object.
+ */
+CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int space_width, unsigned int kerning);
 
 /**
  * @brief Create a text image.

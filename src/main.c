@@ -179,10 +179,17 @@ int main()
         return 0;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        (CGVector2){-50, 0},
+        (CGVector2){0, 0},
         (CGVector2){1, 1},
         0.0f);
-    
+    CGRenderObjectProperty* prop1 = CGCreateRenderObjectProperty(
+        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
+        (CGVector2) {-50, 0},
+        (CGVector2) {1, 1},
+        0.0f);
+
+    CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(60, 60, 30, 2), window);
+    prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
@@ -195,7 +202,7 @@ int main()
         CGTickRenderStart(window);
 
         CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
-        visual_image->is_clamped = CG_TRUE;
+        //visual_image->is_clamped = CG_TRUE;
         visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
         prop->scale = (CGVector2){3.0f, 3.0f};
 
