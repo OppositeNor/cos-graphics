@@ -782,8 +782,12 @@ CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int tex
  * @brief Create a text image.
  * 
  * @param text_rk The resource key of the text to be drawn.
+ * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. If is_temp is CG_TRUE, 
+ * the font will be automatically deleted after the frame.
+ * @param text_property The property of the text.
  * @param window The window that the text is going to be drawn.
- * @return CGVisualImage* The created CGVisualImage object
+ * @warning For text image, this function is the ONLY way to set is_temp. You are NOT supposed to set is_temp property manually.
+ * @return CGVisualImage* 
  */
 CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
 

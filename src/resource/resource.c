@@ -112,7 +112,22 @@ enum CGMemResType
 /**
  * @brief Linked list head for memory resources.
  */
-static CGMemResNode *mem_res_head = NULL;
+static CGMemResNode* mem_res_head = NULL;
+
+/**
+ * @brief The release queue. The resource registered will be freed at the end of the frame.
+ */
+static CGMemResNode* release_queue_head = NULL;
+
+/**
+ * @brief Clear the resource in the resource list.
+ */
+static void CGClearResource();
+
+/**
+ * @brief Clear the resource in the resource queue.
+ */
+static void CGClearQueueResource();
 
 CG_BOOL CGResourceSystemInitialized()
 {
@@ -146,6 +161,7 @@ void CGInitResourceSystem()
 #endif
     
     mem_res_head = CGCreateLinkedListNode(NULL, CG_MEM_RES_TYPE_HEAD);
+    release_queue_head = CGCreateLinkedListNode(NULL, CG_MEM_RES_TYPE_HEAD);
     cg_texture_res_head = (CGTextureResource*)malloc(sizeof(CGTextureResource));
     CG_ERROR_CONDITION(cg_texture_res_head == NULL, CGSTR("Failed to allocate memory for texture resource head."));
     cg_texture_res_head->key = NULL;
@@ -336,9 +352,39 @@ void CGPrintMemoryList()
     CGPrintList(mem_res_head);
 }
 
-void CGClearResource()
+static void CGClearResource()
 {
     CGMemResNode* p = mem_res_head;
+    while (p->next != NULL)
+    {
+        CGMemResNode* temp = p->next;
+        p->next = p->next->next;
+        CGMemRes* mem_res = (CGMemRes*)temp->data;
+        mem_res->deleter(mem_res->data);
+        free(mem_res);
+        free(temp);
+    }
+}
+
+// release queue //
+
+void CGQueueFree(void* data, void (*deleter)(void*))
+{
+    CG_ERROR_CONDITION(release_queue_head == NULL, CGSTR("Memory resource system not initialized."));
+    CGMemRes* resource = CGCreateMemRes(data, deleter);
+    CG_ERROR_CONDITION(resource == NULL, CGSTR("Failed to create memory resource."));
+    CGMemResNode* p = release_queue_head;
+    while (p->next != NULL)
+    {
+        p = p->next;
+    }
+    p->next = CGCreateLinkedListNode(resource, CG_MEM_RES_TYPE_DATA);
+}
+
+static void CGClearQueueResource()
+{
+    CG_ERROR_CONDITION(release_queue_head == NULL, CGSTR("Memory resource system not initialized."));
+    CGMemResNode* p = release_queue_head;
     while (p->next != NULL)
     {
         CGMemResNode* temp = p->next;
@@ -353,6 +399,7 @@ void CGClearResource()
 void CGTerminateResourceSystem()
 {
     CGClearResource();
+    CGClearQueueResource();
     free(mem_res_head);
     mem_res_head = NULL;
     free(cg_resource_file_path);
@@ -361,6 +408,11 @@ void CGTerminateResourceSystem()
     cg_resource_finder_path = NULL;
     free(cg_texture_res_head);
     cg_texture_res_head = NULL;
+}
+
+void CGResourceSystemUpdate()
+{
+    CGClearQueueResource();
 }
 
 CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type)

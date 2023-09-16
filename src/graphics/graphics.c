@@ -234,10 +234,9 @@ static CG_BOOL CGGetGlyphsBitmap(const CGGlyphs* glyphs, CGUByte* bitmap, const 
  * 
  * @param font_rk The resource key of the font.
  * @param face This will be set to the created face.
- * @return CG_TRUE if the function succeeds.
- * @return CG_FALSE if the function fails.
+ * @return CGUByte* The font file resource pointer. You should NOT free the resource pointer before you destroy the face.
  */
-static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
+static CGUByte* CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -737,6 +736,7 @@ void CGWindowDraw(CGWindow* window)
 
 void CGTickRenderEnd()
 {
+    CGResourceSystemUpdate();
     //check OpenGL error
     int gl_error_code = glGetError();
     CG_ERROR_COND_EXIT(gl_error_code != GL_NO_ERROR, -1, CGSTR("OpenGL Error: Error code: 0x%x."), gl_error_code);
@@ -1486,13 +1486,12 @@ static void CGWriteChar(unsigned int current_x,
     unsigned int char_width, unsigned int char_height, CGUByte* target_bitmap, const CGUByte* source)
 {
     unsigned int write_pos;
-#if 1
     for (int i = bitmap_height - 1; i >= 0; --i)
     {
         for (unsigned int j = 0; j < char_width; ++j)
         {
             write_pos = (i * bitmap_width + current_x + j) * 4;
-            if (i <= bitmap_height - char_height)
+            if (i < bitmap_height - char_height)
             {
                 for (unsigned int k = 0; k < 4; ++k)
                     target_bitmap[write_pos + k] = 0x00;
@@ -1503,24 +1502,6 @@ static void CGWriteChar(unsigned int current_x,
             target_bitmap[write_pos + 3] = source[(i - (bitmap_height - char_height)) * char_width + j];
         }
     }
-#else
-    for (int i = 0; i < bitmap_height; ++i)
-    {
-        for (unsigned int j = 0; j < char_width; ++j)
-        {
-            write_pos = (i * bitmap_width + current_x + j) * 4;
-            if (i >= char_height)
-            {
-                for (unsigned int k = 0; k < 4; ++k)
-                    target_bitmap[write_pos + k] = 0x00;
-                continue;
-            }
-            for (unsigned int k = 0; k < 3; ++k)
-                target_bitmap[write_pos + k] = 0xff;
-            target_bitmap[write_pos + 3] = source[i * char_width + j];
-        }
-    }
-#endif
 }
 
 static CG_BOOL CGGetGlyphsBitmap(const CGGlyphs* glyphs, CGUByte* bitmap, const CGTextProperty* text_property)
@@ -1626,25 +1607,26 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
     return CG_TRUE;
 }
 
-static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
+static CGUByte* CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
 {
     int resource_size;
     CGByte* resource = CGLoadResource(font_rk, &resource_size, NULL);
     #ifdef CG_USE_WCHAR
-    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
+    CG_ERROR_COND_RETURN(resource == NULL, NULL, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
     if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face))
     {
         free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %ls"), font_rk);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create font face with rk: %ls"), font_rk);
     }
     #else
-    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %s"), font_rk);
+    CG_ERROR_COND_RETURN(resource == NULL, NULL, CGSTR("Failed to load font resource with rk: %s"), font_rk);
     if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, &face))
     {
         free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %s"), font_rk);
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create font face with rk: %s"), font_rk);
     }
     #endif
+    return resource;
 }
 
 CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int space_width, unsigned int kerning)
@@ -1664,14 +1646,20 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
 
     // create face.
     FT_Face face;
+    CGUByte* font_resource = NULL;
     if (font_rk == NULL)
         face = cg_ft_default_face;
     else
     {
-        if (!CGCreateFreetypeFace(font_rk, &face))
+        font_resource = CGCreateFreetypeFace(font_rk, &face);
+        if (font_resource == NULL)
         {
             free(text);
-            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: %s"), font_rk);
+            #ifdef CG_USE_WCHAR
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
+            #else
+            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
+            #endif
         }
     }
 
@@ -1680,7 +1668,10 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     if (!CGGetTextTexture(text, face, &text_property, &texture_width, &texture_height, &texture_id))
     {
         if (font_rk != NULL)
+        {
             FT_Done_Face(face);
+            free(font_resource);
+        }
 #ifdef CG_USE_WCHAR
         CG_ERROR(CGSTR("Failed to get bitmap from text: %ls"), text);
 #else
@@ -1691,7 +1682,10 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     }
     free(text);
     if (font_rk != NULL)
+    {
         FT_Done_Face(face);
+        free(font_resource);
+    }
 
     CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
     CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for visual_image."));

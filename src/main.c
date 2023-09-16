@@ -173,6 +173,7 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    window_property.resizable = CG_TRUE;
     CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)
@@ -187,8 +188,6 @@ int main()
         (CGVector2) {-50, 0},
         (CGVector2) {1, 1},
         0.0f);
-
-    CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(60, 60, 30, 2), window);
     prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
@@ -207,6 +206,10 @@ int main()
         // visual_image->img_channels = 1;
         prop->scale = (CGVector2){3.0f, 3.0f};
 #endif
+
+        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), CGSTR("default_font"), CGConstructTextProperty(60, 60, 30, 2), window);
+        test_text->is_temp = CG_TRUE;
+        prop->scale = (CGVector2){ 1.0f, 1.0f };
         //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
