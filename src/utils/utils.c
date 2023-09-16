@@ -37,6 +37,6 @@ void CGWriteArrayPos(void* target_array, const void* source_array, unsigned int 
     const unsigned int left_bytes = left * step_size;
     for (unsigned int i = top; i < bottom; ++i)
     {
-        memcpy(&((char*)target_array) + i * line_size_bytes + left_bytes, &((const CGByte*)source_array) + i * line_size_bytes, (right - left) * step_size);
+        memcpy((char*)target_array + i * line_size_bytes + left_bytes, (const CGByte*)source_array + i * line_size_bytes, (right - left) * step_size);
     }
 }

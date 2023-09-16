@@ -32,7 +32,7 @@ void CharToCGChar(const char* str, CGChar* buffer, unsigned int buffer_size);
  * @param right The right position. (in element)
  * @param line_length The number of elements of each line.
 */
-void CGWriteArrayPos(void* target_array, void* source_array, unsigned int step_size,
+void CGWriteArrayPos(void* target_array, const void* source_array, unsigned int step_size,
     unsigned int top, unsigned int left, unsigned int bottom, unsigned int right,
     unsigned int line_length);
 

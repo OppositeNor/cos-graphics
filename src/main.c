@@ -204,14 +204,13 @@ int main()
         CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
         //visual_image->is_clamped = CG_TRUE;
         visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
+        // visual_image->img_channels = 1;
         prop->scale = (CGVector2){3.0f, 3.0f};
 #endif
         //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
-
-        
 
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();

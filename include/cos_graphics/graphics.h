@@ -785,7 +785,7 @@ CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int tex
  * @param window The window that the text is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, CGWindow* window);
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
 
 
 #ifdef __cplusplus

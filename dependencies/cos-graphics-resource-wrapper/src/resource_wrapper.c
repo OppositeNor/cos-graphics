@@ -208,6 +208,7 @@ void CGRWAddResource(CGRWResourceData* res_data)
         data = CGRWLoadFile(res_data->data.path);
     else
         data = res_data->data.value;
+    CGRW_PRINT_VERBOSE(CGSTR("Resource data size: %d."), data.size);
     // write in resource file
     file = CGRWFOpen(cgrw_resource_file_path, "rb+");
     if (file == NULL)
@@ -428,9 +429,9 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
                 data->is_data_value = CGRW_TRUE;
                 if (data->data.path != NULL)
                     free(data->data.path);
-                data->data.value.data = (CGRWByte*)malloc(t_p - p + sizeof(CGRWChar));
+                data->data.value.data = (CGRWByte*)malloc((t_p - p + 1) * sizeof(CGRWChar));
                 CGRW_ERROR_COND_EXIT(data->data.value.data == NULL, -1, CGSTR("Failed to allocate memory for resource value."));
-                data->data.value.size = t_p - p + sizeof(CGRWChar);
+                data->data.value.size = (t_p - p + 1) * sizeof(CGRWChar);
                 CGRWChar* value_data = (CGRWChar*)data->data.value.data;
                 CGRWGetSubString(p, 0, t_p - p, &value_data);
                 CGRW_PRINT_VERBOSE(CGSTR("value: \"%ls\""), data->data.value.data);

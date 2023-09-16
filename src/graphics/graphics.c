@@ -216,7 +216,7 @@ typedef struct
  * @return CG_TRUE if the function succeeds.
  * @return CG_FALSE if the function fails.
  */
-static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, CGTextProperty* text_property);
+static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property);
 
 /**
  * @brief Get the bitmap from glyphs.
@@ -1444,7 +1444,7 @@ static FT_UInt CGGetGlyphFromFace(FT_Face* face, CGChar character)
 }
 
 
-static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, CGTextProperty* text_property)
+static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property)
 {
     CG_ERROR_COND_RETURN(face == NULL || *face == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL face."));
     CG_ERROR_COND_RETURN(glyphs == NULL || glyphs->glyph_instances == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL glyphs array."));
