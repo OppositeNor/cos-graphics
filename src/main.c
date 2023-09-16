@@ -173,16 +173,22 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    window_property.resizable = CG_TRUE;
     CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)
         return 0;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        (CGVector2){-50, 0},
+        (CGVector2){0, 0},
         (CGVector2){1, 1},
         0.0f);
-    
+    CGRenderObjectProperty* prop1 = CGCreateRenderObjectProperty(
+        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
+        (CGVector2) {-50, 0},
+        (CGVector2) {1, 1},
+        0.0f);
+    prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
     while(!CGShouldWindowClose(window))
@@ -195,19 +201,17 @@ int main()
         CGTickRenderStart(window);
 #if 0
         CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
-        visual_image->is_clamped = CG_TRUE;
+        //visual_image->is_clamped = CG_TRUE;
         visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
         // visual_image->img_channels = 1;
         prop->scale = (CGVector2){3.0f, 3.0f};
+#endif
 
-        //prop->transform.x = sin(clock) * 100;
-        CGDrawVisualImage(visual_image, prop, window);
-#endif
-#if 1
-        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(30, 30, 0), window);
+        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), CGSTR("default_font"), CGConstructTextProperty(60, 60, 30, 2), window);
         test_text->is_temp = CG_TRUE;
+        prop->scale = (CGVector2){ 1.0f, 1.0f };
+        //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(test_text, prop, window);
-#endif
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
         CGWindowDraw(window);
 

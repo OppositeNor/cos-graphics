@@ -751,7 +751,7 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
 typedef struct {
     /**
-     * @brief The width of the text (in pixels)
+     * @brief The width of a space (in pixels)
      */
     unsigned int text_width;
     /**
@@ -759,21 +759,35 @@ typedef struct {
      */
     unsigned int text_height;
     /**
-     * @brief Space between two characters (in pixels). Set this to 0 to use the default kerning.
+     * @brief The width of a space (in pixels)
+     */
+    unsigned int space_width;
+    /**
+     * @brief The space between characters (in pixels) 
      */
     unsigned int kerning;
 }CGTextProperty;
 
-CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int kerning);
+/**
+ * @brief Construct a CGTextProperty object.
+ * 
+ * @param text_width The width of a space (in pixels)
+ * @param text_height The height of the text (in pixels)
+ * @param space_width The widht of a space (in pixels)
+ * @return CGTextProperty The constructed CGTextProperty object.
+ */
+CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int space_width, unsigned int kerning);
 
 /**
  * @brief Create a text image.
  * 
  * @param text_rk The resource key of the text to be drawn.
- * @param font_rk The resource key of the font file.
- * @param window The window that the text is going to be drawn.
+ * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. If is_temp is CG_TRUE, 
+ * the font will be automatically deleted after the frame.
  * @param text_property The property of the text.
- * @return CGVisualImage* The created CGVisualImage object of the image of the text.
+ * @param window The window that the text is going to be drawn.
+ * @warning For text image, this function is the ONLY way to set is_temp. You are NOT supposed to set is_temp property manually.
+ * @return CGVisualImage* 
  */
 CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
 

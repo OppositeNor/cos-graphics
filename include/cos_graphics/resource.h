@@ -159,16 +159,21 @@ void CGFreeResource(void* resource);
 void CGPrintMemoryList();
 
 /**
- * @brief Clear all resources.
- * 
+ * @brief Free a resource at the end of the frame.
+ * @param data The data to be freed.
+ * @param deleter The callback function of the deleter. (setting this to CGFreeResource is recommended)
  */
-void CGClearResource();
+void CGQueueFree(void* data, void (*deleter)(void*));
 
 /**
  * @brief Terminate resource system.
- * 
  */
 void CGTerminateResourceSystem();
+
+/**
+ * @brief This function should be called after each frame.
+ */
+void CGResourceSystemUpdate();
 
 /**
  * @brief Load resource from resource file.
