@@ -59,6 +59,8 @@ static const CGChar* cg_default_geo_vshader_rk = CGSTR("default_geometry_shader_
  * @brief fragment shader path for a geometry
  */
 static const CGChar* cg_default_geo_fshader_rk = CGSTR("default_geometry_shader_fragment");
+
+static const CGChar* cg_default_font_rk = CGSTR("default_font");
 /**
  * @brief vertex shader path for a geometry
  */
@@ -1657,7 +1659,6 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
     if (text == NULL)
     {
-        free(result);
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource."));
     }
 
