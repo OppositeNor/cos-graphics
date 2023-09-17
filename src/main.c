@@ -174,7 +174,7 @@ int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
     window_property.resizable = CG_TRUE;
-    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
+    CGWindow* window = CGCreateWindow(1280, 720, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)
         return 0;

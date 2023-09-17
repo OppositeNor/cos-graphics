@@ -678,6 +678,8 @@ static void CGRWGoToNext(CGRWChar** p, unsigned int* line_count, CGRWChar identi
 #endif
         if (**p == identifier)
             return;
+        if (**p == '\"')
+            CGRWGoToNext(p, line_count, '\"');
         if (**p == '\n' && line_count != NULL)
             ++(*line_count);
     }
