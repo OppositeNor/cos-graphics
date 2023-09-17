@@ -193,16 +193,22 @@ static FT_UInt CGGetGlyphFromFace(FT_Face* face, CGChar character);
 
 typedef struct
 {
-    FT_Glyph* glyph_instances;
+    FT_Glyph glyph_instance;
+    int delta_y;
+}CGGlyphInstance;
+
+typedef struct
+{
     unsigned int glyphs_count;
+    CGGlyphInstance* glyph_instances;
     union {
         struct {
             unsigned int total_width;
             unsigned int max_char_height;
         }horizontal_layout;
         struct {
+            unsigned int total_height;
             unsigned int max_char_width;
-            unsigned int total_char_height;
         }vertical_layout;
     }glyphs_dimension;
 } CGGlyphs;
@@ -234,9 +240,9 @@ static CG_BOOL CGGetGlyphsBitmap(const CGGlyphs* glyphs, CGUByte* bitmap, const 
  * 
  * @param font_rk The resource key of the font.
  * @param face This will be set to the created face.
- * @return CGUByte* The font file resource pointer. You should NOT free the resource pointer before you destroy the face.
+ * @return CG_TRUE if the function succeeds. CG_FALSE if the function fails.
  */
-static CGUByte* CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
+static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
 
 /**
  * @brief Multiply two matrices together (A x B)
@@ -388,9 +394,9 @@ void CGTerminateGraphics()
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
         glDeleteProgram(cg_default_visual_image_shader_program);
-        CGFreeResource(cg_default_geo_property);
+        CGFree(cg_default_geo_property);
         cg_default_geo_property = NULL;
-        CGFreeResource(cg_default_visual_image_property);
+        CGFree(cg_default_visual_image_property);
         cg_default_visual_image_property = NULL;
         cg_is_glad_initialized = CG_FALSE;
     }
@@ -398,7 +404,7 @@ void CGTerminateGraphics()
     {
         cg_is_glfw_initialized = CG_FALSE;
         for (CGWindowListNode* p = cg_window_list->next; p != NULL; p = p->next)
-            CGFreeResource(p->data);
+            CGFree(p->data);
         glfwTerminate();
         CGDeleteList(cg_window_list);
         cg_is_glfw_initialized = CG_FALSE;
@@ -422,8 +428,8 @@ static void CGInitDefaultShader(const CGChar* shader_v_rk, const CGChar* shader_
     CGShader* shader = CGCreateShader(shader_source);
     CG_ERROR_COND_EXIT(shader == NULL, -1, CGSTR("Failed to init default shader."));
     *shader_program = CGCreateShaderProgram(shader);
-    CGFreeResource(shader_source);
-    CGFreeResource(shader);
+    CGFree(shader_source);
+    CGFree(shader);
 }
 
 static void CGInitGLAD()
@@ -635,7 +641,7 @@ void CGCreateViewport(CGWindow* window)
     if (!cg_is_glad_initialized)
         CGInitGLAD();
 
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -713,17 +719,17 @@ void CGWindowDraw(CGWindow* window)
         case CG_RD_TYPE_TRIANGLE:
             CGRenderTriangle(data->object, data->property, window, assign_z);
             if (((CGTriangle*)(data->object))->is_temp)
-                CGFreeResource(data->object);
+                CGFree(data->object);
             break;
         case CG_RD_TYPE_QUADRANGLE:
             CGRenderQuadrangle(data->object, data->property, window, assign_z);
             if (((CGQuadrangle*)(data->object))->is_temp)
-                CGFreeResource(data->object);
+                CGFree(data->object);
             break;
         case CG_RD_TYPE_VISUAL_IMAGE:
             CGRenderVisualImage(data->object, data->property, window, assign_z);
             if (((CGVisualImage*)(data->object))->is_temp)
-                CGFreeResource(data->object);
+                CGFree(data->object);
             break;
         default:
             CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Cannot find render object identifier: %d"), draw_obj->identifier);
@@ -1394,7 +1400,7 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window)
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to allocate memory for visual_image texture."));
     }
     visual_image->texture_id = CGGetTextureResource(img_rk);
-    CGFreeResource(image);
+    CGFree(image);
     CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
 }
@@ -1450,23 +1456,30 @@ static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyp
     CG_ERROR_COND_RETURN(glyphs == NULL || glyphs->glyph_instances == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL glyphs array."));
     CG_ERROR_COND_RETURN(text_property == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL text property."));
     unsigned int glyph_index;
+    int max_char_top = 0;
+    int min_char_bottom = 0x7fffffff;
     for (unsigned int i = 0; i < glyphs->glyphs_count; ++i)
     {
         if (text[i] == ' ')
         {
-            glyphs->glyph_instances[i] = NULL;
+            glyphs->glyph_instances[i].glyph_instance = NULL;
             glyphs->glyphs_dimension.horizontal_layout.total_width += text_property->space_width + text_property->kerning;
             continue;
         }
         glyph_index = CGGetGlyphFromFace(face, text[i]);
         CG_ERROR_COND_RETURN(glyph_index == 0, CG_FALSE, CGSTR("Failed to get text image."));
-        FT_Get_Glyph((*face)->glyph, &(glyphs->glyph_instances[i]));
-
+        CG_ERROR_COND_RETURN(FT_Get_Glyph((*face)->glyph, &(glyphs->glyph_instances[i].glyph_instance)), CG_FALSE, CGSTR("Failed to get glyph instance from face."));
+        glyphs->glyph_instances[i].delta_y = (*face)->glyph->bitmap_top;
+        if ((*face)->glyph->bitmap_top > max_char_top)
+            max_char_top = (*face)->glyph->bitmap_top;
         glyphs->glyphs_dimension.horizontal_layout.total_width += (*face)->glyph->bitmap.width + text_property->kerning;
-
-        if ((*face)->glyph->bitmap.rows > glyphs->glyphs_dimension.horizontal_layout.max_char_height)
-            glyphs->glyphs_dimension.horizontal_layout.max_char_height = (*face)->glyph->bitmap.rows;
+        if ((*face)->glyph->bitmap_top - (int)(*face)->glyph->bitmap.rows < min_char_bottom)
+            min_char_bottom = (*face)->glyph->bitmap_top - (*face)->glyph->bitmap.rows;
     }
+    for (unsigned int i = 0; i < glyphs->glyphs_count; ++i)
+		glyphs->glyph_instances[i].delta_y = max_char_top - glyphs->glyph_instances[i].delta_y;
+    glyphs->glyphs_dimension.horizontal_layout.max_char_height = (unsigned int)(max_char_top - min_char_bottom);
+    return CG_TRUE;
 }
 
 static void CGWriteSpace(unsigned current_x, unsigned int bitmap_width,  unsigned int bitmap_height, unsigned int space_width, CGUByte* bitmap)
@@ -1482,16 +1495,19 @@ static void CGWriteSpace(unsigned current_x, unsigned int bitmap_width,  unsigne
 }
 
 static void CGWriteChar(unsigned int current_x, 
-    unsigned int bitmap_width, unsigned int bitmap_height, 
-    unsigned int char_width, unsigned int char_height, CGUByte* target_bitmap, const CGUByte* source)
+    const CGGlyphs* glyphs, unsigned int glyph_index, CGUByte* target_bitmap)
 {
     unsigned int write_pos;
-    for (int i = bitmap_height - 1; i >= 0; --i)
+    const unsigned int bitmap_width = glyphs->glyphs_dimension.horizontal_layout.total_width;
+    const unsigned int bitmap_height = glyphs->glyphs_dimension.horizontal_layout.max_char_height;
+    FT_BitmapGlyph glyph = (FT_BitmapGlyph)glyphs->glyph_instances[glyph_index].glyph_instance;
+    const unsigned int delta_y = glyphs->glyph_instances[glyph_index].delta_y;
+    for (unsigned int i = 0; i < bitmap_height; ++i)
     {
-        for (unsigned int j = 0; j < char_width; ++j)
+        for (unsigned int j = 0; j < glyph->bitmap.width; ++j)
         {
             write_pos = (i * bitmap_width + current_x + j) * 4;
-            if (i < bitmap_height - char_height)
+            if (i < delta_y || i >= delta_y + glyph->bitmap.rows)
             {
                 for (unsigned int k = 0; k < 4; ++k)
                     target_bitmap[write_pos + k] = 0x00;
@@ -1499,7 +1515,7 @@ static void CGWriteChar(unsigned int current_x,
             }
             for (unsigned int k = 0; k < 3; ++k)
                 target_bitmap[write_pos + k] = 0xff;
-            target_bitmap[write_pos + 3] = source[(i - (bitmap_height - char_height)) * char_width + j];
+            target_bitmap[write_pos + 3] = glyph->bitmap.buffer[(i - delta_y) * glyph->bitmap.width + j];
         }
     }
 }
@@ -1511,8 +1527,7 @@ static CG_BOOL CGGetGlyphsBitmap(const CGGlyphs* glyphs, CGUByte* bitmap, const 
     unsigned int current_x = 0;
     for (unsigned int i = 0; i < glyphs->glyphs_count; ++i)
     {
-        FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph)glyphs->glyph_instances[i];
-        if (glyphs->glyph_instances[i] == NULL)
+        if (glyphs->glyph_instances[i].glyph_instance == NULL)
         {
             CGWriteSpace(current_x, 
                 glyphs->glyphs_dimension.horizontal_layout.total_width, glyphs->glyphs_dimension.horizontal_layout.max_char_height,
@@ -1521,10 +1536,8 @@ static CG_BOOL CGGetGlyphsBitmap(const CGGlyphs* glyphs, CGUByte* bitmap, const 
         }
         else
         {
-            CGWriteChar(current_x,
-                glyphs->glyphs_dimension.horizontal_layout.total_width, glyphs->glyphs_dimension.horizontal_layout.max_char_height,
-                bitmap_glyph->bitmap.width, bitmap_glyph->bitmap.rows, bitmap, bitmap_glyph->bitmap.buffer);
-            current_x += bitmap_glyph->bitmap.width;
+            CGWriteChar(current_x, glyphs, i, bitmap);
+            current_x += ((FT_BitmapGlyph)(glyphs->glyph_instances[i].glyph_instance))->bitmap.width;
         }
 
         CGWriteSpace(current_x,
@@ -1549,12 +1562,11 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    FT_UInt glyph_index;
     CGGlyphs glyphs;
     glyphs.glyphs_dimension.horizontal_layout.max_char_height = 0;
     glyphs.glyphs_dimension.horizontal_layout.total_width = 0;
     glyphs.glyphs_count = CG_STRLEN(text);
-    glyphs.glyph_instances = (FT_Glyph*)malloc(glyphs.glyphs_count * sizeof(FT_Glyph));
+    glyphs.glyph_instances = (CGGlyphInstance*)malloc(glyphs.glyphs_count * sizeof(CGGlyphInstance));
     CG_ERROR_COND_RETURN(glyphs.glyph_instances == NULL, CG_FALSE, CGSTR("Failed to allocate memory for glyphs."));
     FT_Set_Pixel_Sizes(face, text_property->text_width, text_property->text_height);
     if (!CGGetTextGlyphs(&face, text, &glyphs, text_property))
@@ -1575,8 +1587,8 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
         free(image_data);
         for (unsigned int i = 0; i < glyphs.glyphs_count; ++i)
         {
-            if (glyphs.glyph_instances[i] != NULL)
-                FT_Done_Glyph(glyphs.glyph_instances[i]);
+            if (glyphs.glyph_instances[i].glyph_instance != NULL)
+                FT_Done_Glyph(glyphs.glyph_instances[i].glyph_instance);
         }
         free(glyphs.glyph_instances);
         CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to get bitmap from glyphs."));
@@ -1595,8 +1607,8 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
     free(image_data);
     for (unsigned int i = 0; i < glyphs.glyphs_count; ++i)
     {
-        if (glyphs.glyph_instances[i] != NULL)
-            FT_Done_Glyph(glyphs.glyph_instances[i]);
+        if (glyphs.glyph_instances[i].glyph_instance != NULL)
+            FT_Done_Glyph(glyphs.glyph_instances[i].glyph_instance);
     }
     free(glyphs.glyph_instances);
 
@@ -1607,26 +1619,26 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
     return CG_TRUE;
 }
 
-static CGUByte* CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
+static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
 {
-    int resource_size;
-    CGByte* resource = CGLoadResource(font_rk, &resource_size, NULL);
+    unsigned int resource_size;
+    CGByte* resource = CGLoadReusableResource(font_rk, CG_DELETER(free), &resource_size);
     #ifdef CG_USE_WCHAR
-    CG_ERROR_COND_RETURN(resource == NULL, NULL, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
+    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
     if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face))
     {
         free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create font face with rk: %ls"), font_rk);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %ls"), font_rk);
     }
     #else
-    CG_ERROR_COND_RETURN(resource == NULL, NULL, CGSTR("Failed to load font resource with rk: %s"), font_rk);
+    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %s"), font_rk);
     if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, &face))
     {
         free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create font face with rk: %s"), font_rk);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %s"), font_rk);
     }
     #endif
-    return resource;
+    return CG_TRUE;
 }
 
 CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int space_width, unsigned int kerning)
@@ -1639,20 +1651,15 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     CG_ERROR_COND_RETURN(text_rk == NULL, NULL, CGSTR("Cannot create text visual_image with NULL text resource key."));
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, CGSTR("Cannot create text visual_image with NULL window."));
     CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
-    if (text == NULL)
-    {
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to load text resource."));
-    }
+    CG_ERROR_COND_RETURN(text == NULL, NULL, CGSTR("Failed to load text resource."));
 
     // create face.
     FT_Face face;
-    CGUByte* font_resource = NULL;
     if (font_rk == NULL)
         face = cg_ft_default_face;
     else
     {
-        font_resource = CGCreateFreetypeFace(font_rk, &face);
-        if (font_resource == NULL)
+        if (!CGCreateFreetypeFace(font_rk, &face))
         {
             free(text);
             #ifdef CG_USE_WCHAR
@@ -1668,24 +1675,18 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     if (!CGGetTextTexture(text, face, &text_property, &texture_width, &texture_height, &texture_id))
     {
         if (font_rk != NULL)
-        {
             FT_Done_Face(face);
-            free(font_resource);
-        }
-#ifdef CG_USE_WCHAR
+        #ifdef CG_USE_WCHAR
         CG_ERROR(CGSTR("Failed to get bitmap from text: %ls"), text);
-#else
+        #else
         CG_ERROR(CGSTR("Failed to get bitmap from text: %s"), text);
-#endif
+        #endif
         free(text);
         return NULL;
     }
     free(text);
     if (font_rk != NULL)
-    {
         FT_Done_Face(face);
-        free(font_resource);
-    }
 
     CGVisualImage* result = (CGVisualImage*)malloc(sizeof(CGVisualImage));
     CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for visual_image."));
@@ -1736,4 +1737,33 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, const CGRenderObjectProperty* property)
+{
+    CG_ERROR_COND_RETURN(text_rk == NULL, CG_FALSE, CGSTR("Cannot draw text with NULL text resource key."));
+    CG_ERROR_COND_RETURN(property == NULL, CG_FALSE, CGSTR("Cannot draw text with NULL property."));
+    CGGladInitializeCheck();
+    
+    CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
+    CG_ERROR_COND_RETURN(text == NULL, CG_FALSE, CGSTR("Failed to load text resource."));
+    FT_Face face;
+    if (font_rk == NULL)
+        face = cg_ft_default_face;
+    else
+    {
+        if (!CGCreateFreetypeFace(font_rk, &face))
+        {
+            free(text);
+            #ifdef CG_USE_WCHAR
+            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
+            #else
+            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
+            #endif
+        }
+    }
+
+    if (font_rk != NULL)
+        FT_Done_Face(face);
+    free(text);
 }

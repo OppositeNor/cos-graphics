@@ -28,6 +28,21 @@ CG_BOOL CGResourceSystemInitialized();
 void CGClearTextureResource();
 
 /**
+ * @brief Load a resource that is reusable. If you have a resource that's been allocated
+ * and freed frequently, you can use this function to load the resource and you don't
+ * have to free it. You can load the resource by calling this function with the same key.
+ * When you want to free the resource, you can call @ref CGFreeReusableResource with the same key.
+ * 
+ * @param key The key of the resource, which will also be the key of the reusable resource.
+ * @param deleter The deleter of the resource. The resource will be freed by calling deleter(data).
+ * @param resource_size The size of the resource. If you don't need this, you can set it to NULL.
+ * @return CGUByte* The resource data.
+ */
+CGUByte* CGLoadReusableResource(const CGChar* key, void (*deleter)(void*), unsigned int* resource_size);
+
+void CGFreeReusableResource(const CGChar* key);
+
+/**
  * @brief Initialize resource system.
  */
 void CGInitResourceSystem();
@@ -146,11 +161,11 @@ void CGSetFloatArrayValue(unsigned int count, float* array, ...);
 void CGRegisterResource(void* data, void (*deleter)(void*));
 
 /**
- * @brief Free the resource that's been created.
+ * @brief Free a allocated resource.
  * 
  * @param resource The resource to be freed.
  */
-void CGFreeResource(void* resource);
+void CGFree(void* resource);
 
 /**
  * @brief Print the memory list.

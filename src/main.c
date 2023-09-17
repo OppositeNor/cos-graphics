@@ -99,10 +99,10 @@ int main()
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        CGFreeResource(prop2);
+        CGFree(prop2);
     }
-    CGFreeResource(prop);
-    //CGFreeResource(window);
+    CGFree(prop);
+    //CGFree(window);
     CGTerminateGraphics();
     return 0;
 }
@@ -191,6 +191,7 @@ int main()
     prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
+        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(120, 120, 30, 2), window);
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -207,9 +208,8 @@ int main()
         prop->scale = (CGVector2){3.0f, 3.0f};
 #endif
 
-        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), CGSTR("default_font"), CGConstructTextProperty(60, 60, 30, 2), window);
-        test_text->is_temp = CG_TRUE;
-        prop->scale = (CGVector2){ 1.0f, 1.0f };
+        //test_text->is_temp = CG_TRUE;
+        prop->scale = (CGVector2){ 0.5f, 0.5f };
         //prop->transform.x = sin(clock) * 100;
         CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
