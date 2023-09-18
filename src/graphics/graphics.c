@@ -51,6 +51,8 @@ static CGKeyCallbackFunction cg_key_callback = NULL;
 static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
 static CGCursorPositionCallbackFunction cg_cursor_position_callback = NULL;
 
+static float cg_global_buffer_20[20];
+
 /**
  * @brief vertex shader resource key for a geometry
  */
@@ -69,6 +71,8 @@ static const CGChar* cg_default_visual_image_vshader_rk = CGSTR("default_visual_
  * @brief fragment shader path for a geometry
  */
 static const CGChar* cg_default_visual_image_fshader_rk = CGSTR("default_visual_image_shader_fragment");
+
+static const CGChar* cg_default_bitmap_visual_image_fshader_rk = CGSTR("default_bitmap_visual_image_shader_fragment");
 
 /**
  * @brief default shader for geometry
@@ -89,6 +93,16 @@ static CGShaderProgram cg_default_visual_image_shader_program;
  * @brief shader program for drawing visual_images
  */
 static CGShaderProgram cg_visual_image_shader_program;
+
+/**
+ * @brief default shader for bitmap visual_images
+ */
+static CGShaderProgram cg_default_bitmap_visual_image_shader_program;
+
+/**
+ * @brief shader program for drawing text visual_images
+ */
+static CGShaderProgram cg_bitmap_visual_image_shader_program;
 
 #define CG_EXTRACT_RENDER_NODE_DATA(node) ((CGRenderNodeData*)node->data)
 typedef struct
@@ -159,6 +173,9 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
 
 // render visual_image
 static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
+
+// draw a glyph
+static void CGDrawGlyph(int offset, const FT_GlyphSlot glyph, const CGRenderObjectProperty* render_property, const CGWindow* window);
 
 // Set an image data to a texture. Note that if you have a texture that is binded, the texture will be unbinded after you call this function.
 static void CGSetTextureValue(unsigned int texture_id, CGImage* texture);
@@ -250,11 +267,11 @@ static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face);
  * @param result The result matrix (needs to allocate memory manually)
  * @param mat_1 Matrix A
  * @param mat_2 Matrix B
- * @param demention_x The x count of the result matrix
- * @param demention_y The y count of the result matrix
+ * @param dimension_x The x count of the result matrix
+ * @param dimension_y The y count of the result matrix
  * @return float* 
  */
-static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y);
+static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int dimension_x, int dimension_y);
 
 
 /**
@@ -394,6 +411,7 @@ void CGTerminateGraphics()
         cg_buffer_count = 0;
         glDeleteProgram(cg_default_geo_shader_program);
         glDeleteProgram(cg_default_visual_image_shader_program);
+        glDeleteProgram(cg_default_bitmap_visual_image_shader_program);
         CGFree(cg_default_geo_property);
         cg_default_geo_property = NULL;
         CGFree(cg_default_visual_image_property);
@@ -446,6 +464,9 @@ static void CGInitGLAD()
 
     CGInitDefaultShader(cg_default_visual_image_vshader_rk, cg_default_visual_image_fshader_rk, &cg_default_visual_image_shader_program);
     cg_visual_image_shader_program = cg_default_visual_image_shader_program;
+
+    CGInitDefaultShader(cg_default_visual_image_vshader_rk, cg_default_bitmap_visual_image_fshader_rk, &cg_default_bitmap_visual_image_shader_program);
+    cg_bitmap_visual_image_shader_program = cg_default_bitmap_visual_image_shader_program;
     
     cg_default_visual_image_property = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f), 
@@ -1076,39 +1097,39 @@ static float* CGCreateRotateMatrix(float rotate)
     return result;
 }
 
-static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int demention_x, int demention_y)
+static void CGMatMultiply(float* result, const float* mat_1, const float* mat_2, int dimension_x, int dimension_y)
 {
     CG_ERROR_CONDITION(result == NULL || mat_1 == NULL || mat_2 == NULL, CGSTR("Unable to multiply NULL matrix"));
     float *temp1 = NULL, *temp2 = NULL;
     if (mat_1 == result)
     {
-        temp1 = (float*)malloc(sizeof(float) * demention_x * demention_y);
+        temp1 = (float*)malloc(sizeof(float) * dimension_x * dimension_y);
         CG_ERROR_CONDITION(temp1 == NULL, CGSTR("Failed to allocate memory for temp matrix."));
-        memcpy(temp1, mat_1, sizeof(float) * demention_x * demention_y);
+        memcpy(temp1, mat_1, sizeof(float) * dimension_x * dimension_y);
         mat_1 = temp1;
     }
     if (mat_2 == result)
     {
-        temp2 = (float*)malloc(sizeof(float) * demention_x * demention_y);
+        temp2 = (float*)malloc(sizeof(float) * dimension_x * dimension_y);
         if (temp2 == NULL)
         {
             if (temp1 != NULL)
                 free(temp1);
             CG_ERROR_CONDITION(CG_TRUE, CGSTR("Failed to allocate memory for temp matrix."));
         }
-        memcpy(temp2, mat_2, sizeof(float) * demention_x * demention_y);
+        memcpy(temp2, mat_2, sizeof(float) * dimension_x * dimension_y);
         mat_2 = temp2;
     }
-    for (int i = 0; i < demention_y; ++i)
+    for (int i = 0; i < dimension_y; ++i)
     {
-        for (int j = 0; j < demention_x; ++j)
+        for (int j = 0; j < dimension_x; ++j)
         {
             float value = 0;
-            for (int k = 0; k < demention_x; ++k)
+            for (int k = 0; k < dimension_x; ++k)
             {
-                value += mat_1[i * demention_x + k] * mat_2[k * demention_y + j];
+                value += mat_1[i * dimension_x + k] * mat_2[k * dimension_y + j];
             }
-            result[i * demention_x + j] = value;
+            result[i * dimension_x + j] = value;
         }
     }
     if (temp1 != NULL)
@@ -1256,8 +1277,7 @@ static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float ass
 static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z)
 {
     CG_ERROR_COND_RETURN(visual_image == NULL, NULL, CGSTR("Cannot make vertices array out of a visual_image of value NULL"));
-    float* vertices = (float*)malloc(sizeof(float) * 20);
-    CG_ERROR_COND_RETURN(vertices == NULL, NULL, CGSTR("Failed to allocate memory for vertices"));
+    float* vertices = cg_global_buffer_20;
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     double temp_half_width = (double)visual_image->img_width / 2;
     double temp_half_height = (double)visual_image->img_height / 2;
@@ -1343,10 +1363,13 @@ static void CGSetTextureValue(unsigned int texture_id, CGImage* texture)
     switch(texture->channels)
     {
     case 1:
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RED, GL_UNSIGNED_BYTE, texture->data);
-        break;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, texture->width, texture->height, 0, GL_RED, GL_UNSIGNED_BYTE, texture->data);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     case 3:
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->width, texture->height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture->data);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         break;
     case 4:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
@@ -1718,12 +1741,10 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, CGSTR("Failed to draw visual_image: Attempting to draw visual_image on a NULL window"));
     CGGladInitializeCheck();
     float* vertices = CGMakeVisualImageVertices(visual_image, assigned_z);
-    CG_ERROR_CONDITION(vertices == NULL, CGSTR("Failed to draw visual_image"));
     glBindVertexArray(window->visual_image_vao);
     glUseProgram(cg_visual_image_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
-    free(vertices);
 
     glBindTexture(GL_TEXTURE_2D, visual_image->texture_id);
     CGSetPropertyUniforms(cg_visual_image_shader_program, property);
@@ -1732,17 +1753,56 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     CGSetShaderUniform1i(cg_visual_image_shader_program, "is_clamped", visual_image->is_clamped);
     CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_top_left", visual_image->clamp_top_left);
     CGSetShaderUniformVec2f(cg_visual_image_shader_program, "clamp_bottom_right", visual_image->clamp_bottom_right);
-    CGSetShaderUniformVec2f(cg_visual_image_shader_program, "image_demention", (CGVector2){visual_image->img_width, visual_image->img_height});
+    CGSetShaderUniformVec2f(cg_visual_image_shader_program, "image_dimension", (CGVector2){visual_image->img_width, visual_image->img_height});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, const CGRenderObjectProperty* property)
+static void CGDrawGlyph( int offset, const FT_GlyphSlot glyph, const CGRenderObjectProperty* render_property, const CGWindow* window)
+{
+    CG_ERROR_CONDITION(glyph == NULL, CGSTR("Failed to draw bitmap: Bitmap must be specified to a non-null bitmap instance."));
+
+    unsigned int texture_id = 0;
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, glyph->bitmap.width, glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glUseProgram(cg_bitmap_visual_image_shader_program);
+    glBindVertexArray(window->visual_image_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO]);
+    double bottom = ((double)glyph->bitmap_top - (double)glyph->bitmap.rows);
+    double right = (double)(glyph->bitmap_left + glyph->bitmap.width);
+    CGSetFloatArrayValue(20, cg_global_buffer_20,
+        (double)(glyph->bitmap_left + offset), (double)glyph->bitmap_top, (double)render_property->z, 0.0, 0.0,
+        (double)(right + offset), (double)glyph->bitmap_top, (double)render_property->z, 1.0, 0.0,
+        (double)(right + offset), (double)bottom, (double)render_property->z, 1.0, 1.0,
+        (double)(glyph->bitmap_left + offset), (double)bottom, (double)render_property->z, 0.0, 1.0
+    );
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), cg_global_buffer_20);
+    CGSetPropertyUniforms(cg_bitmap_visual_image_shader_program, render_property);
+    CGSetShaderUniform1f(cg_bitmap_visual_image_shader_program, "render_width", (float)window->width / 2.0f);
+    CGSetShaderUniform1f(cg_bitmap_visual_image_shader_program, "render_height", (float)window->height / 2.0f);
+    CGSetShaderUniformVec2f(cg_bitmap_visual_image_shader_program, "image_dimension", (CGVector2){glyph->bitmap.width, glyph->bitmap.rows});
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, &texture_id);
+}
+
+CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, const CGRenderObjectProperty* render_property, const CGWindow* window)
 {
     CG_ERROR_COND_RETURN(text_rk == NULL, CG_FALSE, CGSTR("Cannot draw text with NULL text resource key."));
-    CG_ERROR_COND_RETURN(property == NULL, CG_FALSE, CGSTR("Cannot draw text with NULL property."));
+    if (render_property == NULL)
+        render_property = cg_default_geo_property;
     CGGladInitializeCheck();
     
     CGChar* text = (CGChar*)CGLoadResource(text_rk, NULL, NULL);
@@ -1763,7 +1823,32 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
         }
     }
 
+    unsigned int char_count = CG_STRLEN(text);
+    int offset = 0;
+    for (unsigned int i = 0; i < char_count; ++i)
+    {
+        if (text[i] == ' ')
+        {
+            offset += text_property.space_width + text_property.kerning;
+            continue;
+        }
+        if (FT_Load_Char(face, text[i], FT_LOAD_RENDER))
+        {
+            free(text);
+            if (font_rk != NULL)
+                FT_Done_Face(face);
+            #ifdef CG_USE_WCHAR
+            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to load glyph with char: \'%lc\' (unicode: %#x)."), text[i], text[i]);
+            #else
+            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to load glyph with char: \'%c\' (unicode: %#x)."), text[i], text[i]);
+            #endif
+        }
+        CGDrawGlyph(offset, face->glyph, render_property, window);
+        offset += face->glyph->bitmap.width + text_property.kerning;
+    }
+
     if (font_rk != NULL)
         FT_Done_Face(face);
     free(text);
+    return CG_TRUE;
 }

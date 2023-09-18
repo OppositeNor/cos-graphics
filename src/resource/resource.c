@@ -317,7 +317,8 @@ void CGSetFloatArrayValue(unsigned int count, float* array, ...)
     va_start(args, array);
     for (int i = 0; i < count; ++i)
     {
-        array[i] = (float)va_arg(args, double);
+        float f = (float)va_arg(args, double);
+        array[i] = f;
     }
     va_end(args);
 }

@@ -211,8 +211,9 @@ int main()
         //test_text->is_temp = CG_TRUE;
         prop->scale = (CGVector2){ 0.5f, 0.5f };
         //prop->transform.x = sin(clock) * 100;
-        CGDrawVisualImage(test_text, prop, window);
+        //CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
+        CGDrawText(CGSTR("test_text_2"), NULL, CGConstructTextProperty(120, 120, 30, 4), prop, window);
         CGWindowDraw(window);
 
         CGTickRenderEnd();
