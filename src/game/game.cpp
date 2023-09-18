@@ -20,14 +20,14 @@ CGGame::~CGGame()
 
 CGGame* CGGame::GetInstance()
 {
-    CG_ERROR_COND_EXIT(game_instance == nullptr, -1, "The game instance is NULL. Please initialize the game before getting game instance.");
+    CG_ERROR_COND_EXIT(game_instance == nullptr, -1, CGSTR("The game instance is NULL. Please initialize the game before getting game instance."));
     return game_instance;
 }
 
 void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title, 
     CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost)
 {
-    CG_PRINT("Initializing game...");
+    CG_PRINT(CGSTR("Initializing game..."));
     if (CGGame::game_instance != nullptr)
     {
         delete game_instance;
@@ -36,7 +36,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p
     CGGame::game_instance = new CGGame();
     CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
         p_resizable, p_boarderless, p_transparent, p_topmost);
-    CG_PRINT("Creating window...");
+    CG_PRINT(CGSTR("Creating window..."));
     
     CGWindowSubProperty window_sub_property;
     window_sub_property.use_full_screen = p_fullscreen;
@@ -51,9 +51,9 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p
         p_title.c_str(),
         window_sub_property);
     
-    CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, "Failed to create window");
-    CG_PRINT("Window created.");
-    CG_PRINT("Game initialized.");
+    CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, CGSTR("Failed to create window"));
+    CG_PRINT(CGSTR("Window created."));
+    CG_PRINT(CGSTR("Game initialized."));
     game_instance->game_initialized = true;
     game_instance->main_camera = new CGCamera();
 }
@@ -71,7 +71,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p
 
 void CGGame::StartGame()
 {
-    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before starting the game.");
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before starting the game."));
     game_instance->Ready();
     game_instance->GameLoop();
     game_instance->ExitGame();
@@ -79,11 +79,11 @@ void CGGame::StartGame()
 
 void CGGame::ExitGame()
 {
-    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before exiting the game.");
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before exiting the game."));
     delete game_instance;
     game_instance = nullptr;
     CGTerminateGraphics();
-    CG_PRINT("Game exited.");
+    CG_PRINT(CGSTR("Game exited."));
 }
 
 void CGGame::AddComponent(CGComponent* p_component)
@@ -106,7 +106,7 @@ void CGGame::RemoveComponent(CGComponent* p_component)
 
 void CGGame::SetWindowClearColor(const CGColor& p_color)
 {
-    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, "Game is not initialized. Please initialize the game before setting the window clear color.");
+    CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before setting the window clear color."));
     CGSetClearScreenColor(p_color);
 }
 
