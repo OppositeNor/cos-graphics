@@ -25,3 +25,18 @@ void CharToCGChar(const char* str, CGChar* buffer, unsigned int buffer_size)
         buffer[i] = (CGChar)str[i];
     buffer[i] = (CGChar)'\0';
 }
+
+void CGWriteArrayPos(void* target_array, const void* source_array, unsigned int step_size,
+    unsigned int top, unsigned int left, unsigned int bottom, unsigned int right,
+    unsigned int line_length)
+{
+    CG_ERROR_CONDITION(target_array == NULL, CGSTR("Cannot write array position with target array pointer \"NULL\"."));
+	CG_ERROR_CONDITION(source_array == NULL, CGSTR("Cannot write array position with from array pointer \"NULL\"."));
+    CG_ERROR_CONDITION(bottom < top || right < left || line_length == 0 || line_length < (right - left), CGSTR("Invalid dimenssion values"));
+    const unsigned int line_size_bytes = line_length * step_size;
+    const unsigned int left_bytes = left * step_size;
+    for (unsigned int i = top; i < bottom; ++i)
+    {
+        memcpy((char*)target_array + i * line_size_bytes + left_bytes, (const CGByte*)source_array + i * line_size_bytes, (right - left) * step_size);
+    }
+}

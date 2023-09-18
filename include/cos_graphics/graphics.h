@@ -749,6 +749,63 @@ CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
  */
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image);
 
+typedef struct {
+    /**
+     * @brief The width of a space (in pixels)
+     */
+    unsigned int text_width;
+    /**
+     * @brief The height of the text (in pixels)
+     */
+    unsigned int text_height;
+    /**
+     * @brief The width of a space (in pixels)
+     */
+    unsigned int space_width;
+    /**
+     * @brief The space between characters (in pixels) 
+     */
+    unsigned int kerning;
+}CGTextProperty;
+
+/**
+ * @brief Construct a CGTextProperty object.
+ * 
+ * @param text_width The width of a space (in pixels)
+ * @param text_height The height of the text (in pixels)
+ * @param space_width The widht of a space (in pixels)
+ * @return CGTextProperty The constructed CGTextProperty object.
+ */
+CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int text_height, unsigned int space_width, unsigned int kerning);
+
+/**
+ * @brief Create a text image.
+ * 
+ * @bug Unsolved memory leak.
+ * @note Try not to make a text a temporary object. It will be very inefficient. Also 
+ * currently there's a memory leak bug when you try to create a temporary text image. and
+ * I am still trying to fix it. If you want to draw a temporary text, please use @ref CGDrawText
+ * instead.
+ * 
+ * @param text_rk The resource key of the text to be drawn.
+ * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. 
+ * @param text_property The property of the text.
+ * @param window The window that the text is going to be drawn.
+ * @return CGVisualImage* The created visual image.
+ */
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
+
+/**
+ * @brief Draw a text on the screen. Compare to @ref CGCreateTextVisualImage, this function is more efficient
+ * if you only want to draw an image but not getting an image visual image object.
+ * @param window The window that the text will be drawn on
+ * @param text_rk The resource key of the text.
+ * @param font_rk The resource key of the font. If you want to use the default font, you can set this to NULL.
+ * @param text_property The property of the text.
+ * @param render_property The render property.
+ * @return CG_TRUE if the text is successfully drawn. CG_FALSE if failed.
+ */
+CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, const CGRenderObjectProperty* render_property, const CGWindow* window);
 
 #ifdef __cplusplus
 }

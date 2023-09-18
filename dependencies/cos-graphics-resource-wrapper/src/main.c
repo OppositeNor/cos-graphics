@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     {
 #ifdef CGRW_USE_WCHAR
         CGRWChar buff[256];
-        CharToCGRWChar(argv[i], buff, 256);
+        CharToCGRWChar(argv[i], buff, 255);
         CGRWResourceData* res_data = CGRWPhraseUsedResource(buff);
 #else
         CGRWResourceData* res_data = CGRWPhraseUsedResource(argv[i]);
@@ -27,13 +27,25 @@ int main(int argc, char* argv[])
     while (temp != NULL)
     {
 #ifdef CGRW_USE_WCHAR
-        CGRW_PRINT_VERBOSE(CGSTR("type: %ls, key: %ls, path: %ls"), temp->type, temp->key, temp->path);
+        if (!temp->is_data_value)
+                CGRW_PRINT_VERBOSE(CGSTR("type: %ls, key: %ls, path: %ls"), temp->type, temp->key, temp->data.path);
+        else
+                CGRW_PRINT_VERBOSE(CGSTR("type: %ls, key: %ls, value: %ls"), temp->type, temp->key, temp->data.value.data);
 #else
-        CGRW_PRINT_VERBOSE(CGSTR("type: %s, key: %s, path: %s"), temp->type, temp->key, temp->path);
+        if (!temp->is_data_value)
+                CGRW_PRINT_VERBOSE(CGSTR("type: %s, key: %s, path: %s"), temp->type, temp->key, temp->data.path);
+        else
+                CGRW_PRINT_VERBOSE(CGSTR("type: %s, key: %s, value: %s"), temp->type, temp->key, temp->data.value.data);
 #endif
         CGRWAddResource(temp);
         CGRWResourceData* temp2 = temp;
         temp = temp->next;
+        if (temp2->is_data_value)
+            free(temp2->data.value.data);
+        else
+            free(temp2->data.path);
+        free(temp2->key);
+        free(temp2->type);
         free(temp2);
     }
     CGRWTerminate();

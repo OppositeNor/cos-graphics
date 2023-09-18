@@ -100,10 +100,10 @@ int main()
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
-        CGFreeResource(prop2);
+        CGFree(prop2);
     }
-    CGFreeResource(prop);
-    //CGFreeResource(window);
+    CGFree(prop);
+    //CGFree(window);
     CGTerminateGraphics();
     return 0;
 }
@@ -174,18 +174,25 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
-    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Graphics test"), window_property);
+    window_property.resizable = CG_TRUE;
+    CGWindow* window = CGCreateWindow(1280, 720, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));
     if (window == NULL)
         return 0;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        (CGVector2){-50, 0},
+        (CGVector2){0, 0},
         (CGVector2){1, 1},
         0.0f);
-    
+    CGRenderObjectProperty* prop1 = CGCreateRenderObjectProperty(
+        CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
+        (CGVector2) {-50, 0},
+        (CGVector2) {1, 1},
+        0.0f);
+    prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
+        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(120, 120, 30, 2), window);
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -194,21 +201,27 @@ int main()
         static float clock = 0;
         clock += (float)delta * 3;
         CGTickRenderStart(window);
-
+#if 0
         CGVisualImage* visual_image = CGCreateTVisualImage(CGSTR("test1"), window);
-        visual_image->is_clamped = CG_TRUE;
+        //visual_image->is_clamped = CG_TRUE;
         visual_image->clamp_top_left = (CGVector2){3.0f, 3.0f};
+        // visual_image->img_channels = 1;
         prop->scale = (CGVector2){3.0f, 3.0f};
+#endif
 
+        //test_text->is_temp = CG_TRUE;
+        prop->scale = (CGVector2){ 0.5f, 0.5f };
         //prop->transform.x = sin(clock) * 100;
-        CGDrawVisualImage(visual_image, prop, window);
+        //CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
+        CGDrawText(CGSTR("test_text_2"), NULL, CGConstructTextProperty(120, 120, 30, 4), prop, window);
         CGWindowDraw(window);
 
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+
     CGTerminateGraphics();
     return 0;
 }

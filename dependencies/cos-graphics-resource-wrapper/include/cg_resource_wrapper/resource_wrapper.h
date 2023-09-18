@@ -8,10 +8,6 @@ extern "C" {
 #define CGRW_TRUE 1
 #define CGRW_FALSE 0
 
-#define CGRW_TYPE_BUFF_SIZE 64
-#define CGRW_KEY_BUFF_SIZE 64
-#define CGRW_PATH_BUFF_SIZE 128
-
 // define target platform
 #if (defined __WIN32__) || (defined _WIN32)
     #define CGRW_TG_WIN              //windows
@@ -109,14 +105,28 @@ void CharToCGRWChar(const char* str, CGRWChar* buffer, unsigned int buffer_size)
 
 typedef char* CGRWResourceIdentifier;
 
+typedef char CGRWByte;
+
+/**
+ * @brief Byte array.
+ */
+typedef struct {
+    CGRWByte* data;         /*The data of the array.*/
+    unsigned int size;  /*The size of the array.*/
+}CGRWByteArray;
+
 /**
  * @brief The resource data gathered from the ures file
  */
 typedef struct CGRWResourceData
 {
-    CGRWChar type[CGRW_TYPE_BUFF_SIZE];     /*The type of the resource.*/
-    CGRWChar key[CGRW_KEY_BUFF_SIZE];      /*The key of the resource.*/
-    CGRWChar path[CGRW_PATH_BUFF_SIZE];     /*The path of the resource.*/
+    CGRWChar* type;     /*The type of the resource.*/
+    CGRWChar* key;      /*The key of the resource.*/
+    union{
+        CGRWByteArray value;
+        CGRWChar* path;
+    }data;              /*The data of the resource.*/
+    CGRW_BOOL is_data_value; /*Whether the data is a value or a file path.*/
     struct CGRWResourceData* next; /*The next resource data.*/
 }CGRWResourceData;
 

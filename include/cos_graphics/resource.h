@@ -28,6 +28,21 @@ CG_BOOL CGResourceSystemInitialized();
 void CGClearTextureResource();
 
 /**
+ * @brief Load a resource that is reusable. If you have a resource that's been allocated
+ * and freed frequently, you can use this function to load the resource and you don't
+ * have to free it. You can load the resource by calling this function with the same key.
+ * When you want to free the resource, you can call @ref CGFreeReusableResource with the same key.
+ * 
+ * @param key The key of the resource, which will also be the key of the reusable resource.
+ * @param deleter The deleter of the resource. The resource will be freed by calling deleter(data).
+ * @param resource_size The size of the resource. If you don't need this, you can set it to NULL.
+ * @return CGUByte* The resource data.
+ */
+CGUByte* CGLoadReusableResource(const CGChar* key, void (*deleter)(void*), unsigned int* resource_size);
+
+void CGFreeReusableResource(const CGChar* key);
+
+/**
  * @brief Initialize resource system.
  */
 void CGInitResourceSystem();
@@ -43,6 +58,15 @@ void CGInitResourceSystem();
  * @returns NULL if failed to load file.
  */
 CGByte* CGLoadFile(const CGChar* file_path);
+
+/**
+ * @brief Register texture resource to the resource system. After registering, 
+ * you can access it with @ref CGGetTextureResource by using the key you entered
+ * as the first parameter (file_rk).
+ * @param key The key of the resource.
+ * @param texture_id The OpenGL texture id.
+ */
+void CGRegisterTextureResource(const CGChar* key, unsigned int texture_id);
 
 /**
  * @brief Get texture resource.
@@ -137,11 +161,11 @@ void CGSetFloatArrayValue(unsigned int count, float* array, ...);
 void CGRegisterResource(void* data, void (*deleter)(void*));
 
 /**
- * @brief Free the resource that's been created.
+ * @brief Free a allocated resource.
  * 
  * @param resource The resource to be freed.
  */
-void CGFreeResource(void* resource);
+void CGFree(void* resource);
 
 /**
  * @brief Print the memory list.
@@ -150,23 +174,29 @@ void CGFreeResource(void* resource);
 void CGPrintMemoryList();
 
 /**
- * @brief Clear all resources.
- * 
+ * @brief Free a resource at the end of the frame.
+ * @param data The data to be freed.
+ * @param deleter The callback function of the deleter. (setting this to CGFreeResource is recommended)
  */
-void CGClearResource();
+void CGQueueFree(void* data, void (*deleter)(void*));
 
 /**
  * @brief Terminate resource system.
- * 
  */
 void CGTerminateResourceSystem();
+
+/**
+ * @brief This function should be called after each frame.
+ */
+void CGResourceSystemUpdate();
 
 /**
  * @brief Load resource from resource file.
  * 
  * @param resource_key The key of the resource.
- * @returns The data of the resource.
- * @returns The resource data. NULL if failed to load resource.
+ * @param size This buffer will be set to the size of the resource. If you don't need this, you can set it to NULL.
+ * @param type This buffer will be set to the type of the resource. If you don't need this, you can set it to NULL.
+ * @return CGByte* The resource data. NULL if failed to load resource.
  */
 CGByte* CGLoadResource(const CGChar* resource_key, int* size, CGChar* type);
 

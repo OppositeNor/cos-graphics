@@ -32,16 +32,6 @@ static CGRWChar* cgrw_resource_file_path = NULL;
 static const CGRWChar* cgrw_resource_finder_name = CGSTR("finder.qaq");
 static CGRWChar* cgrw_resource_finder_path = NULL;
 
-typedef char CGRWByte;
-
-/**
- * @brief Byte array.
- */
-typedef struct {
-    CGRWByte* data;         /*The data of the array.*/
-    unsigned int size;  /*The size of the array.*/
-}CGRWByteArray;
-
 /**
  * @brief Load file data from disk.
  * 
@@ -74,7 +64,7 @@ static void CGRWDeleteComments(CGRWChar* str);
  * @param end The end index.
  * @param sub_string The buffer to store the sub string.
  */
-static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar* sub_string);
+static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar** sub_string);
 
 /**
  * @brief Get the data from a file.
@@ -126,7 +116,7 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
  */
 static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWResourceData* data);
 
-static inline CGRW_BOOL CGRWIsLetter(CGRWChar c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-'; }
+static inline CGRW_BOOL CGRWIsLetter(CGRWChar c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
 
 void CGRWInit(int argc, char* argv[])
 {
@@ -173,6 +163,7 @@ void CGRWTerminate()
     free(cgrw_resource_finder_path);
     cgrw_resource_file_path = NULL;
     cgrw_resource_finder_path = NULL;
+    
     CGRW_PRINT(CGSTR("Resource wrapper terminated."));
 }
 
@@ -211,9 +202,15 @@ void CGRWAddResource(CGRWResourceData* res_data)
 #else
     CGRW_PRINT(CGSTR("Adding resource: %s."), res_data->key);
 #endif
-    CGRWByteArray data = CGRWLoadFile(res_data->path);
+    FILE* file = NULL;
+    CGRWByteArray data;
+    if (!res_data->is_data_value)
+        data = CGRWLoadFile(res_data->data.path);
+    else
+        data = res_data->data.value;
+    CGRW_PRINT_VERBOSE(CGSTR("Resource data size: %d."), data.size);
     // write in resource file
-    FILE* file = CGRWFOpen(cgrw_resource_file_path, "rb+");
+    file = CGRWFOpen(cgrw_resource_file_path, "rb+");
     if (file == NULL)
     {
         file = CGRWFOpen(cgrw_resource_file_path, "wb");
@@ -223,7 +220,8 @@ void CGRWAddResource(CGRWResourceData* res_data)
     unsigned int data_location = ftell(file);
     fwrite(data.data, sizeof(CGRWByte), data.size, file);
     fclose(file);
-    free(data.data);
+    if (!res_data->is_data_value)
+        free(data.data);
     
     // write in resource finder
     file = CGRWFOpen(cgrw_resource_finder_path, "ab");
@@ -273,9 +271,9 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
     for (unsigned int i = 0; p != NULL; p = p->next)
     {
         CGRW_PRINT_VERBOSE(CGSTR("Checking resource index %d..."), i);
-        CGRW_ERROR_COND_EXIT(p->type[0] == '\0', -1, CGSTR("Resource type is empty."));
-        CGRW_ERROR_COND_EXIT(p->key[0] == '\0', -1, CGSTR("Resource key is empty."));
-        CGRW_ERROR_COND_EXIT(p->path[0] == '\0', -1, CGSTR("Resource path is empty."));
+        CGRW_ERROR_COND_EXIT(p->type == NULL, -1, CGSTR("Resource type is empty."));
+        CGRW_ERROR_COND_EXIT(p->key == NULL, -1, CGSTR("Resource key is empty."));
+        CGRW_ERROR_COND_EXIT(p->data.path == NULL, -1, CGSTR("Resource path is empty."));
 #ifdef CGRW_USE_WCHAR
         for (CGRWResourceData* q = p->next; q != NULL; q = q->next)
         {
@@ -287,7 +285,10 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
         }
         CGRW_PRINT_VERBOSE(CGSTR("type: %ls"), p->type);
         CGRW_PRINT_VERBOSE(CGSTR("key: %ls"), p->key);
-        CGRW_PRINT_VERBOSE(CGSTR("path: %ls"), p->path);
+        if (p->is_data_value)
+            CGRW_PRINT_VERBOSE(CGSTR("value: %ls"), p->data.value.data);
+        else
+            CGRW_PRINT_VERBOSE(CGSTR("path: %ls"), p->data.path);
 #else
     for (CGRWResourceData* q = p->next; q != NULL; q = q->next)
         {
@@ -299,7 +300,10 @@ CGRWResourceData* CGRWPhraseUsedResource(const CGRWChar* file_path)
         }
         CGRW_PRINT_VERBOSE(CGSTR("type: %s"), p->type);
         CGRW_PRINT_VERBOSE(CGSTR("key: %s"), p->key);
-        CGRW_PRINT_VERBOSE(CGSTR("path: %s"), p->path);
+        if (p->is_data_value)
+            CGRW_PRINT_VERBOSE(CGSTR("value: %s"), p->data.value.data);
+        else
+            CGRW_PRINT_VERBOSE(CGSTR("path: %s"), p->data.path);
 #endif
         ++i;
     }
@@ -313,9 +317,9 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
     unsigned int line_count = 1;
     
     CGRW_ERROR_COND_EXIT(data_head == NULL, -1, CGSTR("Cannot phrase resource with data_head valued \"NULL\"."));
-    data_head->type[0] = '\0';
-    data_head->key[0] = '\0';
-    data_head->path[0] = '\0';
+    data_head->type = NULL;
+    data_head->key = NULL;
+    data_head->data.path = NULL;
     data_head->next = NULL;
     
     CGRWResourceData* data = data_head;
@@ -335,21 +339,22 @@ static void CGRWPhraseData(const CGRWChar* file_data, CGRWResourceData* data_hea
         case (CGRWChar)'[':
             {
                 CGRW_PRINT_VERBOSE(CGSTR("Found resource at line: %d"), line_count);
-                if (data != data_head || data->type[0] != '\0' || data->key[0] != '\0' || data->path[0] != '\0')
+                if (data != data_head || data->type != NULL || data->key != NULL || data->data.path != NULL)
                 {
                     CGRWResourceData* t_data = (CGRWResourceData*)malloc(sizeof(CGRWResourceData));
                     CGRW_ERROR_COND_EXIT(t_data == NULL, -1, CGSTR("Failed to allocate memory for resource data."));
                     data->next = t_data;
                     data = t_data;
-                    data->key[0] = '\0';
-                    data->path[0] = '\0';
-                    data->type[0] = '\0';
+                    data->is_data_value = CGRW_FALSE;
+                    data->key = NULL;
+                    data->data.path = NULL;
+                    data->type = NULL;
                     data->next = NULL;
                 }
                 CGRWChar* t_p = p;
                 CGRWGoToNext(&p, &line_count, ']');
                 CGRW_ERROR_COND_EXIT(t_p == p, -1, CGSTR("Data type cannot be empty."), line_count);
-                CGRWGetSubString(t_p, 1, p - t_p - 1, data->type);
+                CGRWGetSubString(t_p, 1, p - t_p - 1, &data->type);
 #ifdef CGRW_USE_WCHAR
                 CGRW_PRINT_VERBOSE(CGSTR("Resource type: \"%ls\"."), data->type);
 #else
@@ -405,13 +410,31 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             CGRWGoToNext(&t_p, &line_count, '"');
             if (CGRW_STRCMP(buff, CGSTR("key")) == 0)
             {
-                CGRWGetSubString(p, 0, t_p - p, data->key);
+                if (data->key != NULL)
+                    free(data->key);
+                CGRWGetSubString(p, 0, t_p - p, &data->key);
                 CGRW_PRINT_VERBOSE(CGSTR("key: \"%ls\""), data->key);
             }
             else if (CGRW_STRCMP(buff, CGSTR("path")) == 0)
             {
-                CGRWGetSubString(p, 0, t_p - p, data->path);
-                CGRW_PRINT_VERBOSE(CGSTR("path: \"%ls\""), data->path);
+                data->is_data_value = CGRW_FALSE;
+                if (data->data.path != NULL)
+                    free(data->data.path);
+                CGRWGetSubString(p, 0, t_p - p, &data->data.path);
+                CGRW_PRINT_VERBOSE(CGSTR("path: \"%ls\""), data->data.path);
+            }
+            else if (CGRW_STRCMP(buff, CGSTR("value")) == 0)
+            {
+                // currently value only accepts string.
+                data->is_data_value = CGRW_TRUE;
+                if (data->data.path != NULL)
+                    free(data->data.path);
+                data->data.value.data = (CGRWByte*)malloc((t_p - p + 1) * sizeof(CGRWChar));
+                CGRW_ERROR_COND_EXIT(data->data.value.data == NULL, -1, CGSTR("Failed to allocate memory for resource value."));
+                data->data.value.size = (t_p - p + 1) * sizeof(CGRWChar);
+                CGRWChar* value_data = (CGRWChar*)data->data.value.data;
+                CGRWGetSubString(p, 0, t_p - p, &value_data);
+                CGRW_PRINT_VERBOSE(CGSTR("value: \"%ls\""), data->data.value.data);
             }
             p = t_p + 1;
             CGRWSkipSpaces(&p, &line_count);
@@ -437,13 +460,35 @@ static void CGRWPhraseChunk(const CGRWChar* str, unsigned int line_count, CGRWRe
             CGRWGoToNext(&t_p, &line_count, '"');
             if (CGRW_STRCMP(buff, CGSTR("key")) == 0)
             {
-                CGRWGetSubString(p, 0, t_p - p, data->key);
+                data->key = (CGRWChar*)malloc(sizeof(CGRWChar) * (t_p - p + 1));
+                CGRW_ERROR_COND_EXIT(data->key == NULL, -1, CGSTR("Failed to allocate memory for resource key."));
+                CGRWGetSubString(p, 0, t_p - p, &data->key);
                 CGRW_PRINT_VERBOSE(CGSTR("key: \"%s\""), data->key);
             }
             else if (CGRW_STRCMP(buff, CGSTR("path")) == 0)
             {
-                CGRWGetSubString(p, 0, t_p - p, data->path);
-                CGRW_PRINT_VERBOSE(CGSTR("path: \"%s\""), data->path);
+                data->is_data_value = CGRW_FALSE;
+                data->data.path = (CGRWByte*)malloc(sizeof(CGRWChar) * (t_p - p + 1));
+                CGRW_ERROR_COND_EXIT(data->data.path == NULL, -1, CGSTR("Failed to allocate memory for resource path."));
+                CGRWGetSubString(p, 0, t_p - p, &data->data.path);
+                if (!data->is_data_value)
+                    CGRW_PRINT_VERBOSE(CGSTR("path: \"%s\""), data->data.path);
+                else
+                    CGRW_PRINT_VERBOSE(CGSTR("value: \"%s\""), data->data.value.data);
+            }
+            else if (CGRW_STRCMP(buff, CGSTR("value")) == 0)
+            {
+                // currently value only accepts string.
+                data->is_data_value = CGRW_TRUE;
+                data->data.value.data = (CGRWByte*)malloc(sizeof(CGRWByte) * (t_p - p + 1));
+                CGRW_ERROR_COND_EXIT(data->data.value.data == NULL, -1, CGSTR("Failed to allocate memory for resource value."));
+                data->data.value.size = t_p - p + 1;
+                CGRWGetSubString(p, 0, t_p - p, &data->data.value.data);
+                CGRW_PRINT_VERBOSE(CGSTR("value: \"%s\""), data->data.value.data);
+            }
+            else
+            {
+                CGRW_WARNING(CGSTR("Unknown keyword: %s"), buff);
             }
             p = t_p + 1;
             CGRWSkipSpaces(&p, &line_count);
@@ -489,7 +534,7 @@ static void CGRWReadValue(CGRWChar* str, CGRWChar* buff, unsigned int line_count
     CGRW_ERROR_COND_EXIT(*p != '\"', -1, CGSTR("Invalid resource file format at line: %d."), line_count);
     CGRWChar* t_p = p;
     CGRWGoToNext(&t_p, &line_count, '\"');
-    CGRWGetSubString(p, 0, t_p - p, buff);
+    CGRWGetSubString(p, 0, t_p - p, &buff);
 }
 
 static void CGRWDeleteComments(CGRWChar* str)
@@ -501,9 +546,6 @@ static void CGRWDeleteComments(CGRWChar* str)
     {
         switch(*p)
         {
-        case '\0':
-            CGRW_PRINT_VERBOSE(CGSTR("Comments removed"));
-            return;
         case '\n':
             ++line_count;
             break;
@@ -519,10 +561,15 @@ static void CGRWDeleteComments(CGRWChar* str)
         default:
             break;
         }
+        if (*p == '\0')
+        {
+            CGRW_PRINT_VERBOSE(CGSTR("Comments removed."));
+            return;
+        }
     }
 }
 
-static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar* sub_string)
+static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned int end, CGRWChar** sub_string)
 {
     CGRW_ERROR_COND_EXIT(str == NULL, -1, CGSTR("Cannot get substring from string pointer \"NULL\"."));
     CGRW_ERROR_COND_EXIT(start >= CGRW_STRLEN(str), -1, CGSTR("Invalid start string index."));
@@ -535,9 +582,13 @@ static void CGRWGetSubString(const CGRWChar* str, unsigned int start, unsigned i
         --end;
     CGRW_ERROR_COND_EXIT(start > end, -1, CGSTR("Start string index cannot be greater than end string index."));
     CGRW_ERROR_COND_EXIT(sub_string == NULL, -1, CGSTR("Cannot get substring with substring pointer \"NULL\"."));
-    for (unsigned int i = 0; i <= end - start; ++i)
-        sub_string[i] = str[start + i];
-    sub_string[end - start + 1] = '\0';
+    if (*sub_string == NULL)
+    {
+        *sub_string = (CGRWChar*)malloc((end - start + 2) * sizeof(CGRWChar));
+        CGRW_ERROR_COND_EXIT(*sub_string == NULL, -1, CGSTR("Failed to allocate memory for substring."));
+    }
+    memcpy(*sub_string, str + start, (end - start + 1) * sizeof(CGRWChar));
+    (*sub_string)[end - start + 1] = '\0';
 }
 
 static CGRWChar *CGRWGetFileData(FILE *file)
@@ -561,7 +612,7 @@ static CGRWChar *CGRWGetFileData(FILE *file)
     else
         rewind(file);
 #endif
-    CGRWChar* file_data = (CGRWChar*)malloc((file_size - bom_skip) * sizeof(CGRWChar));
+    CGRWChar* file_data = (CGRWChar*)malloc((file_size - bom_skip + 1) * sizeof(CGRWChar));
     CGRW_ERROR_COND_EXIT(file_data == NULL, -1, CGSTR("Failed to allocate memory for file data."));
     fread(file_data, sizeof(CGRWChar), file_size - bom_skip, file);
     file_data[file_size - bom_skip] = '\0';
@@ -627,6 +678,8 @@ static void CGRWGoToNext(CGRWChar** p, unsigned int* line_count, CGRWChar identi
 #endif
         if (**p == identifier)
             return;
+        if (**p == '\"')
+            CGRWGoToNext(p, line_count, '\"');
         if (**p == '\n' && line_count != NULL)
             ++(*line_count);
     }
