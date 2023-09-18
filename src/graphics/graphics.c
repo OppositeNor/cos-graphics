@@ -479,7 +479,7 @@ static void CGInitGLAD()
     cg_is_glad_initialized = CG_TRUE;
 }
 
-CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property)
+CGWindow* CGCreateWindow(int width, int height, const char* title, CGWindowSubProperty sub_property)
 {
     if (!cg_is_glfw_initialized)
         CGInitGLFW(sub_property);
@@ -493,19 +493,10 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSub
     CG_ERROR_COND_RETURN(window == NULL, NULL, CGSTR("Failed to allocate memory for window."));
     window->width = width;
     window->height = height;
-    CG_STRCPY(window->title, title);
+    strcpy(window->title, title);
     window->sub_property = sub_property;
-#ifdef CG_USE_WCHAR
-    {
-        char title_c[256];
-        CGCharToChar(title, title_c, 256);
-        window->glfw_window_instance = glfwCreateWindow(width, height, title_c, 
-            sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
-    }
-#else
     window->glfw_window_instance = glfwCreateWindow(width, height, title,
         sub_property.use_full_screen ? glfwGetPrimaryMonitor() : NULL, NULL);
-#endif
     glfwSetWindowAttrib((GLFWwindow*)window->glfw_window_instance, GLFW_FLOATING, sub_property.topmost);
     window->render_list = NULL;
     CGCreateRenderList(window);

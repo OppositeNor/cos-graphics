@@ -105,7 +105,7 @@ typedef struct{
     /**
      * @brief The title of the window.
      */
-    CGChar title[256];
+    char title[256];
     int width;
     int height;
     void* glfw_window_instance;
@@ -183,7 +183,7 @@ CGVector2 CGConstructVector2(float x, float y);
  * will change instead. You will find the window not scalling, but the content inside the window
  * scalling. You can change these two properties any time and it will be updated in real-time.
  */
-CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSubProperty sub_property);
+CGWindow* CGCreateWindow(int width, int height, const char* title, CGWindowSubProperty sub_property);
 
 #ifdef CG_TG_WIN
     /**
