@@ -105,7 +105,7 @@ typedef struct{
     /**
      * @brief The title of the window.
      */
-    char title[256];
+    CGChar title[256];
     int width;
     int height;
     void* glfw_window_instance;
