@@ -29,19 +29,19 @@ class CGGame
     {
         unsigned int width;
         unsigned int height;
-        std::string title;
+        CGString title;
         CG_BOOL resizable;
         CG_BOOL fullscreen;
         CG_BOOL boarderless;
         CG_BOOL transparent;
         CG_BOOL topmost;
 
-        WindowProperties(unsigned int p_width, unsigned int p_height, std::string p_title, 
+        WindowProperties(unsigned int p_width, unsigned int p_height, CGString p_title, 
                 CG_BOOL p_fullscreen = CG_FALSE, CG_BOOL p_resizable = CG_TRUE) noexcept
             : WindowProperties(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE)
         {}
 
-        WindowProperties(unsigned int p_width, unsigned int p_height, std::string p_title, 
+        WindowProperties(unsigned int p_width, unsigned int p_height, CGString p_title, 
                 CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost) noexcept
             : width(p_width), height(p_height), title(p_title), resizable(p_resizable), fullscreen(p_fullscreen),
             boarderless(p_boarderless), transparent(p_transparent), topmost(p_topmost)
@@ -86,7 +86,7 @@ public:
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        std::string p_title,
+        CGString p_title,
         CG_BOOL p_fullscreen,
         CG_BOOL p_resizable,
         CG_BOOL boarderless, 
@@ -96,14 +96,14 @@ public:
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        std::string p_title, 
+        CGString p_title, 
         CG_BOOL p_fullscreen, 
         CG_BOOL p_resizable);
 
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        std::string p_title);
+        CGString p_title);
 
     /**
      * @brief Start the game.

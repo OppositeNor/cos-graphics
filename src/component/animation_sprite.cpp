@@ -11,7 +11,7 @@ CGAnimationSprite::CGAnimationSprite(float p_fps)
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map, 
-        std::string p_default_animation, float p_fps)
+        CGString p_default_animation, float p_fps)
     : CGAnimationSprite(p_fps)
 {
     animation_map = CGAnimationMap(p_animation_map);
@@ -19,7 +19,7 @@ CGAnimationSprite::CGAnimationSprite(CGAnimationMap& p_animation_map,
 }
 
 CGAnimationSprite::CGAnimationSprite(CGAnimationMap&& p_animation_map, 
-        std::string p_default_animation, float p_fps)
+        CGString p_default_animation, float p_fps)
     : CGAnimationSprite(p_fps)
 {
     animation_map = std::move(p_animation_map);
@@ -33,12 +33,12 @@ CGAnimationSprite::~CGAnimationSprite()
     {
         for (auto&& frame : animation.second)
         {
-            CGFreeResource(frame);
+            CGFree(frame);
         }
     }
 }
 
-void CGAnimationSprite::AddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation)
+void CGAnimationSprite::AddAnimation(const CGString& p_animation_name, const std::vector<CGVisualImage*>& p_animation)
 {
     animation_map.insert(std::make_pair(p_animation_name, p_animation));
 }
@@ -60,7 +60,7 @@ void CGAnimationSprite::PlayFromStart()
     clock = 0.0f;
 }
 
-void CGAnimationSprite::PlayFromStart(std::string p_animation_name)
+void CGAnimationSprite::PlayFromStart(CGString p_animation_name)
 {
     is_playing = true;
     current_animation = p_animation_name;
@@ -79,11 +79,15 @@ void CGAnimationSprite::SetAnimationFinishCallback(const std::function<void(CGAn
 
 void CGAnimationSprite::Draw(float p_delta)
 {
-    if (current_animation == "" || animation_map.size() == 0)
+    if (current_animation == CGSTR("") || animation_map.size() == 0)
         return;
     if (animation_map.find(current_animation) == animation_map.end())
     {
-        CG_WARNING("Animation %s not found.", current_animation.c_str());
+        #ifdef CG_USE_WCHAR
+        CG_WARNING(CGSTR("Animation %ls not found."), current_animation.c_str());
+        #else
+        CG_WARNING(CGSTR("Animation %s not found."), current_animation.c_str());
+        #endif
         return;
     }
     auto& animation_played = animation_map[current_animation];

@@ -16,7 +16,7 @@
  */
 #define CG_COMPONENT_TYPE(type) \
     public:                     \
-    virtual std::string GetComponentType() override { return #type; } \
+    virtual CGString GetComponentType() override { return CGSTR(#type); } \
     private:
 
 /**
@@ -45,9 +45,9 @@ public:
     /**
      * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
      * 
-     * @return std::string 
+     * @return CGString 
      */
-    virtual std::string GetComponentType() {return "CGComponent";}
+    virtual CGString GetComponentType() {return CGSTR("CGComponent");}
     
     /**
      * @brief Transform component that contains the transformation of components.

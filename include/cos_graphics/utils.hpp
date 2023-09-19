@@ -29,7 +29,7 @@ public:
      * @param p_image_rks The list of image resource keys.
      * @return std::vector<CGVisualImage*>&& The list of CGVisualImage*.
      */
-    static std::vector<CGVisualImage*> CreateVisualImageList(const std::initializer_list<std::string>& p_image_rks)
+    static std::vector<CGVisualImage*> CreateVisualImageList(const std::initializer_list<CGString>& p_image_rks)
     {
         std::vector<CGVisualImage*> list;
         for (auto iter : p_image_rks)

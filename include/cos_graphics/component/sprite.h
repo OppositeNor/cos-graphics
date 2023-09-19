@@ -1,7 +1,6 @@
 #pragma once
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/graphics.h"
-#include <string>
 
 /**
  * @brief The sprite component. It can be used to render a component with a texture.
@@ -24,7 +23,7 @@ public:
      * @param p_texture_rk The resource key of the texture for the sprite
      * @param p_position The position that the sprite is going to be on.
      */
-    explicit CGSprite(const std::string& p_texture_rk = std::string(""));
+    explicit CGSprite(const CGString& p_texture_rk = CGString(CGSTR("")));
 
     /**
      * @brief Copy constructor
@@ -75,5 +74,5 @@ public:
      * 
      * @param p_texture_rk The resource key of the texture file that the sprite is going to be set to.
      */
-    void SetTexture(const std::string& p_texture_rk);
+    void SetTexture(const CGString& p_texture_rk);
 };

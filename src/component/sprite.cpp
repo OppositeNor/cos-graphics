@@ -2,9 +2,9 @@
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
 
-CGSprite::CGSprite(const std::string& p_texture_rk) : CGVisualComponent()
+CGSprite::CGSprite(const CGString& p_texture_rk) : CGVisualComponent()
 {
-    if (p_texture_rk == std::string(""))
+    if (p_texture_rk == CGString(CGSTR("")))
         return;
     texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
 }
@@ -36,14 +36,14 @@ void CGSprite::SetTexture(CGVisualImage*&& p_texture) noexcept
     p_texture = nullptr;
 }
 
-void CGSprite::SetTexture(const std::string& p_texture_rk)
+void CGSprite::SetTexture(const CGString& p_texture_rk)
 {
     texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
 }
 
 CGSprite::~CGSprite()
 {
-    CGFreeResource(texture);
+    CGFree(texture);
 }
 
 void CGSprite::Draw(float p_delta)

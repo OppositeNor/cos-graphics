@@ -82,14 +82,14 @@ void CGComponent::AddChild(CGComponent* p_child)
 {
     if (p_child == nullptr)
     {
-        CG_WARNING("Trying to add a null child to a component.");
+        CG_WARNING(CGSTR("Trying to add a null child to a component."));
         return;
     }
     for (auto& child : children)
     {
         if (child == p_child)
         {
-            CG_WARNING("Trying to add a child that already exists.");
+            CG_WARNING(CGSTR("Trying to add a child that already exists."));
             return;
         }
     }
@@ -101,7 +101,7 @@ void CGComponent::RemoveChild(CGComponent* p_child)
 {
     if (p_child == nullptr)
     {
-        CG_WARNING("Trying to remove a null child from a component.");
+        CG_WARNING(CGSTR("Trying to remove a null child from a component."));
         return;
     }
     for (auto child = children.begin(); child != children.end(); ++child)
@@ -113,14 +113,14 @@ void CGComponent::RemoveChild(CGComponent* p_child)
             return;
         }
     }
-    CG_WARNING("Trying to remove a child that doesn't exist.");
+    CG_WARNING(CGSTR("Trying to remove a child that doesn't exist."));
 }
 
 void CGComponent::SetParent(CGComponent* p_parent)
 {
     if (p_parent == nullptr)
     {
-        CG_WARNING("Trying to set a null parent to a component.");
+        CG_WARNING(CGSTR("Trying to set a null parent to a component."));
         return;
     }
     if (parent != nullptr)
@@ -132,7 +132,7 @@ void CGComponent::DetachChild(CGComponent* p_child)
 {
     if (p_child == nullptr)
     {
-        CG_WARNING("Trying to detach a null child from a component.");
+        CG_WARNING(CGSTR("Trying to detach a null child from a component."));
         return;
     }
     for (auto child = children.begin(); child != children.end(); ++child)
@@ -144,5 +144,5 @@ void CGComponent::DetachChild(CGComponent* p_child)
             return;
         }
     }
-    CG_WARNING("Trying to detach a child that doesn't exist.");
+    CG_WARNING(CGSTR("Trying to detach a child that doesn't exist."));
 }

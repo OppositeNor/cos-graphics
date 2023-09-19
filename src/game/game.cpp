@@ -3,7 +3,7 @@
 #include "cos_graphics/component/component.h"
 #include "cos_graphics/component/camera.h"
 
-CGGame::CGGame() : window_properties(WindowProperties(640, 480, "", CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE))
+CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE))
 {
     
 }
@@ -24,7 +24,7 @@ CGGame* CGGame::GetInstance()
     return game_instance;
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title, 
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title, 
     CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost)
 {
     CG_PRINT(CGSTR("Initializing game..."));
@@ -58,13 +58,13 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p
     game_instance->main_camera = new CGCamera();
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title, 
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title, 
     CG_BOOL p_fullscreen, CG_BOOL p_resizable)
 {
     InitGame(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE);
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, std::string p_title)
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title)
 {
     InitGame(p_width, p_height, p_title, CG_FALSE, CG_TRUE, CG_FALSE, CG_FALSE, CG_FALSE);
 }

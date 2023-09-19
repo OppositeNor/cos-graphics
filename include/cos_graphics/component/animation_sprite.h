@@ -6,8 +6,8 @@
 #include <string>
 #include <functional>
 
-using CGAnimationMap = std::map<std::string, std::vector<CGVisualImage*>>;
-using CGAnimationPair = std::pair<std::string, std::vector<CGVisualImage*>>;
+using CGAnimationMap = std::map<CGString, std::vector<CGVisualImage*>>;
+using CGAnimationPair = std::pair<CGString, std::vector<CGVisualImage*>>;
 
 /**
  * @brief A component that displays an animation.
@@ -27,7 +27,7 @@ protected:
     /**
      * @brief The current animation that is playing;
      */
-    std::string current_animation;
+    CGString current_animation;
 
     /**
      * @brief An internal clock of the animation.
@@ -36,7 +36,7 @@ protected:
 
     /**
      * @brief The map the animations' textures.
-     * @tparam std::string The name of the animation.
+     * @tparam CGString The name of the animation.
      * @tparam std::std::vector<CGVisualImage*> The list of textures of the animation.
      */
     CGAnimationMap animation_map;
@@ -72,7 +72,7 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(CGAnimationMap& p_animation_map, std::string p_default_animation, float p_fps = 5.0f);
+    CGAnimationSprite(CGAnimationMap& p_animation_map, CGString p_default_animation, float p_fps = 5.0f);
     
     /**
      * @brief Construct a new CGAnimationSprite object
@@ -82,7 +82,7 @@ public:
      * @param p_start_frame The frame that the animation is going to start.
      * @param p_position The position of the animation is going to be displayed.
      */
-    CGAnimationSprite(CGAnimationMap&& p_animation_map, std::string p_default_animation, float p_fps = 5.0f);
+    CGAnimationSprite(CGAnimationMap&& p_animation_map, CGString p_default_animation, float p_fps = 5.0f);
 
     
 
@@ -92,7 +92,7 @@ public:
      * @param p_animation_name The name of the animation.
      * @param p_animation The list of textures of the animation.
      */
-    void AddAnimation(const std::string& p_animation_name, const std::vector<CGVisualImage*>& p_animation);
+    void AddAnimation(const CGString& p_animation_name, const std::vector<CGVisualImage*>& p_animation);
 
     /**
      * @brief Add an animation to the animation map.
@@ -114,7 +114,7 @@ public:
      * 
      * @param p_animation_name The animation to be played.
      */
-    void PlayFromStart(std::string p_animation_name);
+    void PlayFromStart(CGString p_animation_name);
 
     /**
      * @brief Set the animation finish callback function.

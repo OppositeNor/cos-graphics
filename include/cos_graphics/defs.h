@@ -49,6 +49,15 @@ typedef unsigned char CGUByte;
     #define CGSTR(str) str
 #endif
 
+#ifdef __cplusplus
+    #include <string>
+    #ifdef CG_USE_WCHAR
+        using CGString = std::wstring;
+    #else
+        using CGString = std::string;
+    #endif
+#endif
+
 /********************************************************************************/
 /*
  * Key defs. Tese defines are copied from glfw3.h.

@@ -28,7 +28,7 @@ CGVisualComponent::CGVisualComponent(const CGVisualComponent& p_other) : CGCompo
 
 CGVisualComponent::~CGVisualComponent()
 {
-    CGFreeResource(render_property);
+    CGFree(render_property);
 }
 
 void CGVisualComponent::Tick(double p_delta_time)

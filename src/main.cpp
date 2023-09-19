@@ -10,10 +10,10 @@ void KeyCallback(CGWindow* window, int key, int action);
 
 int main()
 {
-    CGGame::InitGame(1280, 720, "Test", CG_FALSE, CG_FALSE);
+    CGGame::InitGame(1280, 720, CGSTR("Test"), CG_FALSE, CG_FALSE);
     CGSetKeyCallback(KeyCallback);
 
-    CGVisualImage* image = CGCreateVisualImage("test1", 
+    CGVisualImage* image = CGCreateVisualImage(CGSTR("test1"), 
         CGGame::GetInstance()->GetGameWindow());
     sprite2 = new CGSprite(image);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, 100.0f);
@@ -23,12 +23,12 @@ int main()
     sprite->SetParent(sprite2);
 
     CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
-    animation_sprite->AddAnimation("test", std::vector<CGVisualImage*>{
-        CGCreateVisualImage("test1", CGGame::GetInstance()->GetGameWindow()),
-        CGCreateVisualImage("test2", CGGame::GetInstance()->GetGameWindow()),
-        CGCreateVisualImage("test3", CGGame::GetInstance()->GetGameWindow())});
+    animation_sprite->AddAnimation(CGSTR("test"), std::vector<CGVisualImage*>{
+        CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()),
+        CGCreateVisualImage(CGSTR("test2"), CGGame::GetInstance()->GetGameWindow()),
+        CGCreateVisualImage(CGSTR("test3"), CGGame::GetInstance()->GetGameWindow())});
     animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
-    animation_sprite->PlayFromStart("test");
+    animation_sprite->PlayFromStart(CGSTR("test"));
     //animation_sprite->SetParent(sprite);
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
     
