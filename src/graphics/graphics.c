@@ -1212,16 +1212,14 @@ CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert
 static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, CGSTR("Cannot make vertices array out of a triangle of value NULL."));
-    float* result = (float*)malloc(sizeof(float) * 9);
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle vertexes."));
     static const float denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (assigned_z - CG_RENDER_NEAR) / denom;
-    CGSetFloatArrayValue(9, result,
+    CGSetFloatArrayValue(9, cg_global_buffer_20,
         triangle->vert_1.x, triangle->vert_1.y, depth,
         triangle->vert_2.x, triangle->vert_2.y, depth,
         triangle->vert_3.x, triangle->vert_3.y, depth
     );
-    return result;
+    return cg_global_buffer_20;
 }
 
 static void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
@@ -1248,7 +1246,6 @@ static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectPro
     glUseProgram(cg_geo_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_TRIANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 9 * sizeof(float), triangle_vertices);
-    free(triangle_vertices);
 
     CGSetPropertyUniforms(cg_geo_shader_program, property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width / 2.0f);
@@ -1262,8 +1259,7 @@ static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectPro
 static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, CGSTR("Cannot make vertices array out of a quadrangle of value NULL."));
-    float* vertices = (float*)malloc(sizeof(float) * 12);
-    CG_ERROR_COND_RETURN(vertices == NULL, NULL, CGSTR("Failed to allocate vertices memories."));
+    float* vertices = cg_global_buffer_20;
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(12, vertices, 
         quadrangle->vert_1.x, quadrangle->vert_1.y, depth,
@@ -1277,17 +1273,16 @@ static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float ass
 static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float assigned_z)
 {
     CG_ERROR_COND_RETURN(visual_image == NULL, NULL, CGSTR("Cannot make vertices array out of a visual_image of value NULL"));
-    float* vertices = cg_global_buffer_20;
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     double temp_half_width = (double)visual_image->img_width / 2;
     double temp_half_height = (double)visual_image->img_height / 2;
-    CGSetFloatArrayValue(20, vertices,
+    CGSetFloatArrayValue(20, cg_global_buffer_20,
         -1 * temp_half_width,      temp_half_height, depth, 0.0, 0.0,
              temp_half_width,      temp_half_height, depth, 1.0, 0.0,
              temp_half_width, -1 * temp_half_height, depth, 1.0, 1.0,
         -1 * temp_half_width, -1 * temp_half_height, depth, 0.0, 1.0
     );
-    return vertices;
+    return cg_global_buffer_20;
 }
 
 CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
@@ -1342,7 +1337,6 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     glUseProgram(cg_default_geo_shader_program);
     glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
-    free(vertices);
     
     CGSetPropertyUniforms(cg_geo_shader_program, property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width / 2.0f);
