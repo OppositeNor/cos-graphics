@@ -181,7 +181,7 @@ int main()
         return 0;
     CGRenderObjectProperty* prop = CGCreateRenderObjectProperty(
         CGConstructColor(1.0f, 1.0f, 1.0f, 1.0f),
-        (CGVector2){0, 0},
+        (CGVector2){-0, 0},
         (CGVector2){1, 1},
         0.0f);
     CGRenderObjectProperty* prop1 = CGCreateRenderObjectProperty(
@@ -192,7 +192,7 @@ int main()
     prop->scale = (CGVector2){ 1.0f, 1.0f };
     
     double tick_end_time = CGGetCurrentTime();
-        CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("HelloWorld"), NULL, CGConstructTextProperty(120, 120, 30, 2), window);
+    //CGVisualImage* test_text = CGCreateTextVisualImage(CGSTR("test_text"), NULL, CGConstructTextProperty(120, 120, 30, 2), window);
     while(!CGShouldWindowClose(window))
     {
         static double tick_start_time = 0;
@@ -211,10 +211,14 @@ int main()
 
         //test_text->is_temp = CG_TRUE;
         prop->scale = (CGVector2){ 0.5f, 0.5f };
-        //prop->transform.x = sin(clock) * 100;
         //CGDrawVisualImage(test_text, prop, window);
         //CGSetWindowPosition(window, (CGVector2){300, 300 + sin(clock) * 100});
-        CGDrawText(CGSTR("test_text_2"), NULL, CGConstructTextProperty(120, 120, 30, 4), prop, window);
+        CGDrawText(CGSTR("test_text"), CGSTR("test_font"), CGConstructTextProperty(120, 120, 60, 15), prop, window);
+        
+        //CGVisualImage* test_text_tick = CGCreateTextVisualImage(CGSTR("test_text"), CGSTR("test_font"), CGConstructTextProperty(120, 120, 30, 6), window);
+        //test_text_tick->is_temp = CG_TRUE;
+        //CGDrawVisualImage(test_text_tick, prop, window);
+
         CGWindowDraw(window);
 
         CGTickRenderEnd();

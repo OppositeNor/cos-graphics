@@ -781,11 +781,8 @@ CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int tex
 /**
  * @brief Create a text image.
  * 
- * @bug Unsolved memory leak.
- * @note Try not to make a text a temporary object. It will be very inefficient. Also 
- * currently there's a memory leak bug when you try to create a temporary text image. and
- * I am still trying to fix it. If you want to draw a temporary text, please use @ref CGDrawText
- * instead.
+ * @note Try not to make a text a temporary object. It will be very inefficient. If you want to draw a temporary text, 
+ * please use @ref CGDrawText instead.
  * 
  * @param text_rk The resource key of the text to be drawn.
  * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. 
@@ -798,6 +795,10 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
 /**
  * @brief Draw a text on the screen. Compare to @ref CGCreateTextVisualImage, this function is more efficient
  * if you only want to draw an image but not getting an image visual image object.
+ * 
+ * @note Different from other rander objects, the text will be drawn on the screen directly, and it will be always
+ * at the top among all other render objects.
+ * 
  * @param window The window that the text will be drawn on
  * @param text_rk The resource key of the text.
  * @param font_rk The resource key of the font. If you want to use the default font, you can set this to NULL.

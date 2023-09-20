@@ -206,7 +206,7 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
  * @param character The character to get glyph index from.
  * @return FT_UInt The glyph index of the character.
  */
-static FT_UInt CGGetGlyphFromFace(FT_Face* face, CGChar character);
+static CG_BOOL CGGetGlyphFromFace(FT_Face face, CGChar character);
 
 typedef struct
 {
@@ -239,7 +239,7 @@ typedef struct
  * @return CG_TRUE if the function succeeds.
  * @return CG_FALSE if the function fails.
  */
-static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property);
+static CG_BOOL CGGetTextGlyphs(FT_Face face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property);
 
 /**
  * @brief Get the bitmap from glyphs.
@@ -1453,23 +1453,20 @@ CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
     return result;
 }
 
-static FT_UInt CGGetGlyphFromFace(FT_Face* face, CGChar character)
+static CG_BOOL CGGetGlyphFromFace(FT_Face face, CGChar character)
 { 
-    FT_UInt result = FT_Get_Char_Index(*face, character);
 #ifdef CG_USE_WCHAR
-    CG_ERROR_COND_RETURN(result == 0, 0, CGSTR("Glyph index with char: \'%lc\' (unicode: %#x) not found."), character, character);
+    CG_ERROR_COND_RETURN(FT_Load_Char(face, character, FT_LOAD_RENDER), CG_FALSE, CGSTR("Glyph index with char: \'%lc\' (unicode: %#x) not found."), character, character);
 #else
-    CG_ERROR_COND_RETURN(result == 0, 0, CGSTR("Glyph index with char: \'%c\' (unicode: %#x) not found."), character, character);
+    CG_ERROR_COND_RETURN(FT_Load_Char(face, character, FT_LOAD_RENDER), CG_FALSE, CGSTR("Glyph index with char: \'%c\' (unicode: %#x) not found."), character, character);
 #endif
-    CG_ERROR_COND_RETURN(FT_Load_Glyph(*face, result, FT_LOAD_DEFAULT), 0, CGSTR("Failed to load glyph."));
-    CG_ERROR_COND_RETURN(FT_Render_Glyph((*face)->glyph, FT_RENDER_MODE_NORMAL), 0, CGSTR("Failed to render glyph."));
-    return result;
+    return CG_TRUE;
 }
 
 
-static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property)
+static CG_BOOL CGGetTextGlyphs(FT_Face face, const CGChar* text, CGGlyphs* glyphs, const CGTextProperty* text_property)
 {
-    CG_ERROR_COND_RETURN(face == NULL || *face == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL face."));
+    CG_ERROR_COND_RETURN(face == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL face."));
     CG_ERROR_COND_RETURN(glyphs == NULL || glyphs->glyph_instances == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL glyphs array."));
     CG_ERROR_COND_RETURN(text_property == NULL, CG_FALSE, CGSTR("Cannot get glyphs from NULL text property."));
     unsigned int glyph_index;
@@ -1477,21 +1474,20 @@ static CG_BOOL CGGetTextGlyphs(FT_Face* face, const CGChar* text, CGGlyphs* glyp
     int min_char_bottom = 0x7fffffff;
     for (unsigned int i = 0; i < glyphs->glyphs_count; ++i)
     {
-        if (text[i] == ' ')
+        if (text[i] == (CGChar)' ')
         {
             glyphs->glyph_instances[i].glyph_instance = NULL;
             glyphs->glyphs_dimension.horizontal_layout.total_width += text_property->space_width + text_property->kerning;
             continue;
         }
-        glyph_index = CGGetGlyphFromFace(face, text[i]);
-        CG_ERROR_COND_RETURN(glyph_index == 0, CG_FALSE, CGSTR("Failed to get text image."));
-        CG_ERROR_COND_RETURN(FT_Get_Glyph((*face)->glyph, &(glyphs->glyph_instances[i].glyph_instance)), CG_FALSE, CGSTR("Failed to get glyph instance from face."));
-        glyphs->glyph_instances[i].delta_y = (*face)->glyph->bitmap_top;
-        if ((*face)->glyph->bitmap_top > max_char_top)
-            max_char_top = (*face)->glyph->bitmap_top;
-        glyphs->glyphs_dimension.horizontal_layout.total_width += (*face)->glyph->bitmap.width + text_property->kerning;
-        if ((*face)->glyph->bitmap_top - (int)(*face)->glyph->bitmap.rows < min_char_bottom)
-            min_char_bottom = (*face)->glyph->bitmap_top - (*face)->glyph->bitmap.rows;
+        CG_ERROR_COND_RETURN(!CGGetGlyphFromFace(face, text[i]), CG_FALSE, CGSTR("Failed to get text image."));
+        CG_ERROR_COND_RETURN(FT_Get_Glyph(face->glyph, &(glyphs->glyph_instances[i].glyph_instance)), CG_FALSE, CGSTR("Failed to get glyph instance from face."));
+        glyphs->glyph_instances[i].delta_y = face->glyph->bitmap_top;
+        if (face->glyph->bitmap_top > max_char_top)
+            max_char_top = face->glyph->bitmap_top;
+        glyphs->glyphs_dimension.horizontal_layout.total_width += face->glyph->bitmap.width + text_property->kerning;
+        if (face->glyph->bitmap_top - (int)face->glyph->bitmap.rows < min_char_bottom)
+            min_char_bottom = face->glyph->bitmap_top - face->glyph->bitmap.rows;
     }
     for (unsigned int i = 0; i < glyphs->glyphs_count; ++i)
 		glyphs->glyph_instances[i].delta_y = max_char_top - glyphs->glyph_instances[i].delta_y;
@@ -1574,19 +1570,18 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
 
     CGGladInitializeCheck();
 
-    glGenTextures(1, result);
-    glBindTexture(GL_TEXTURE_2D, *result);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     CGGlyphs glyphs;
     glyphs.glyphs_dimension.horizontal_layout.max_char_height = 0;
     glyphs.glyphs_dimension.horizontal_layout.total_width = 0;
     glyphs.glyphs_count = CG_STRLEN(text);
     glyphs.glyph_instances = (CGGlyphInstance*)malloc(glyphs.glyphs_count * sizeof(CGGlyphInstance));
     CG_ERROR_COND_RETURN(glyphs.glyph_instances == NULL, CG_FALSE, CGSTR("Failed to allocate memory for glyphs."));
-    FT_Set_Pixel_Sizes(face, text_property->text_width, text_property->text_height);
-    if (!CGGetTextGlyphs(&face, text, &glyphs, text_property))
+    if (FT_Set_Pixel_Sizes(face, text_property->text_width, text_property->text_height))
+    {
+        free(glyphs.glyph_instances);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to set font pixel size."));
+    }
+    if (!CGGetTextGlyphs(face, text, &glyphs, text_property))
     {
         free(glyphs.glyph_instances);
         CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to get glyphs from text."));
@@ -1596,6 +1591,11 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
         glyphs.glyphs_dimension.horizontal_layout.total_width * glyphs.glyphs_dimension.horizontal_layout.max_char_height * 4);
     if (image_data == NULL)
     {
+        for (unsigned int i = 0; i < glyphs.glyphs_count; ++i)
+        {
+            if (glyphs.glyph_instances[i].glyph_instance != NULL)
+                FT_Done_Glyph(glyphs.glyph_instances[i].glyph_instance);
+        }
         free(glyphs.glyph_instances);
         CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to allocate memory for text image."));
     }
@@ -1610,6 +1610,12 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
         free(glyphs.glyph_instances);
         CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to get bitmap from glyphs."));
     }
+    for (unsigned int i = 0; i < glyphs.glyphs_count; ++i)
+    {
+        if (glyphs.glyph_instances[i].glyph_instance != NULL)
+            FT_Done_Glyph(glyphs.glyph_instances[i].glyph_instance);
+    }
+    free(glyphs.glyph_instances);
     
     glGenTextures(1, result);
     glBindTexture(GL_TEXTURE_2D, *result);
@@ -1622,12 +1628,6 @@ static CG_BOOL CGGetTextTexture(const CGChar* text, FT_Face face, const CGTextPr
     glBindTexture(GL_TEXTURE_2D, 0);
 
     free(image_data);
-    for (unsigned int i = 0; i < glyphs.glyphs_count; ++i)
-    {
-        if (glyphs.glyph_instances[i].glyph_instance != NULL)
-            FT_Done_Glyph(glyphs.glyph_instances[i].glyph_instance);
-    }
-    free(glyphs.glyph_instances);
 
     if (texture_width != NULL)
         *texture_width = glyphs.glyphs_dimension.horizontal_layout.total_width;
@@ -1642,18 +1642,12 @@ static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
     CGByte* resource = CGLoadReusableResource(font_rk, CG_DELETER(free), &resource_size);
     #ifdef CG_USE_WCHAR
     CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
-    if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face))
-    {
-        free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %ls"), font_rk);
-    }
+    CG_ERROR_COND_RETURN(FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face), CG_FALSE, 
+        CGSTR("Failed to create font face with rk: %ls"), font_rk);
     #else
     CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %s"), font_rk);
-    if (FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, &face))
-    {
-        free(resource);
-        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create font face with rk: %s"), font_rk);
-    }
+    CG_ERROR_COND_RETURN(FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face), CG_FALSE, 
+        CGSTR("Failed to create font face with rk: %s"), font_rk);
     #endif
     return CG_TRUE;
 }
@@ -1674,17 +1668,14 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
     FT_Face face;
     if (font_rk == NULL)
         face = cg_ft_default_face;
-    else
+    else if (!CGCreateFreetypeFace(font_rk, &face))
     {
-        if (!CGCreateFreetypeFace(font_rk, &face))
-        {
-            free(text);
-            #ifdef CG_USE_WCHAR
-            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
-            #else
-            CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
-            #endif
-        }
+        free(text);
+        #ifdef CG_USE_WCHAR
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
+        #else
+        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
+        #endif
     }
 
     // get texture
@@ -1774,10 +1765,10 @@ static void CGDrawGlyph( int offset, const FT_GlyphSlot glyph, const CGRenderObj
     double bottom = ((double)glyph->bitmap_top - (double)glyph->bitmap.rows);
     double right = (double)(glyph->bitmap_left + glyph->bitmap.width);
     CGSetFloatArrayValue(20, cg_global_buffer_20,
-        (double)(glyph->bitmap_left + offset), (double)glyph->bitmap_top, (double)render_property->z, 0.0, 0.0,
-        (double)(right + offset), (double)glyph->bitmap_top, (double)render_property->z, 1.0, 0.0,
-        (double)(right + offset), (double)bottom, (double)render_property->z, 1.0, 1.0,
-        (double)(glyph->bitmap_left + offset), (double)bottom, (double)render_property->z, 0.0, 1.0
+        (double)(glyph->bitmap_left + offset), (double)glyph->bitmap_top, 0.0, 0.0, 0.0,
+        (double)(right + offset), (double)glyph->bitmap_top, 0.0, 1.0, 0.0,
+        (double)(right + offset), (double)bottom, 0.0, 1.0, 1.0,
+        (double)(glyph->bitmap_left + offset), (double)bottom, 0.0, 0.0, 1.0
     );
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), cg_global_buffer_20);
     CGSetPropertyUniforms(cg_bitmap_visual_image_shader_program, render_property);
@@ -1804,17 +1795,19 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
     FT_Face face;
     if (font_rk == NULL)
         face = cg_ft_default_face;
-    else
+    else if (!CGCreateFreetypeFace(font_rk, &face))
     {
-        if (!CGCreateFreetypeFace(font_rk, &face))
-        {
-            free(text);
-            #ifdef CG_USE_WCHAR
-            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
-            #else
-            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
-            #endif
-        }
+        free(text);
+        #ifdef CG_USE_WCHAR
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
+        #else
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
+        #endif
+    }
+    if (FT_Set_Pixel_Sizes(face, text_property.text_width, text_property.text_height))
+    {
+        free(text);
+        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to set pixel size for font."), font_rk);
     }
 
     unsigned int char_count = CG_STRLEN(text);
@@ -1826,16 +1819,17 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
             offset += text_property.space_width + text_property.kerning;
             continue;
         }
-        if (FT_Load_Char(face, text[i], FT_LOAD_RENDER))
+        if (!CGGetGlyphFromFace(face, text[i]))
         {
-            free(text);
             if (font_rk != NULL)
                 FT_Done_Face(face);
             #ifdef CG_USE_WCHAR
-            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to load glyph with char: \'%lc\' (unicode: %#x)."), text[i], text[i]);
+            CG_ERROR(CGSTR("Failed to load glyph with char: \'%lc\' (unicode: %#x)."), text[i], text[i]);
             #else
-            CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to load glyph with char: \'%c\' (unicode: %#x)."), text[i], text[i]);
+            CG_ERROR(CGSTR("Failed to load glyph with char: \'%c\' (unicode: %#x)."), text[i], text[i]);
             #endif
+            free(text);
+            return CG_FALSE;
         }
         CGDrawGlyph(offset, face->glyph, render_property, window);
         offset += face->glyph->bitmap.width + text_property.kerning;
