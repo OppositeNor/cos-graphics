@@ -3,6 +3,7 @@
 #include <cos_graphics/component/animation_sprite.h>
 #include <cos_graphics/log.h>
 #include <cos_graphics/component/camera.h>
+#include <cos_graphics/component/text_component.h>
 
 CGSprite* sprite2 = nullptr;
 CGSprite* sprite = nullptr;
@@ -27,9 +28,13 @@ int main()
         CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()),
         CGCreateVisualImage(CGSTR("test2"), CGGame::GetInstance()->GetGameWindow()),
         CGCreateVisualImage(CGSTR("test3"), CGGame::GetInstance()->GetGameWindow())});
+    
     animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     animation_sprite->PlayFromStart(CGSTR("test"));
-    //animation_sprite->SetParent(sprite);
+    
+    auto text = new CGTextComponent(CGSTR("test_text"), CGConstructTextProperty(120, 120, 30, 10));
+    text->GetTransform().scale = CGConstructVector2(0.5f, 0.5f);
+
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
     
     CGGame::StartGame();

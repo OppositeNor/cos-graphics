@@ -16,6 +16,19 @@ CGComponent::CGComponent()
     Ready();
 }
 
+CGComponent::CGComponent(const CGComponent& other) : CGComponent::CGComponent()
+{
+    transform = other.transform;
+}
+
+CGComponent::CGComponent(CGComponent&& other) noexcept
+{
+    transform = other.transform;
+    parent = other.parent;
+    other.parent = nullptr;
+    children = std::move(other.children);
+}
+
 CGComponent::~CGComponent()
 {
     if (!CGGame::GetInstance()->IsGameTerminating())

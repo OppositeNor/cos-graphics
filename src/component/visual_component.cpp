@@ -26,6 +26,13 @@ CGVisualComponent::CGVisualComponent(const CGVisualComponent& p_other) : CGCompo
     visual = p_other.visual;
 }
 
+CGVisualComponent::CGVisualComponent(CGVisualComponent&& p_other) : CGComponent(std::move(p_other))
+{
+    render_property = p_other.render_property;
+    p_other.render_property = nullptr;
+    visual = p_other.visual;
+}
+
 CGVisualComponent::~CGVisualComponent()
 {
     CGFree(render_property);

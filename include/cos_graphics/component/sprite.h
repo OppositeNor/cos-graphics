@@ -9,7 +9,7 @@
  */
 class CGSprite : public CGVisualComponent
 {
-    CG_COMPONENT_TYPE(CGSprite)
+    CG_COMPONENT(CGSprite)
 protected:
     /**
      * @brief The texture of the sprite.
@@ -28,11 +28,16 @@ public:
     /**
      * @brief Copy constructor
      * 
-     * @bug The texture copy is still unusable.
-     * 
      * @param p_other The other CGSprite object.
      */
     CGSprite(const CGSprite& p_other);
+
+    /**
+     * @brief Move constructor
+     * 
+     * @param p_other The other CGSprite object
+     */
+    CGSprite(CGSprite&& p_other) noexcept;
     
     /**
      * @brief Construct a new CGSprite object

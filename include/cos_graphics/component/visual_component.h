@@ -8,7 +8,7 @@
  */
 class CGVisualComponent : public CGComponent
 {
-    CG_COMPONENT_TYPE(CGVisualComponent)
+    CG_COMPONENT(CGVisualComponent)
 
     CGRenderObjectProperty* render_property;
 protected:
@@ -42,6 +42,13 @@ public:
      * @param p_other The other CGVisualComponent object.
      */
     CGVisualComponent(const CGVisualComponent& p_other);
+
+    /**
+     * @brief Move constructor.
+     * 
+     * @param p_other The other CGVisualComponent object.
+     */
+    CGVisualComponent(CGVisualComponent&& p_other);
 
     virtual ~CGVisualComponent() override;
 

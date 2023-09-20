@@ -14,7 +14,7 @@ using CGAnimationPair = std::pair<CGString, std::vector<CGVisualImage*>>;
  */
 class CGAnimationSprite : public CGVisualComponent
 {
-    CG_COMPONENT_TYPE(CGAnimationSprite)
+    CG_COMPONENT(CGAnimationSprite)
 protected:
 
     void Draw(float p_delta) override;

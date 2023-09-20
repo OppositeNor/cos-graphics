@@ -8,16 +8,16 @@
 #include <string>
 
 /**
- * @brief Identification of a component. The region under this macro will be set to private.
+ * @brief Prefix of component. The region under this macro will be set to private.
  * Everytime you create a component you should put this macro inside it. Use 
- * @code CG_COMPONENT_TYPE(YourComponentName) to identify the component.
+ * @code CG_COMPONENT(YourComponentName).
  * @endcode
  *  
  */
-#define CG_COMPONENT_TYPE(type) \
+#define CG_COMPONENT(type) \
     public:                     \
     virtual CGString GetComponentType() override { return CGSTR(#type); } \
-    private:
+    private:                
 
 /**
  * @brief The base class for all the components in the game.
@@ -108,6 +108,19 @@ public:
      * @brief Construct a new CGComponent object.
      */
     CGComponent();
+
+    /**
+     * @brief Copy constructor.
+     * @note The parent and children will not be copied.
+     * @param other The other CGComponent object.
+     */
+    CGComponent(const CGComponent& other);
+
+    /**
+     * @brief Move constructor.
+     * @param other The other CGComponent object.
+     */
+    CGComponent(CGComponent&& other) noexcept;
 
     virtual ~CGComponent();
 

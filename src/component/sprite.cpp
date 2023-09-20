@@ -19,10 +19,15 @@ CGSprite::CGSprite(CGVisualImage*&& p_texture) : texture(p_texture), CGVisualCom
     p_texture = nullptr;
 }
 
-
 CGSprite::CGSprite(const CGSprite& p_other) : CGVisualComponent(p_other)
 {
     texture = CGCopyVisualImage(p_other.texture);
+}
+
+CGSprite::CGSprite(CGSprite&& p_other) noexcept : CGVisualComponent(std::move(p_other))
+{
+    texture = p_other.texture;
+    p_other.texture = nullptr;
 }
 
 void CGSprite::SetTexture(CGVisualImage*& p_texture)
