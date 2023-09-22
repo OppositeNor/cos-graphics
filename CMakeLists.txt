@@ -31,8 +31,8 @@ file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # set this to OFF if you only want to export the library
 set (USE_TEST_EXE ON)
 
-# set this to OFF if you don't want to export the library
-set (USE_SHARED_LIB ON)
+# set this to ON if you want to export an dynamic library.
+set (USE_SHARED_LIB OFF)
 
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
@@ -85,7 +85,7 @@ message("System: ${CMAKE_SYSTEM_NAME}")
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_package(glfw3 REQUIRED)
     list(APPEND libs "glfw")
-
+    # todo: add freetype for linux
     list(APPEND libs "m")
 #windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -126,14 +126,18 @@ set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 if (USE_SHARED_LIB)
+    add_library(${LIB_OUTPUT_NAME} SHARED
+        ${SOURCES}
+    )
+else()
     add_library(${LIB_OUTPUT_NAME} STATIC
         ${SOURCES}
     )
-
-    target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
-        ${libs}
-    )
 endif()
+
+target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
+    ${libs}
+)
 
 if (USE_TEST_EXE)
 
