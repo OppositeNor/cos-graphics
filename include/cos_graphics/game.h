@@ -32,7 +32,7 @@ class CGGame
         CGString title;
         CG_BOOL resizable;
         CG_BOOL fullscreen;
-        CG_BOOL boarderless;
+        CG_BOOL borderless;
         CG_BOOL transparent;
         CG_BOOL topmost;
 
@@ -44,7 +44,7 @@ class CGGame
         WindowProperties(unsigned int p_width, unsigned int p_height, CGString p_title, 
                 CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost) noexcept
             : width(p_width), height(p_height), title(p_title), resizable(p_resizable), fullscreen(p_fullscreen),
-            boarderless(p_boarderless), transparent(p_transparent), topmost(p_topmost)
+            borderless(p_boarderless), transparent(p_transparent), topmost(p_topmost)
         {}
     } window_properties;
 
@@ -70,10 +70,6 @@ class CGGame
      */
     CGGame();
 
-    /**
-     * @brief Marks that is the game terminating and preparing to release resources.
-     */
-    bool game_terminating = false;
 public:
 
     /**
@@ -176,14 +172,6 @@ public:
      * @param p_camera The camera that the main camera will be set to.
      */
     void SetMainCamera(CGCamera* p_camera) noexcept;
-
-    /**
-     * @brief Check if the game is terminating and releasing component resource.
-     * 
-     * @return true The game is terminating and self-releasing component resources is not allowed.
-     * @return false The game is not terminating and self-releasing resources is allowed.
-     */
-    bool IsGameTerminating() const noexcept;
     
 private:
 

@@ -108,16 +108,23 @@ void KeyCallback(CGWindow* window, int key, int action)
 
 #include "cos_graphics/game.h"
 #include "cos_graphics/component/sprite.h"
-
+#include "cos_graphics/component/text.h"
+#include "test.h"
 int main()
 {
     CGGame::InitGame(1280, 720, CGSTR(""));
-
+#if 0
     auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     sprite2->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     sprite->AllignTop();
+    auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(120, 120, 30, 10));
+#endif
+
+    auto main_menu = new MainMenu();
     CGGame::GetInstance()->StartGame();
+    delete main_menu;
+    CGGame::GetInstance()->ExitGame();
     return 0;
 }

@@ -4,6 +4,7 @@
 
 CGSprite::CGSprite(const CGString& p_texture_rk) : CGVisualComponent()
 {
+    texture = nullptr;
     if (p_texture_rk == CGString(CGSTR("")))
         return;
     texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
@@ -16,7 +17,8 @@ CGSprite::CGSprite(CGVisualImage*& p_texture) : CGVisualComponent()
 
 CGSprite::~CGSprite()
 {
-    CGFree(texture);
+    if (texture != nullptr)
+        CGFree(texture);
 }
 
 void CGSprite::Draw(float p_delta)

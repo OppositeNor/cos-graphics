@@ -30,16 +30,13 @@ CGComponent::CGComponent(CGComponent&& other) noexcept
 
 CGComponent::~CGComponent()
 {
-    if (!CGGame::GetInstance()->IsGameTerminating())
+    CGGame::GetInstance()->RemoveComponent(this);
+    for (auto& child : children)
     {
-        CGGame::GetInstance()->RemoveComponent(this);
-        for (auto& child : children)
-        {
-            delete child;
-        }
-        if (parent != nullptr)
-            parent->RemoveChild(this);
+        delete child;
     }
+    if (parent != nullptr)
+        parent->RemoveChild(this);
 }
 
 void CGComponent::Tick(double p_delta_time)

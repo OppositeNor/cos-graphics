@@ -49,7 +49,7 @@ public:
      * 
      * @param other The other CGText object.
      */
-    CGText(CGText&& other);
+    CGText(CGText&& other) noexcept;
 
     /**
      * @brief Destroy the CGText object.

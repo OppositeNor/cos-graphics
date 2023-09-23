@@ -5,7 +5,7 @@ project(CosGraphics LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
- set (CMAKE_BUILD_TYPE Release)
+# set (CMAKE_BUILD_TYPE Release)
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
 
@@ -20,7 +20,8 @@ set(CG_CPP_TEST ON)
 
 
 if(CG_CPP_TEST MATCHES ON)
-    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.cpp)
+    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.cpp
+                            ${CMAKE_SOURCE_DIR}/src/test.h)
 else()
     set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.c)
 endif()

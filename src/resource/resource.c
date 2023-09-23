@@ -12,10 +12,6 @@
 #ifdef CG_TG_WIN
     #include <windows.h>
 
-    // test
-    #define _CRTDBG_MAP_ALLOC
-    #include <crtdbg.h>
-
     #define CG_FILE_SPLITTER (CGChar)'\\'
 
     static void CGGetExecDir(CGChar* buff, unsigned int size)

@@ -10,11 +10,6 @@ CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FA
 
 CGGame::~CGGame()
 {
-    game_terminating = true;
-    for (auto&& i : component_list)
-    {
-        delete i;
-    }
     game_initialized = false;
 }
 
@@ -31,7 +26,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_ti
     if (CGGame::game_instance != nullptr)
     {
         delete game_instance;
-        return;
+        game_instance = nullptr;
     }
     CGGame::game_instance = new CGGame();
     CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
@@ -74,7 +69,6 @@ void CGGame::StartGame()
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before starting the game."));
     game_instance->Ready();
     game_instance->GameLoop();
-    game_instance->ExitGame();
 }
 
 void CGGame::ExitGame()
@@ -97,7 +91,9 @@ void CGGame::RemoveComponent(CGComponent* p_component)
     auto iter = component_list.begin();
     for (auto iter = component_list.begin(); iter < component_list.end(); ++iter)
     {
-        if (*iter == p_component)
+        if (*iter != p_component)
+            continue;
+        else
         {
             component_list.erase(iter);
             break;
@@ -111,7 +107,6 @@ void CGGame::RemoveComponent(CGComponent* p_component)
             return;
         }
     }
-    CG_WARNING(CGSTR("Trying to remove a component that doesn't exist."));
 }
 
 void CGGame::SetWindowClearColor(const CGColor& p_color)
@@ -133,11 +128,6 @@ CGCamera* CGGame::GetMainCamera() noexcept
 void CGGame::SetMainCamera(CGCamera* p_camera) noexcept
 {
     main_camera = p_camera;
-}
-
-bool CGGame::IsGameTerminating() const noexcept
-{
-    return game_terminating;
 }
 
 const CGWindow* CGGame::GetGameWindow() const noexcept

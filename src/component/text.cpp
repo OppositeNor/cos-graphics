@@ -43,7 +43,7 @@ CGText::CGText(const CGText& other) : CGVisualComponent(other)
     UpdateTextImage();
 }
 
-CGText::CGText(CGText&& other) : CGVisualComponent(std::move(other))
+CGText::CGText(CGText&& other) noexcept : CGVisualComponent(std::move(other))
 {
     text = other.text;
     font_rk = other.font_rk;
