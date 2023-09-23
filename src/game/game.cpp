@@ -142,8 +142,11 @@ CGWindow* CGGame::GetGameWindow() noexcept
 
 void CGGame::Tick(float p_delta)
 {
-    for (auto& i : component_prepare_list)
-        i->Ready();
+    while (!component_prepare_list.empty())
+    {
+        (*component_prepare_list.begin())->Ready();
+        component_prepare_list.erase(component_prepare_list.begin());
+    }
     component_prepare_list.clear();
     Update(p_delta);
     for (auto& i : component_list)

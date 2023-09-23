@@ -15,12 +15,12 @@ CGComponent::CGComponent()
     CGGame::GetInstance()->AddComponent(this);
 }
 
-CGComponent::CGComponent(const CGComponent& other) : CGComponent::CGComponent()
+CGComponent::CGComponent(const CGComponent& other) : CGComponent()
 {
     transform = other.transform;
 }
 
-CGComponent::CGComponent(CGComponent&& other) noexcept
+CGComponent::CGComponent(CGComponent&& other) noexcept : CGComponent()
 {
     transform = other.transform;
     parent = other.parent;

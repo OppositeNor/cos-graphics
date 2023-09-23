@@ -20,8 +20,7 @@ set(CG_CPP_TEST ON)
 
 
 if(CG_CPP_TEST MATCHES ON)
-    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.cpp
-                            ${CMAKE_SOURCE_DIR}/src/test.h)
+    set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.cpp)
 else()
     set(CG_TEST_MAIN_SOURCE ${CG_TEST_MAIN_SOURCE}.c)
 endif()
