@@ -53,6 +53,11 @@ class CGGame
      */
     std::vector<CGComponent*> component_list;
 
+    /**
+     * @brief The component that are prepared, but have not called the Ready() function.
+     */
+    std::vector<CGComponent*> component_prepare_list;
+
     bool game_initialized = false;
 
     /**

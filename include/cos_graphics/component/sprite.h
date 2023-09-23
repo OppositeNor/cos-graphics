@@ -1,6 +1,7 @@
 #pragma once
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/graphics.h"
+#include <memory>
 
 /**
  * @brief The sprite component. It can be used to render a component with a texture.
@@ -58,6 +59,19 @@ public:
     CGSprite(CGVisualImage*&& p_texture);
 
     virtual ~CGSprite() override;
+
+    /**
+     * @brief Get the width of the visual component.
+     * 
+     * @return float The width of the visual component.
+     */
+    virtual float GetWidth() const override;
+    /**
+     * @brief Get the height of the visual component
+     * 
+     * @return float The height of the visual component
+     */
+    virtual float GetHeight() const override;
 
     /**
      * @brief Set the texture of the sprite. The texture is going to be copied.

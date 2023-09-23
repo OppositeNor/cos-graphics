@@ -4,6 +4,7 @@
 #include <string>
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/game.h"
+#include "cos_graphics/component/component.h"
 
 class CGUtils
 {

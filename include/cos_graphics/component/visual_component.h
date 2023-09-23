@@ -1,5 +1,6 @@
 #pragma once
 #include "cos_graphics/component/component.h"
+#include "cos_graphics/interface/rect_shape.h"
 #include "cos_graphics/graphics.h"
 
 /**
@@ -7,6 +8,7 @@
  * 
  */
 class CGVisualComponent : public CGComponent
+    , public CGIRectShape
 {
     CG_COMPONENT(CGVisualComponent)
 
@@ -73,4 +75,64 @@ public:
      * @return false The component is not visual in the game
      */
     bool IsVisual() const noexcept;
+
+    /**
+     * @brief Allign the top of the image to the top of the window.
+     * 
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AllignTop(float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the bottom of the image to the bottom of the window.
+     * 
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AllignBottom(float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the left of the image to the left of the window.
+     * 
+     * @param p_offset The x offset of the image after allignment.
+     */
+    void AllignLeft(float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the right of the image to the right of the window.
+     * 
+     * @param p_offset The x offset of the image after allignment.
+     */
+    void AllignRight(float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the bottom of the image to the top of a target component.
+     * 
+     * @param target The target component.
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AllignBottomToTop(const CGVisualComponent& target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the top of the image to the bottom of a target component.
+     * 
+     * @param target The target component.
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AllignTopToBottom(const CGVisualComponent& target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the left of the image to the right of a target component.
+     * 
+     * @param target The target component.
+     * @param p_offset The x offset of the image after allignment.
+     */
+    void AllignLeftToRight(const CGVisualComponent& target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the right of the image to the left of the target component.
+     * 
+     * @param target The target component
+     * @param p_offset The x offset of the image after allignment.
+     */
+    void AllignRightToLeft(const CGVisualComponent& target, float p_offset = 0.0f);
 };

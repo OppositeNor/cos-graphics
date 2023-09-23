@@ -1,7 +1,7 @@
-#include "cos_graphics/component/text_component.h"
+#include "cos_graphics/component/text.h"
 #include "cos_graphics/game.h"
 
-void CGTextComponent::UpdateTextImage()
+void CGText::UpdateTextImage()
 {
     if (text_image != nullptr)
         CGFree(text_image);
@@ -13,7 +13,7 @@ void CGTextComponent::UpdateTextImage()
         text_image = CGCreateTextVisualImage(text_rk.c_str(), font_rk.c_str(), CGTextProperty(), CGGame::GetInstance()->GetGameWindow());
 }
 
-CGTextComponent::CGTextComponent(const CGString& p_text_rk, const CGTextProperty& p_text_property) 
+CGText::CGText(const CGString& p_text_rk, const CGTextProperty& p_text_property) 
     : text_rk(p_text_rk), font_rk(CGSTR("")), text_property(p_text_property), CGVisualComponent()
 {
     auto string_data = (CGChar*)CGLoadResource(p_text_rk.c_str(), NULL, NULL);
@@ -23,7 +23,7 @@ CGTextComponent::CGTextComponent(const CGString& p_text_rk, const CGTextProperty
     text_image = CGCreateTextVisualImage(p_text_rk.c_str(), NULL, p_text_property, CGGame::GetInstance()->GetGameWindow());
 }
 
-CGTextComponent::CGTextComponent(const CGString& p_text_rk, const CGString& p_font_rk, const CGTextProperty& p_text_property)
+CGText::CGText(const CGString& p_text_rk, const CGString& p_font_rk, const CGTextProperty& p_text_property)
     : text_rk(p_text_rk), font_rk(p_font_rk), text_property(p_text_property), CGVisualComponent()
 {
     auto string_data = (CGChar*)CGLoadResource(p_text_rk.c_str(), NULL, NULL);
@@ -33,7 +33,7 @@ CGTextComponent::CGTextComponent(const CGString& p_text_rk, const CGString& p_fo
     text_image = CGCreateTextVisualImage(p_text_rk.c_str(), p_font_rk.c_str(), p_text_property, CGGame::GetInstance()->GetGameWindow());
 }
 
-CGTextComponent::CGTextComponent(const CGTextComponent& other) : CGVisualComponent(other)
+CGText::CGText(const CGText& other) : CGVisualComponent(other)
 {
     text = other.text;
     font_rk = other.font_rk;
@@ -43,7 +43,7 @@ CGTextComponent::CGTextComponent(const CGTextComponent& other) : CGVisualCompone
     UpdateTextImage();
 }
 
-CGTextComponent::CGTextComponent(CGTextComponent&& other) : CGVisualComponent(std::move(other))
+CGText::CGText(CGText&& other) : CGVisualComponent(std::move(other))
 {
     text = other.text;
     font_rk = other.font_rk;
@@ -54,7 +54,19 @@ CGTextComponent::CGTextComponent(CGTextComponent&& other) : CGVisualComponent(st
     UpdateTextImage();
 }
 
-void CGTextComponent::SetText(const CGString& p_text_rk)
+CGText::~CGText()
+{
+    CGFree(text_image);
+}
+
+void CGText::Draw(float p_delta)
+{
+    if (text_image == nullptr)
+        return;
+    CGDrawVisualImage(text_image, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
+}
+
+void CGText::SetText(const CGString& p_text_rk)
 {
     auto string_data = (CGChar*)CGLoadResource(p_text_rk.c_str(), NULL, NULL);
     text = CGString(string_data);
@@ -62,36 +74,34 @@ void CGTextComponent::SetText(const CGString& p_text_rk)
     UpdateTextImage();
 }
 
-const CGString& CGTextComponent::GetText() const noexcept
+const CGString& CGText::GetText() const noexcept
 {
     return text;
 }
 
-void CGTextComponent::SetFont(const CGString& p_font_rk)
+void CGText::SetFont(const CGString& p_font_rk)
 {
     font_rk = p_font_rk;
     UpdateTextImage();
 }
 
-const CGTextProperty& CGTextComponent::GetTextProperty() const noexcept
+const CGTextProperty& CGText::GetTextProperty() const noexcept
 {
     return text_property;
 }
 
-void CGTextComponent::SetTextProperty(const CGTextProperty& p_property)
+void CGText::SetTextProperty(const CGTextProperty& p_property)
 {
     text_property = p_property;
     UpdateTextImage();
 }
 
-CGTextComponent::~CGTextComponent()
+float CGText::GetWidth() const
 {
-    CGFree(text_image);
+    return text_image->img_width * transform.scale.x;
 }
 
-void CGTextComponent::Draw(float p_delta)
+float CGText::GetHeight() const
 {
-    if (text_image == nullptr)
-        return;
-    CGDrawVisualImage(text_image, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
+    return text_image->img_height * transform.scale.y;
 }

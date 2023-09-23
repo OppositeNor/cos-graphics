@@ -1,9 +1,13 @@
 #pragma once
 #include "cos_graphics/component/visual_component.h"
 
-class CGTextComponent : public CGVisualComponent
+/**
+ * @brief A text 
+ * 
+ */
+class CGText : public CGVisualComponent
 {
-    CG_COMPONENT(CGTextComponent)
+    CG_COMPONENT(CGText)
 private:
     CGString text;
     CGString text_rk;
@@ -17,35 +21,40 @@ protected:
 
 public:
     /**
-     * @brief Construct a new CGTextComponent object with the default font.
+     * @brief Construct a new CGText object with the default font.
      * 
      * @param p_text_rk The resource key of the text.
      * @param p_text_property The property of the text.
      */
-    CGTextComponent(const CGString& p_text_rk, const CGTextProperty& p_text_property);
+    CGText(const CGString& p_text_rk, const CGTextProperty& p_text_property);
 
     /**
-     * @brief Construct a new CGTextComponent object.
+     * @brief Construct a new CGText object.
      * 
      * @param p_text_rk The resource key of the text.
      * @param p_font_rk The resource key of the font.
      * @param p_text_property The property of the text.
      */
-    CGTextComponent(const CGString& p_text_rk, const CGString& p_font_rk, const CGTextProperty& p_text_property);
+    CGText(const CGString& p_text_rk, const CGString& p_font_rk, const CGTextProperty& p_text_property);
     
     /**
      * @brief Copy constructor.
      * 
-     * @param other The other CGTextComponent object.
+     * @param other The other CGText object.
      */
-    CGTextComponent(const CGTextComponent& other);
+    CGText(const CGText& other);
 
     /**
      * @brief Move constructor.
      * 
-     * @param other The other CGTextComponent object.
+     * @param other The other CGText object.
      */
-    CGTextComponent(CGTextComponent&& other);
+    CGText(CGText&& other);
+
+    /**
+     * @brief Destroy the CGText object.
+     */
+    virtual ~CGText() override;
 
     /**
      * @brief Set the text that the component will draw.
@@ -83,7 +92,16 @@ public:
     void SetTextProperty(const CGTextProperty& p_property);
 
     /**
-     * @brief Destroy the CGTextComponent object.
+     * @brief Get the width of the visual component.
+     * 
+     * @return float The width of the visual component.
      */
-    virtual ~CGTextComponent() override;
+    virtual float GetWidth() const override;
+
+    /**
+     * @brief Get the height of the visual component
+     * 
+     * @return float The height of the visual component
+     */
+    virtual float GetHeight() const override;
 };

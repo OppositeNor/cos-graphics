@@ -14,6 +14,19 @@ CGSprite::CGSprite(CGVisualImage*& p_texture) : CGVisualComponent()
     texture = CGCopyVisualImage(p_texture);
 }
 
+CGSprite::~CGSprite()
+{
+    CGFree(texture);
+}
+
+void CGSprite::Draw(float p_delta)
+{
+    if (texture == nullptr)
+        return;
+    
+    CGDrawVisualImage(texture, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
+}
+
 CGSprite::CGSprite(CGVisualImage*&& p_texture) : texture(p_texture), CGVisualComponent()
 {
     p_texture = nullptr;
@@ -41,20 +54,12 @@ void CGSprite::SetTexture(CGVisualImage*&& p_texture) noexcept
     p_texture = nullptr;
 }
 
-void CGSprite::SetTexture(const CGString& p_texture_rk)
+float CGSprite::GetWidth() const
 {
-    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
+    return transform.scale.x * texture->img_width;
 }
 
-CGSprite::~CGSprite()
+float CGSprite::GetHeight() const
 {
-    CGFree(texture);
-}
-
-void CGSprite::Draw(float p_delta)
-{
-    if (texture == nullptr)
-        return;
-    
-    CGDrawVisualImage(texture, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
+    return transform.scale.y * texture->img_height;
 }

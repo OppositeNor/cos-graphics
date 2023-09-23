@@ -1,3 +1,4 @@
+#if 0
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
 #include <cos_graphics/component/animation_sprite.h>
@@ -102,4 +103,21 @@ void KeyCallback(CGWindow* window, int key, int action)
             break;
         }
     }
+}
+#endif
+
+#include "cos_graphics/game.h"
+#include "cos_graphics/component/sprite.h"
+
+int main()
+{
+    CGGame::InitGame(1280, 720, CGSTR(""));
+
+    auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
+    auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
+    sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
+    sprite2->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
+    sprite->AllignTop();
+    CGGame::GetInstance()->StartGame();
+    return 0;
 }

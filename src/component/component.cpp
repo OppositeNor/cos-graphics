@@ -13,7 +13,6 @@ CGComponent::CGTransform::CGTransform(const CGVector2& p_position, float p_rotat
 CGComponent::CGComponent()
 {
     CGGame::GetInstance()->AddComponent(this);
-    Ready();
 }
 
 CGComponent::CGComponent(const CGComponent& other) : CGComponent::CGComponent()

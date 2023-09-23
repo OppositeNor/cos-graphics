@@ -89,19 +89,29 @@ void CGGame::ExitGame()
 void CGGame::AddComponent(CGComponent* p_component)
 {
     component_list.insert(component_list.end(), p_component);
+    component_prepare_list.insert(component_prepare_list.end(), p_component);
 }
 
 void CGGame::RemoveComponent(CGComponent* p_component)
 {
     auto iter = component_list.begin();
-    for (; iter < component_list.end(); ++iter)
+    for (auto iter = component_list.begin(); iter < component_list.end(); ++iter)
     {
         if (*iter == p_component)
         {
             component_list.erase(iter);
+            break;
+        }
+    }
+    for (auto iter = component_prepare_list.begin(); iter < component_prepare_list.end(); ++iter)
+    {
+        if (*iter == p_component)
+        {
+            component_prepare_list.erase(iter);
             return;
         }
     }
+    CG_WARNING(CGSTR("Trying to remove a component that doesn't exist."));
 }
 
 void CGGame::SetWindowClearColor(const CGColor& p_color)
@@ -142,6 +152,9 @@ CGWindow* CGGame::GetGameWindow() noexcept
 
 void CGGame::Tick(float p_delta)
 {
+    for (auto& i : component_prepare_list)
+        i->Ready();
+    component_prepare_list.clear();
     Update(p_delta);
     for (auto& i : component_list)
         i->Tick(p_delta);

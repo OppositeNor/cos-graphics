@@ -83,7 +83,6 @@ public:
         CGTransform(const CGVector2& p_position = {0.0f, 0.0f}, float p_rotation = 0.0f, const CGVector2& p_scale = {1.0f, 1.0f});
         virtual ~CGTransform() {}
     };
-protected:
 
     /**
      * @brief Called once when the component is created.
@@ -96,6 +95,7 @@ protected:
      * @param p_delta_time the time in seconds since the last frame.
      */
     virtual void Update(double p_delta_time) {}
+protected:
 
     /**
      * @brief The transform of the component.

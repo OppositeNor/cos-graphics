@@ -5,14 +5,14 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/camera.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/component.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/sprite.h
-    ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/text_component.h
+    ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/text.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/visual_component.h
 
     ${PROJECT_SOURCE_DIR}/animation_sprite.cpp
     ${PROJECT_SOURCE_DIR}/camera.cpp
     ${PROJECT_SOURCE_DIR}/component.cpp
     ${PROJECT_SOURCE_DIR}/sprite.cpp
-    ${PROJECT_SOURCE_DIR}/text_component.cpp
+    ${PROJECT_SOURCE_DIR}/text.cpp
     ${PROJECT_SOURCE_DIR}/visual_component.cpp
     ${SOURCES}
     PARENT_SCOPE

@@ -63,3 +63,43 @@ bool CGVisualComponent::IsVisual() const noexcept
 {
     return visual;
 }
+
+void CGVisualComponent::AllignTop(float p_offset)
+{
+    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetHeight() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignBottom(float p_offset)
+{
+    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f + GetHeight() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignLeft(float p_offset)
+{
+    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f + GetWidth() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignRight(float p_offset)
+{
+    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetWidth() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignBottomToTop(const CGVisualComponent& target, float p_offset)
+{
+    transform.position.y = target.GetGlobalPosition().y + target.GetHeight() / 2.0f + GetHeight() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignTopToBottom(const CGVisualComponent& target, float p_offset)
+{
+    transform.position.y = target.GetGlobalPosition().y - target.GetHeight() / 2.0f - GetHeight() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignLeftToRight(const CGVisualComponent& target, float p_offset)
+{
+    transform.position.x = target.GetGlobalPosition().x + target.GetWidth() / 2.0f + GetWidth() / 2.0f + p_offset;
+}
+
+void CGVisualComponent::AllignRightToLeft(const CGVisualComponent& target, float p_offset)
+{
+    transform.position.x = target.GetGlobalPosition().x - target.GetWidth() / 2.0f - GetWidth() / 2.0f + p_offset;
+}
