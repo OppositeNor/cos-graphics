@@ -8,11 +8,6 @@ CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FA
     
 }
 
-CGGame* CGGame::CreateGameInstance()
-{
-    return new CGGame();
-}
-
 CGGame::~CGGame()
 {
     game_initialized = false;
