@@ -70,6 +70,9 @@ class CGGame
      */
     CGGame();
 
+protected:
+    static virtual CGGame* CreateGameInstance();
+
 public:
 
     /**

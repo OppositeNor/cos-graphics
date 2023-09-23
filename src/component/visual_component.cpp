@@ -103,3 +103,8 @@ void CGVisualComponent::AllignRightToLeft(const CGVisualComponent& target, float
 {
     transform.position.x = target.GetGlobalPosition().x - target.GetWidth() / 2.0f - GetWidth() / 2.0f + p_offset;
 }
+
+void CGVisualComponent::SetColor(const CGColor& p_color) noexcept
+{
+    render_property->color = p_color;
+}

@@ -8,6 +8,11 @@ CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FA
     
 }
 
+CGGame* CGGame::CreateGameInstance()
+{
+    return new CGGame();
+}
+
 CGGame::~CGGame()
 {
     game_initialized = false;
@@ -28,7 +33,7 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_ti
         delete game_instance;
         game_instance = nullptr;
     }
-    CGGame::game_instance = new CGGame();
+    CGGame::game_instance = CreateGameInstance();
     CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
         p_resizable, p_boarderless, p_transparent, p_topmost);
     CG_PRINT(CGSTR("Creating window..."));

@@ -135,4 +135,11 @@ public:
      * @param p_offset The x offset of the image after allignment.
      */
     void AllignRightToLeft(const CGVisualComponent& target, float p_offset = 0.0f);
+
+    /**
+     * @brief Set the color of the component.
+     * 
+     * @param p_color The color to be set to.
+     */
+    void SetColor(const CGColor& p_color) noexcept;
 };
