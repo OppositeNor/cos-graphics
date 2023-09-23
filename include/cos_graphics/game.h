@@ -6,12 +6,14 @@
 
 class CGComponent;
 class CGCamera;
+class CGGameFactory;
 
 /**
  * @brief The game class.
  */
 class CGGame
 {
+    friend CGGameFactory;
     /**
      * @brief The instance of the game.
      */
@@ -66,6 +68,11 @@ class CGGame
     CGCamera* main_camera = nullptr;
 
     /**
+     * @brief The factory that created the game.
+     */
+    inline static CGGameFactory* game_factory = nullptr;
+
+    /**
      * @brief Constructor
      */
     CGGame();
@@ -87,7 +94,7 @@ public:
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        CGString p_title,
+        const CGString& p_title,
         CG_BOOL p_fullscreen,
         CG_BOOL p_resizable,
         CG_BOOL boarderless, 
@@ -97,14 +104,39 @@ public:
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        CGString p_title, 
+        const CGString& p_title, 
         CG_BOOL p_fullscreen, 
         CG_BOOL p_resizable);
 
     static void InitGame(
         unsigned int p_width, 
         unsigned int p_height, 
-        CGString p_title);
+        const CGString& p_title);
+    
+    static void InitGame(
+        CGGameFactory*&& p_factory, 
+        unsigned int p_width, 
+        unsigned int p_height, 
+        const CGString& p_title, 
+        CG_BOOL p_fullscreen, 
+        CG_BOOL p_resizable, 
+        CG_BOOL p_boarderless, 
+        CG_BOOL p_transparent, 
+        CG_BOOL p_topmost);
+    
+    static void InitGame(
+        CGGameFactory*&& p_factory, 
+        unsigned int p_width, 
+        unsigned int p_height, 
+        const CGString& p_title, 
+        CG_BOOL p_fullscreen, 
+        CG_BOOL p_resizable);
+
+    static void InitGame(
+        CGGameFactory*&& p_factory, 
+        unsigned int p_width, 
+        unsigned int p_height, 
+        const CGString& p_title);
 
     /**
      * @brief Start the game.

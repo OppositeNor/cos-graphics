@@ -2,6 +2,7 @@
 #include "cos_graphics/log.h"
 #include "cos_graphics/component/component.h"
 #include "cos_graphics/component/camera.h"
+#include "cos_graphics/game_factory.h"
 
 CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE))
 {
@@ -19,16 +20,36 @@ CGGame* CGGame::GetInstance()
     return game_instance;
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title, 
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const CGString& p_title, 
+    CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost)
+{
+    InitGame(new CGGameFactory(), p_width, p_height, p_title, p_fullscreen, p_resizable, p_boarderless, p_transparent, p_topmost);
+}
+
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const CGString& p_title, 
+    CG_BOOL p_fullscreen, CG_BOOL p_resizable)
+{
+    InitGame(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE);
+}
+
+void CGGame::InitGame(unsigned int p_width, unsigned int p_height, const CGString& p_title)
+{
+    InitGame(p_width, p_height, p_title, CG_FALSE, CG_TRUE, CG_FALSE, CG_FALSE, CG_FALSE);
+}
+
+void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned int p_height, const CGString& p_title, 
     CG_BOOL p_fullscreen, CG_BOOL p_resizable, CG_BOOL p_boarderless, CG_BOOL p_transparent, CG_BOOL p_topmost)
 {
     CG_PRINT(CGSTR("Initializing game..."));
+    if (game_factory != nullptr)
+        delete game_factory;
+    game_factory = const_cast<CGGameFactory*>(p_factory);
     if (CGGame::game_instance != nullptr)
     {
         delete game_instance;
         game_instance = nullptr;
     }
-    CGGame::game_instance = new CGGame();
+    CGGame::game_instance = game_factory->CreateGame();
     CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
         p_resizable, p_boarderless, p_transparent, p_topmost);
     CG_PRINT(CGSTR("Creating window..."));
@@ -53,15 +74,15 @@ void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_ti
     game_instance->main_camera = new CGCamera();
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title, 
+void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned int p_height, const CGString& p_title, 
     CG_BOOL p_fullscreen, CG_BOOL p_resizable)
 {
-    InitGame(p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE);
+    InitGame(std::move(p_factory), p_width, p_height, p_title, p_fullscreen, p_resizable, CG_FALSE, CG_FALSE, CG_FALSE);
 }
 
-void CGGame::InitGame(unsigned int p_width, unsigned int p_height, CGString p_title)
+void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned int p_height, const CGString& p_title)
 {
-    InitGame(p_width, p_height, p_title, CG_FALSE, CG_TRUE, CG_FALSE, CG_FALSE, CG_FALSE);
+    InitGame(std::move(p_factory), p_width, p_height, p_title, CG_FALSE, CG_TRUE, CG_FALSE, CG_FALSE, CG_FALSE);
 }
 
 void CGGame::StartGame()
@@ -78,6 +99,7 @@ void CGGame::ExitGame()
     game_instance = nullptr;
     CGTerminateGraphics();
     CG_PRINT(CGSTR("Game exited."));
+    delete game_factory;
 }
 
 void CGGame::AddComponent(CGComponent* p_component)
