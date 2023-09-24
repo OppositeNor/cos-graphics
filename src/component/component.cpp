@@ -46,7 +46,7 @@ float CGComponent::GetBoarderTopY() const noexcept
     float top_y = 0;
     for (auto& child : children)
     {
-        float child_top_y = child->GetBoarderTopY() * transform.scale.y;
+        float child_top_y = child->GetTransform().position.y + child->GetBoarderTopY() * transform.scale.y;
         if (child_top_y > top_y)
             top_y = child_top_y;
     }
@@ -60,7 +60,7 @@ float CGComponent::GetBoarderBottomY() const noexcept
     float bottom_y = 0;
     for (auto& child : children)
     {
-        float child_bottom_y = child->GetBoarderBottomY() * transform.scale.y;
+        float child_bottom_y = child->GetTransform().position.y - child->GetBoarderBottomY() * transform.scale.y;
         if (child_bottom_y < bottom_y)
             bottom_y = child_bottom_y;
     }
@@ -74,7 +74,7 @@ float CGComponent::GetBoarderLeftX() const noexcept
     float left_x = 0;
     for (auto& child : children)
     {
-        float child_left_x = child->GetBoarderLeftX() * transform.scale.x;
+        float child_left_x = child->GetTransform().position.x - child->GetBoarderLeftX() * transform.scale.x;
         if (child_left_x < left_x)
             left_x = child_left_x;
     }
@@ -88,7 +88,7 @@ float CGComponent::GetBoarderRightX() const noexcept
     float right_x = 0;
     for (auto& child : children)
     {
-        float child_right_x = child->GetBoarderRightX() * transform.scale.x;
+        float child_right_x = child->GetTransform().position.x + child->GetBoarderRightX() * transform.scale.x;
         if (child_right_x > right_x)
             right_x = child_right_x;
     }
