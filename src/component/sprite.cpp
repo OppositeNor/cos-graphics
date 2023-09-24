@@ -2,7 +2,7 @@
 #include "cos_graphics/game.h"
 #include "cos_graphics/log.h"
 
-CGSprite::CGSprite(const CGString& p_texture_rk) : CGVisualComponent()
+CGSprite::CGSprite(const CGString& p_texture_rk) : CGTextureContainer()
 {
     texture = nullptr;
     if (p_texture_rk == CGString(CGSTR("")))
@@ -10,15 +10,14 @@ CGSprite::CGSprite(const CGString& p_texture_rk) : CGVisualComponent()
     texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
 }
 
-CGSprite::CGSprite(CGVisualImage*& p_texture) : CGVisualComponent()
+CGSprite::CGSprite(CGVisualImage*& p_texture) : CGTextureContainer()
 {
     texture = CGCopyVisualImage(p_texture);
 }
 
 CGSprite::~CGSprite()
 {
-    if (texture != nullptr)
-        CGFree(texture);
+    
 }
 
 void CGSprite::Draw(float p_delta)
@@ -29,20 +28,20 @@ void CGSprite::Draw(float p_delta)
     CGDrawVisualImage(texture, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
 }
 
-CGSprite::CGSprite(CGVisualImage*&& p_texture) : texture(p_texture), CGVisualComponent()
+CGSprite::CGSprite(CGVisualImage*&& p_texture) : CGTextureContainer()
 {
+    texture = p_texture;
     p_texture = nullptr;
 }
 
-CGSprite::CGSprite(const CGSprite& p_other) : CGVisualComponent(p_other)
+CGSprite::CGSprite(const CGSprite& p_other) : CGTextureContainer(p_other)
 {
-    texture = CGCopyVisualImage(p_other.texture);
+
 }
 
-CGSprite::CGSprite(CGSprite&& p_other) noexcept : CGVisualComponent(std::move(p_other))
+CGSprite::CGSprite(CGSprite&& p_other) noexcept : CGTextureContainer(std::move(p_other))
 {
-    texture = p_other.texture;
-    p_other.texture = nullptr;
+
 }
 
 void CGSprite::SetTexture(CGVisualImage*& p_texture)
@@ -54,14 +53,4 @@ void CGSprite::SetTexture(CGVisualImage*&& p_texture) noexcept
 {
     texture = p_texture;
     p_texture = nullptr;
-}
-
-float CGSprite::GetWidth() const
-{
-    return transform.scale.x * texture->img_width;
-}
-
-float CGSprite::GetHeight() const
-{
-    return transform.scale.y * texture->img_height;
 }

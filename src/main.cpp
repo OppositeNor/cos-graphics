@@ -114,13 +114,15 @@ int main()
     CGGame::InitGame(1280, 720, CGSTR(""));
     auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
-    sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
-    sprite2->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
+    sprite->AddChild(sprite2);
+    sprite->GetTransform().scale = CGConstructVector2(1.0f, 1.0f);
+    sprite2->GetTransform().position = CGConstructVector2(0.0f, -200.0f);
+    sprite2->GetTransform().scale = CGConstructVector2(1.0f, 1.0f);
     sprite->AllignTop();
     auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(120, 120, 30, 10));
     CGGame::GetInstance()->StartGame();
-    delete(sprite);
-    delete(sprite2);
+    delete sprite;
+    delete sprite2;
     CGGame::GetInstance()->ExitGame();
     return 0;
 }

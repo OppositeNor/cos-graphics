@@ -6,6 +6,7 @@
 #include "cos_graphics/graphics.h"
 #include <vector>
 #include <string>
+#include "cos_graphics/interface/rect_boarder.h"
 
 /**
  * @brief Prefix of component. The region under this macro will be set to private.
@@ -16,13 +17,14 @@
  */
 #define CG_COMPONENT(type) \
     public:                     \
-    virtual CGString GetComponentType() override { return CGSTR(#type); } \
+    inline virtual CGString GetComponentType() const noexcept override { return CGSTR(#type); } \
     private:                
 
 /**
  * @brief The base class for all the components in the game.
  */
-class CGComponent
+class CGComponent :
+    public CGIRectBoarder
 {
     /**
      * @brief The parent of the component. The child will follow the parent's transformation.
@@ -47,7 +49,7 @@ public:
      * 
      * @return CGString 
      */
-    virtual CGString GetComponentType() {return CGSTR("CGComponent");}
+    inline virtual CGString GetComponentType() const noexcept {return CGSTR("CGComponent");}
     
     /**
      * @brief Transform component that contains the transformation of components.
@@ -125,6 +127,46 @@ public:
     virtual ~CGComponent();
 
     /**
+     * @brief Get the width of the boarder.
+     * 
+     * @return float The width of the boarder.
+     */
+    inline virtual float GetBoarderWidth() const noexcept override { return 0.0f; };
+    /**
+     * @brief Get the height of the boarder.
+     * 
+     * @return float The height of the boarder.
+     */
+    inline virtual float GetBoarderHeight() const noexcept override { return 0.0f; };
+
+    /**
+     * @brief Get the y coordinate value of the top of the boarder.
+     * 
+     * @return float The y coordinate value of the top of the boarder.
+     */
+    virtual float GetBoarderTopY() const noexcept override;
+    /**
+     * @brief Get the y coordinate value of the bottom of the boarder.
+     * 
+     * @return float The y coordinate value of the bottom of the boarder.
+     */
+    virtual float GetBoarderBottomY() const noexcept override;
+
+    /**
+     * @brief Get the x coordinate value of the left of the boarder.
+     * 
+     * @return float The x coordinate value of the left of the boarder.
+     */
+    virtual float GetBoarderLeftX() const noexcept override;
+
+    /**
+     * @brief Get the x coordinate value of the right of the boarder.
+     * 
+     * @return float The x coordinate value of the right of the boarder.
+     */
+    virtual float GetBoarderRightX() const noexcept override;
+
+    /**
      * @brief Called every frame by the engine.
      * 
      * @param p_delta_time The difference in time between frames.
@@ -174,13 +216,6 @@ public:
     void AddChild(CGComponent* p_child);
 
     /**
-     * @brief Remove a child from the component.
-     * 
-     * @param p_child The child to be removed.
-     */
-    void RemoveChild(CGComponent* p_child);
-
-    /**
      * @brief Set the Parent object
      * 
      * @param p_parent The parent to be set to
@@ -193,4 +228,18 @@ public:
      * @param p_child The child to be detached.
      */
     void DetachChild(CGComponent* p_child);
+
+    /**
+     * @brief Get the Parent object
+     * 
+     * @return CGComponent* The parent of the component.
+     */
+    CGComponent* GetParent() const noexcept;
+
+    /**
+     * @brief Get children
+     * 
+     * @return const std::vector<CGComponent*>& The children of the component.
+     */
+    const std::vector<CGComponent*>& GetChildren() const noexcept;
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include "cos_graphics/component/visual_component.h"
+#include "cos_graphics/component/texture_container.h"
 #include "cos_graphics/graphics.h"
 #include <memory>
 
@@ -8,14 +8,10 @@
  * 
  * @bug The texture copy is still unusable.
  */
-class CGSprite : public CGVisualComponent
+class CGSprite : public CGTextureContainer
 {
     CG_COMPONENT(CGSprite)
 protected:
-    /**
-     * @brief The texture of the sprite.
-     */
-    CGVisualImage* texture;
     void Draw(float p_delta) override;
 public:
     /**
@@ -59,19 +55,6 @@ public:
     CGSprite(CGVisualImage*&& p_texture);
 
     virtual ~CGSprite() override;
-
-    /**
-     * @brief Get the width of the visual component.
-     * 
-     * @return float The width of the visual component.
-     */
-    virtual float GetWidth() const override;
-    /**
-     * @brief Get the height of the visual component
-     * 
-     * @return float The height of the visual component
-     */
-    virtual float GetHeight() const override;
 
     /**
      * @brief Set the texture of the sprite. The texture is going to be copied.

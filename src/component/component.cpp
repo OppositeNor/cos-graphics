@@ -33,10 +33,66 @@ CGComponent::~CGComponent()
     CGGame::GetInstance()->RemoveComponent(this);
     for (auto& child : children)
     {
-        delete child;
+        DetachChild(child);
     }
     if (parent != nullptr)
-        parent->RemoveChild(this);
+        parent->DetachChild(this);
+}
+
+float CGComponent::GetBoarderTopY() const noexcept
+{
+    if (children.empty())
+        return transform.position.y;
+    float top_y = children[0]->GetBoarderTopY();
+    for (auto& child : children)
+    {
+        float child_top_y = child->GetBoarderTopY();
+        if (child_top_y > top_y)
+            top_y = child_top_y;
+    }
+    return top_y * transform.scale.y;
+}
+
+float CGComponent::GetBoarderBottomY() const noexcept
+{
+    if (children.empty())
+        return transform.position.y;
+    float bottom_y = children[0]->GetBoarderBottomY();
+    for (auto& child : children)
+    {
+        float child_bottom_y = child->GetBoarderBottomY();
+        if (child_bottom_y < bottom_y)
+            bottom_y = child_bottom_y;
+    }
+    return bottom_y * transform.scale.y;
+}
+
+float CGComponent::GetBoarderLeftX() const noexcept
+{
+    if (children.empty())
+        return transform.position.x;
+    float left_x = children[0]->GetBoarderLeftX();
+    for (auto& child : children)
+    {
+        float child_left_x = child->GetBoarderLeftX();
+        if (child_left_x < left_x)
+            left_x = child_left_x;
+    }
+    return left_x * transform.scale.x;
+}
+
+float CGComponent::GetBoarderRightX() const noexcept
+{
+    if (children.empty())
+        return transform.position.x;
+    float right_x = children[0]->GetBoarderRightX();
+    for (auto& child : children)
+    {
+        float child_right_x = child->GetBoarderRightX();
+        if (child_right_x > right_x)
+            right_x = child_right_x;
+    }
+    return right_x * transform.scale.x;
 }
 
 void CGComponent::Tick(double p_delta_time)
@@ -106,25 +162,6 @@ void CGComponent::AddChild(CGComponent* p_child)
     p_child->parent = this;
 }
 
-void CGComponent::RemoveChild(CGComponent* p_child)
-{
-    if (p_child == nullptr)
-    {
-        CG_WARNING(CGSTR("Trying to remove a null child from a component."));
-        return;
-    }
-    for (auto child = children.begin(); child != children.end(); ++child)
-    {
-        if (*child == p_child)
-        {
-            children.erase(child);
-            p_child->parent = nullptr;
-            return;
-        }
-    }
-    CG_WARNING(CGSTR("Trying to remove a child that doesn't exist."));
-}
-
 void CGComponent::SetParent(CGComponent* p_parent)
 {
     if (p_parent == nullptr)
@@ -154,4 +191,14 @@ void CGComponent::DetachChild(CGComponent* p_child)
         }
     }
     CG_WARNING(CGSTR("Trying to detach a child that doesn't exist."));
+}
+
+CGComponent* CGComponent::GetParent() const noexcept
+{
+    return parent;
+}
+
+const std::vector<CGComponent*>& CGComponent::GetChildren() const noexcept
+{
+    return children;
 }

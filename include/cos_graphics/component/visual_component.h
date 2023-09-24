@@ -1,6 +1,5 @@
 #pragma once
 #include "cos_graphics/component/component.h"
-#include "cos_graphics/interface/rect_shape.h"
 #include "cos_graphics/graphics.h"
 
 /**
@@ -8,7 +7,6 @@
  * 
  */
 class CGVisualComponent : public CGComponent
-    , public CGIRectShape
 {
     CG_COMPONENT(CGVisualComponent)
 
@@ -110,7 +108,7 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignBottomToTop(const CGVisualComponent& target, float p_offset = 0.0f);
+    void AllignBottomToTop(const CGIRectBoarder& target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the top of the image to the bottom of a target component.
@@ -118,7 +116,7 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignTopToBottom(const CGVisualComponent& target, float p_offset = 0.0f);
+    void AllignTopToBottom(const CGIRectBoarder& target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the left of the image to the right of a target component.
@@ -126,7 +124,7 @@ public:
      * @param target The target component.
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignLeftToRight(const CGVisualComponent& target, float p_offset = 0.0f);
+    void AllignLeftToRight(const CGIRectBoarder& target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the right of the image to the left of the target component.
@@ -134,7 +132,7 @@ public:
      * @param target The target component
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignRightToLeft(const CGVisualComponent& target, float p_offset = 0.0f);
+    void AllignRightToLeft(const CGIRectBoarder& target, float p_offset = 0.0f);
 
     /**
      * @brief Set the color of the component.

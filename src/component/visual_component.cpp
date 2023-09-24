@@ -66,42 +66,42 @@ bool CGVisualComponent::IsVisual() const noexcept
 
 void CGVisualComponent::AllignTop(float p_offset)
 {
-    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetHeight() / 2.0f + p_offset;
+    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderHeight() / 2.0f + p_offset;
 }
 
 void CGVisualComponent::AllignBottom(float p_offset)
 {
-    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f + GetHeight() / 2.0f + p_offset;
+    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f + GetBoarderHeight() / 2.0f + p_offset;
 }
 
 void CGVisualComponent::AllignLeft(float p_offset)
 {
-    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f + GetWidth() / 2.0f + p_offset;
+    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f + GetBoarderWidth() / 2.0f + p_offset;
 }
 
 void CGVisualComponent::AllignRight(float p_offset)
 {
-    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetWidth() / 2.0f + p_offset;
+    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderWidth() / 2.0f + p_offset;
 }
 
-void CGVisualComponent::AllignBottomToTop(const CGVisualComponent& target, float p_offset)
+void CGVisualComponent::AllignBottomToTop(const CGIRectBoarder& target, float p_offset)
 {
-    transform.position.y = target.GetGlobalPosition().y + target.GetHeight() / 2.0f + GetHeight() / 2.0f + p_offset;
+    transform.position.y = target.GetBoarderTopY() + GetBoarderHeight() / 2.0f + p_offset;
 }
 
-void CGVisualComponent::AllignTopToBottom(const CGVisualComponent& target, float p_offset)
+void CGVisualComponent::AllignTopToBottom(const CGIRectBoarder& target, float p_offset)
 {
-    transform.position.y = target.GetGlobalPosition().y - target.GetHeight() / 2.0f - GetHeight() / 2.0f + p_offset;
+    transform.position.y = target.GetBoarderBottomY() - GetBoarderHeight() / 2.0f + p_offset;
 }
 
-void CGVisualComponent::AllignLeftToRight(const CGVisualComponent& target, float p_offset)
+void CGVisualComponent::AllignLeftToRight(const CGIRectBoarder& target, float p_offset)
 {
-    transform.position.x = target.GetGlobalPosition().x + target.GetWidth() / 2.0f + GetWidth() / 2.0f + p_offset;
+    transform.position.x = target.GetBoarderRightX() + GetBoarderWidth() / 2.0f + p_offset;
 }
 
-void CGVisualComponent::AllignRightToLeft(const CGVisualComponent& target, float p_offset)
+void CGVisualComponent::AllignRightToLeft(const CGIRectBoarder& target, float p_offset)
 {
-    transform.position.x = target.GetGlobalPosition().x - target.GetWidth() / 2.0f - GetWidth() / 2.0f + p_offset;
+    transform.position.x = target.GetBoarderLeftX() - GetBoarderWidth() / 2.0f + p_offset;
 }
 
 void CGVisualComponent::SetColor(const CGColor& p_color) noexcept

@@ -43,7 +43,7 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
     CG_PRINT(CGSTR("Initializing game..."));
     if (game_factory != nullptr)
         delete game_factory;
-    game_factory = const_cast<CGGameFactory*>(p_factory);
+    game_factory = p_factory;
     if (CGGame::game_instance != nullptr)
     {
         delete game_instance;

@@ -1,11 +1,11 @@
 #pragma once
-#include "cos_graphics/component/visual_component.h"
+#include "cos_graphics/component/texture_container.h"
 
 /**
  * @brief A text 
  * 
  */
-class CGText : public CGVisualComponent
+class CGText : public CGTextureContainer
 {
     CG_COMPONENT(CGText)
 private:
@@ -13,7 +13,6 @@ private:
     CGString text_rk;
     CGString font_rk;
     CGTextProperty text_property;
-    CGVisualImage* text_image = nullptr;
 
     void UpdateTextImage();
 protected:
@@ -90,18 +89,4 @@ public:
      * @param p_property The property that the text will be set to.
      */
     void SetTextProperty(const CGTextProperty& p_property);
-
-    /**
-     * @brief Get the width of the visual component.
-     * 
-     * @return float The width of the visual component.
-     */
-    virtual float GetWidth() const override;
-
-    /**
-     * @brief Get the height of the visual component
-     * 
-     * @return float The height of the visual component
-     */
-    virtual float GetHeight() const override;
 };
