@@ -42,57 +42,57 @@ CGComponent::~CGComponent()
 float CGComponent::GetBoarderTopY() const noexcept
 {
     if (children.empty())
-        return transform.position.y;
-    float top_y = children[0]->GetBoarderTopY();
+        return 0;
+    float top_y = 0;
     for (auto& child : children)
     {
-        float child_top_y = child->GetBoarderTopY();
+        float child_top_y = child->GetBoarderTopY() * transform.scale.y;
         if (child_top_y > top_y)
             top_y = child_top_y;
     }
-    return top_y * transform.scale.y;
+    return top_y;
 }
 
 float CGComponent::GetBoarderBottomY() const noexcept
 {
     if (children.empty())
-        return transform.position.y;
-    float bottom_y = children[0]->GetBoarderBottomY();
+        return 0;
+    float bottom_y = 0;
     for (auto& child : children)
     {
-        float child_bottom_y = child->GetBoarderBottomY();
+        float child_bottom_y = child->GetBoarderBottomY() * transform.scale.y;
         if (child_bottom_y < bottom_y)
             bottom_y = child_bottom_y;
     }
-    return bottom_y * transform.scale.y;
+    return bottom_y;
 }
 
 float CGComponent::GetBoarderLeftX() const noexcept
 {
     if (children.empty())
-        return transform.position.x;
-    float left_x = children[0]->GetBoarderLeftX();
+        return 0;
+    float left_x = 0;
     for (auto& child : children)
     {
-        float child_left_x = child->GetBoarderLeftX();
+        float child_left_x = child->GetBoarderLeftX() * transform.scale.x;
         if (child_left_x < left_x)
             left_x = child_left_x;
     }
-    return left_x * transform.scale.x;
+    return left_x;
 }
 
 float CGComponent::GetBoarderRightX() const noexcept
 {
     if (children.empty())
-        return transform.position.x;
-    float right_x = children[0]->GetBoarderRightX();
+        return 0;
+    float right_x = 0;
     for (auto& child : children)
     {
-        float child_right_x = child->GetBoarderRightX();
+        float child_right_x = child->GetBoarderRightX() * transform.scale.x;
         if (child_right_x > right_x)
             right_x = child_right_x;
     }
-    return right_x * transform.scale.x;
+    return right_x;
 }
 
 void CGComponent::Tick(double p_delta_time)
