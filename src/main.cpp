@@ -115,7 +115,7 @@ int main()
     auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite->AddChild(sprite2);
-    sprite->GetTransform().scale = CGConstructVector2(1.0f, 1.0f);
+    sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
     sprite2->GetTransform().position = CGConstructVector2(0.0f, -200.0f);
     sprite2->GetTransform().scale = CGConstructVector2(1.0f, 1.0f);
     sprite->AllignTop();

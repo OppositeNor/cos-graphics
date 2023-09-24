@@ -11,96 +11,74 @@ float CGTextureContainer::GetBoarderWidth() const noexcept
 {
     if (GetChildren().empty())
         return texture->img_width * transform.scale.x;
-    float max_right = 0.0f;
-    float min_left = 0.0f;
-    for (auto& child : GetChildren())
-    {
-        float child_right = child->GetBoarderRightX();
-        float child_left = child->GetBoarderLeftX();
-        if (child_right > max_right)
-            max_right = child_right;
-        if (child_left < min_left)
-            min_left = child_left;
-    }
-    return (max_right - min_left) * transform.scale.x;
+    return GetBoarderRightX() - GetBoarderLeftX();
 }
 
 float CGTextureContainer::GetBoarderHeight() const noexcept
 {
     if (GetChildren().empty())
         return texture->img_height * transform.scale.y;
-    float max_top = 0.0f;
-    float min_bottom = 0.0f;
-    for (auto& child : GetChildren())
-    {
-        float child_top = child->GetBoarderTopY();
-        float child_bottom = child->GetBoarderBottomY();
-        if (child_top > max_top)
-            max_top = child_top;
-        if (child_bottom < min_bottom)
-            min_bottom = child_bottom;
-    }
-    return (max_top - min_bottom) * transform.scale.y;
+    return GetBoarderTopY() - GetBoarderBottomY();
 }
 
 float CGTextureContainer::GetBoarderTopY() const noexcept
 {
     auto& children = GetChildren();
     if (children.empty())
-        return transform.position.y + texture->img_height * transform.scale.y / 2.0f;
-    float top_y = children[0]->GetBoarderTopY();
+        return (float)texture->img_height * transform.scale.y / 2.0f;
+    float top_y = (float)texture->img_height * transform.scale.y / 2.0f;
     for (auto& child : children)
     {
-        float child_top_y = child->GetBoarderTopY();
+        float child_top_y = (child->GetTransform().position.y + child->GetBoarderTopY()) * transform.scale.y;
         if (child_top_y > top_y)
             top_y = child_top_y;
     }
-    return top_y * transform.scale.y;
+    return top_y;
 }
 
 float CGTextureContainer::GetBoarderBottomY() const noexcept
 {
     auto& children = GetChildren();
     if (children.empty())
-        return transform.position.y - texture->img_height * transform.scale.y / 2.0f;
-    float bottom_y = children[0]->GetBoarderBottomY();
+        return (float)texture->img_height * transform.scale.y / -2.0f;
+    float bottom_y = (float)texture->img_height * transform.scale.y / -2.0f;
     for (auto& child : children)
     {
-        float child_bottom_y = child->GetBoarderBottomY();
+        float child_bottom_y = (child->GetTransform().position.y + child->GetBoarderBottomY()) * transform.scale.y;
         if (child_bottom_y < bottom_y)
             bottom_y = child_bottom_y;
     }
-    return bottom_y * transform.scale.y;
+    return bottom_y;
 }
 
 float CGTextureContainer::GetBoarderLeftX() const noexcept
 {
     auto& children = GetChildren();
     if (children.empty())
-        return transform.position.x - texture->img_width * transform.scale.x / 2.0f;
-    float left_x = children[0]->GetBoarderLeftX();
+        return (float)texture->img_width * transform.scale.x / -2.0f;
+    float left_x = (float)texture->img_width * transform.scale.x / -2.0f;
     for (auto& child : children)
     {
-        float child_left_x = child->GetBoarderLeftX();
+        float child_left_x = (child->GetTransform().position.x + child->GetBoarderLeftX()) * transform.scale.x;
         if (child_left_x < left_x)
             left_x = child_left_x;
     }
-    return left_x * transform.scale.x;
+    return left_x;
 }
 
 float CGTextureContainer::GetBoarderRightX() const noexcept
 {
     auto& children = GetChildren();
     if (children.empty())
-        return transform.position.x + texture->img_width * transform.scale.x / 2.0f;
-    float right_x = children[0]->GetBoarderRightX();
+        return (float)texture->img_width * transform.scale.x / 2.0f;
+    float right_x = (float)texture->img_width * transform.scale.x / 2.0f;
     for (auto& child : children)
     {
-        float child_right_x = child->GetBoarderRightX();
+        float child_right_x = (child->GetTransform().position.x + child->GetBoarderRightX()) * transform.scale.x;
         if (child_right_x > right_x)
             right_x = child_right_x;
     }
-    return right_x * transform.scale.x;
+    return right_x;
 }
 
 CGTextureContainer::CGTextureContainer(const CGTextureContainer& p_other) : CGVisualComponent(p_other)
@@ -112,4 +90,34 @@ CGTextureContainer::CGTextureContainer(CGTextureContainer&& p_other) noexcept : 
 {
     texture = p_other.texture;
     p_other.texture = nullptr;
+}
+
+float CGTextureContainer::GetWidth() const noexcept
+{
+    return texture->img_width * transform.scale.x;
+}
+
+float CGTextureContainer::GetHeight() const noexcept
+{
+    return texture->img_height * transform.scale.y;
+}
+
+float CGTextureContainer::GetTopY() const noexcept
+{
+    return transform.position.y + (float)texture->img_height * transform.scale.y / 2.0f;
+}
+
+float CGTextureContainer::GetBottomY() const noexcept
+{
+    return transform.position.y - (float)texture->img_height * transform.scale.y / 2.0f;
+}
+
+float CGTextureContainer::GetLeftX() const noexcept 
+{
+    return transform.position.x - (float)texture->img_width * transform.scale.x / 2.0f;
+}
+
+float CGTextureContainer::GetRightX() const noexcept
+{
+    return transform.position.x + (float)texture->img_width * transform.scale.x / 2.0f;
 }

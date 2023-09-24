@@ -66,22 +66,22 @@ bool CGVisualComponent::IsVisual() const noexcept
 
 void CGVisualComponent::AllignTop(float p_offset)
 {
-    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderHeight() / 2.0f + p_offset;
+    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderTopY() + p_offset;
 }
 
 void CGVisualComponent::AllignBottom(float p_offset)
 {
-    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f + GetBoarderHeight() / 2.0f + p_offset;
+    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderBottomY() + p_offset;
 }
 
 void CGVisualComponent::AllignLeft(float p_offset)
 {
-    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f + GetBoarderWidth() / 2.0f + p_offset;
+    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderLeftX() + p_offset;
 }
 
 void CGVisualComponent::AllignRight(float p_offset)
 {
-    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderWidth() / 2.0f + p_offset;
+    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderRightX() + p_offset;
 }
 
 void CGVisualComponent::AllignBottomToTop(const CGIRectBoarder& target, float p_offset)

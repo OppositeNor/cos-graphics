@@ -1,11 +1,11 @@
 #pragma once
-
+#include "cos_graphics/interface/rect_shape.h"
 /**
  * @brief Interface for objects that can be enclosed by a boarder.
- * @note A boarder is a unrotated rectangle that enclosed the whole component. The whole
+ * @note A boarder is a rectangle that enclosed the whole component. The whole
  * component also includes the children of the component.
  */
-class CGIRectBoarder
+class CGIRectBoarder : public CGIRectShape
 {
 public:
     /**

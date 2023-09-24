@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "cos_graphics/interface/rect_boarder.h"
+#include "cos_graphics/interface/rect_shape.h"
 
 /**
  * @brief Prefix of component. The region under this macro will be set to private.
@@ -172,20 +173,60 @@ public:
      * @param p_delta_time The difference in time between frames.
      */
     virtual void Tick(double p_delta_time);
+
+    /**
+     * @brief Get the width of the shape.
+     * 
+     * @return float The width of the shape.
+     */
+    inline virtual float GetWidth() const noexcept override { return 0.0f; };
+    /**
+     * @brief Get the height of the shape.
+     * 
+     * @return float The height of the shape.
+     */
+    inline virtual float GetHeight() const noexcept override { return 0.0f; };
+
+    /**
+     * @brief Get the y coordinate value of the top of the shape.
+     * 
+     * @return float The y coordinate value of the top of the shape.
+     */
+    inline virtual float GetTopY() const noexcept override { return transform.position.y; }
+    /**
+     * @brief Get the y coordinate value of the bottom of the shape.
+     * 
+     * @return float The y coordinate value of the bottom of the shape.
+     */
+    inline virtual float GetBottomY() const noexcept override { return transform.position.y; }
+
+    /**
+     * @brief Get the x coordinate value of the left of the shape.
+     * 
+     * @return float The x coordinate value of the left of the shape.
+     */
+    inline virtual float GetLeftX() const noexcept override { return transform.position.x; }
+
+    /**
+     * @brief Get the x coordinate value of the right of the shape.
+     * 
+     * @return float The x coordinate value of the right of the shape.
+     */
+    inline virtual float GetRightX() const noexcept override { return transform.position.x; }
     
     /**
      * @brief Get the Transform object.
      * 
      * @return CGTransform& The transform of the component.
      */
-    const CGTransform& GetTransform() const noexcept;
+    inline const CGTransform& GetTransform() const noexcept { return transform; }
 
     /**
      * @brief Get the reference of the Transform object.
      * 
      * @return CGComponent::CGTransform& The reference of the transform object.
      */
-    CGTransform& GetTransform() noexcept;
+    inline CGTransform& GetTransform() noexcept { return transform; };
 
     /**
      * @brief Get the global position of the component.

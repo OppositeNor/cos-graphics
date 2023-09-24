@@ -100,16 +100,6 @@ void CGComponent::Tick(double p_delta_time)
     Update(p_delta_time);
 }
 
-const CGComponent::CGTransform& CGComponent::GetTransform() const noexcept
-{
-    return transform;
-}
-
-CGComponent::CGTransform& CGComponent::GetTransform() noexcept
-{
-    return transform;
-}
-
 CGVector2 CGComponent::GetGlobalPosition() const
 {
     if (parent == nullptr)
