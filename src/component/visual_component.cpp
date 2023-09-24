@@ -64,46 +64,6 @@ bool CGVisualComponent::IsVisual() const noexcept
     return visual;
 }
 
-void CGVisualComponent::AllignTop(float p_offset)
-{
-    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderTopY() + p_offset;
-}
-
-void CGVisualComponent::AllignBottom(float p_offset)
-{
-    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderBottomY() + p_offset;
-}
-
-void CGVisualComponent::AllignLeft(float p_offset)
-{
-    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderLeftX() + p_offset;
-}
-
-void CGVisualComponent::AllignRight(float p_offset)
-{
-    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderRightX() + p_offset;
-}
-
-void CGVisualComponent::AllignBottomToTop(const CGIRectBoarder& target, float p_offset)
-{
-    transform.position.y = target.GetBoarderTopY() + GetBoarderHeight() / 2.0f + p_offset;
-}
-
-void CGVisualComponent::AllignTopToBottom(const CGIRectBoarder& target, float p_offset)
-{
-    transform.position.y = target.GetBoarderBottomY() - GetBoarderHeight() / 2.0f + p_offset;
-}
-
-void CGVisualComponent::AllignLeftToRight(const CGIRectBoarder& target, float p_offset)
-{
-    transform.position.x = target.GetBoarderRightX() + GetBoarderWidth() / 2.0f + p_offset;
-}
-
-void CGVisualComponent::AllignRightToLeft(const CGIRectBoarder& target, float p_offset)
-{
-    transform.position.x = target.GetBoarderLeftX() - GetBoarderWidth() / 2.0f + p_offset;
-}
-
 void CGVisualComponent::SetColor(const CGColor& p_color) noexcept
 {
     render_property->color = p_color;

@@ -192,3 +192,44 @@ const std::vector<CGComponent*>& CGComponent::GetChildren() const noexcept
 {
     return children;
 }
+
+
+void CGComponent::AllignTop(float p_offset)
+{
+    transform.position.y = CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderTopY() + p_offset;
+}
+
+void CGComponent::AllignBottom(float p_offset)
+{
+    transform.position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderBottomY() + p_offset;
+}
+
+void CGComponent::AllignLeft(float p_offset)
+{
+    transform.position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderLeftX() + p_offset;
+}
+
+void CGComponent::AllignRight(float p_offset)
+{
+    transform.position.x = CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderRightX() + p_offset;
+}
+
+void CGComponent::AllignBottomToTop(const CGIRectBoarder& target, float p_offset)
+{
+    transform.position.y = target.GetBoarderTopY() - GetBoarderBottomY() / 2.0f + p_offset;
+}
+
+void CGComponent::AllignTopToBottom(const CGIRectBoarder& target, float p_offset)
+{
+    transform.position.y = target.GetBoarderBottomY() - GetBoarderTopY() / 2.0f + p_offset;
+}
+
+void CGComponent::AllignLeftToRight(const CGIRectBoarder& target, float p_offset)
+{
+    transform.position.x = target.GetBoarderRightX() - GetBoarderLeftX() / 2.0f + p_offset;
+}
+
+void CGComponent::AllignRightToLeft(const CGIRectBoarder& target, float p_offset)
+{
+    transform.position.x = target.GetBoarderLeftX() - GetBoarderRightX() / 2.0f + p_offset;
+}

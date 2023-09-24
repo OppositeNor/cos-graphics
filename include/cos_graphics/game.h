@@ -71,6 +71,8 @@ class CGGame
      * @brief The factory that created the game.
      */
     inline static CGGameFactory* game_factory = nullptr;
+    
+protected:
 
     /**
      * @brief Constructor
