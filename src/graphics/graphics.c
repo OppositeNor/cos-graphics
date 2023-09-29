@@ -1046,6 +1046,7 @@ CGRenderObjectProperty* CGCreateRenderObjectProperty(CGColor color, CGVector2 tr
     property->scale = scale;
     property->rotation = rotation;
     property->z = 0;
+    property->modify_matrix = NULL;
     CGRegisterResource(property, CG_DELETER(free));
     return property;
 }
@@ -1171,6 +1172,11 @@ static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRender
     {
         CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
+    }
+
+    if (property->modify_matrix)
+    {
+        CGMatMultiply(result, property->modify_matrix, result, 4, 4);
     }
     CGSetShaderUniformMat4f(shader_program, "model_mat", result);
 }

@@ -517,6 +517,15 @@ typedef struct{
      * @brief scale of the object
      */
     CGVector2 scale;
+    /**
+     * @brief The matrix that is going to be used to render the object. The 
+     * matrix MUST be a 4x4 matrix, row-major order.
+     * @details If you wish to add more transformation you can to this matrix, 
+     * and it will be applied to the object. The matrix will be applied to the
+     * object after the rotation, scale, and transform is applied. If you donot
+     * want to apply aditional transformation, you can leave this to NULL.
+     */
+    float* modify_matrix;
 }CGRenderObjectProperty;
 
 /**
