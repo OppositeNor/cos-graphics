@@ -58,6 +58,7 @@ add_subdirectory(src/component)
 add_subdirectory(src/game)
 add_subdirectory(src/utils)
 add_subdirectory(src/interface)
+add_subdirectory(src/math)
 
 if (USE_TEST_EXE)
     list(APPEND CG_RESOURCES image_resource.cgures)

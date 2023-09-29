@@ -8,6 +8,8 @@
 #include <string>
 #include "cos_graphics/interface/rect_boarder.h"
 #include "cos_graphics/interface/rect_shape.h"
+#include "cos_graphics/math/matrix.hpp"
+
 
 /**
  * @brief Prefix of component. The region under this macro will be set to private.
@@ -84,6 +86,19 @@ public:
          * @param p_scale The scale of the component.
          */
         CGTransform(const CGVector2& p_position = {0.0f, 0.0f}, float p_rotation = 0.0f, const CGVector2& p_scale = {1.0f, 1.0f});
+
+        /**
+         * @brief Get the transform matrix of the component.
+         * 
+         * @return CGMat3 The transform matrix of the component.
+         */
+        CGMat3::CGMat3 GetTransformMatrix() const noexcept;
+
+        /**
+         * @brief Get the inverse transform matrix of the component.
+         */
+        CGMat3::CGMat3 GetInvTransformMatrix() const noexcept;
+
         virtual ~CGTransform() {}
     };
 
@@ -98,12 +113,27 @@ public:
      * @param p_delta_time the time in seconds since the last frame.
      */
     virtual void Update(double p_delta_time) {}
-protected:
+private:
 
     /**
      * @brief The transform of the component.
      */
     CGTransform transform;
+
+protected:
+    /**
+     * @brief Get the global transform matrix of the component.
+     * 
+     * @return CGMat3::CGMat3 The global transform matrix of the component.
+     */
+    CGMat3::CGMat3 GetGlobalTransformMatrix() const noexcept;
+
+    /**
+     * @brief Get the inverse global transform matrix of the component.
+     * 
+     * @return CGMat3::CGMat3 The inverse global transform matrix of the component.
+     */
+    CGMat3::CGMat3 GetGlobalInvTransformMatrix() const noexcept;
 
 public:
 
@@ -287,13 +317,42 @@ public:
      * @return CGComponent::CGTransform& The reference of the transform object.
      */
     inline CGTransform& GetTransform() noexcept { return transform; };
+    
+    /**
+     * @brief Convert a global position to a relative position.
+     * 
+     * @param global_position The global position to be converted.
+     * @return CGVector2 The relative position of the component.
+     */
+    CGVector2 ToRelativePosition(const CGVector2& global_position) const;
 
+    /**
+     * @brief Convert a relative position to a global position.
+     * 
+     * @param relative_position The relative position to be converted.
+     * @return CGVector2 The global position of the component.
+     */
+    CGVector2 ToGlobalPosition(const CGVector2& relative_position) const;
+    
     /**
      * @brief Get the global position of the component.
      * 
      * @return CGVector2 The global position of the component.
      */
     CGVector2 GetGlobalPosition() const;
+
+    /**
+     * @brief Set the global position of the component.
+     * 
+     */
+    void SetGlobalPosition(const CGVector2& global_position);
+
+    /**
+     * @brief Set the Global Position object
+     * 
+     * @return CGVector2 The global position of the component.
+     */
+    CGVector2 SetGlobalPosition() const;
 
     /**
      * @brief Get the global transform of the component.

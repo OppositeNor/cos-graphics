@@ -10,6 +10,16 @@ CGComponent::CGTransform::CGTransform(const CGVector2& p_position, float p_rotat
     
 }
 
+CGMat3::CGMat3 CGComponent::CGTransform::GetTransformMatrix() const noexcept
+{
+    return CGMat3::GetPositionMatrix(position) * CGMat3::GetRotationMatrix(rotation) * CGMat3::GetScaleMatrix(scale);
+}
+
+CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
+{
+    return CGMat3::GetScaleMatrix((CGVector2){1.0f / scale.x, 1.0f / scale.y}) * CGMat3::GetRotationMatrix(-rotation) * CGMat3::GetPositionMatrix((CGVector2){-position.x, -position.y});
+}
+
 CGComponent::CGComponent()
 {
     CGGame::GetInstance()->AddComponent(this);
@@ -104,12 +114,41 @@ CGVector2 CGComponent::GetGlobalPosition() const
 {
     if (parent == nullptr)
         return transform.position;
-    const CGTransform& parent_transform = parent->GetTransform();
-    CGVector2 global_position = transform.position;
-    global_position.x += parent_transform.position.x;
-    global_position.y += parent_transform.position.y;
-    global_position = CGUtils::GetVectorRotatedPosition(global_position, parent_transform.rotation, parent_transform.position);
-    return global_position;
+    return parent->GetGlobalTransformMatrix() * transform.position;
+}
+
+CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() const noexcept
+{
+    if (parent == nullptr)
+        return transform.GetTransformMatrix();
+    return parent->GetGlobalTransformMatrix() * transform.GetTransformMatrix();
+}
+
+CGMat3::CGMat3 CGComponent::GetGlobalInvTransformMatrix() const noexcept
+{
+    if (parent == nullptr)
+        return transform.GetInvTransformMatrix();
+    return transform.GetInvTransformMatrix() * parent->GetGlobalInvTransformMatrix();
+}
+
+CGVector2 CGComponent::ToRelativePosition(const CGVector2& global_position) const
+{
+    if (parent == nullptr)
+        return global_position;
+    return parent->GetGlobalInvTransformMatrix() * global_position;
+}
+
+CGVector2 CGComponent::ToGlobalPosition(const CGVector2& relative_position) const
+{
+    return parent->GetGlobalTransformMatrix() * relative_position;
+}
+
+void CGComponent::SetGlobalPosition(const CGVector2& global_position)
+{
+    if (parent == nullptr)
+        transform.position = global_position;
+    else
+        transform.position = parent->GetGlobalInvTransformMatrix() * global_position;
 }
 
 CGComponent::CGTransform CGComponent::GetGlobalTransform() const

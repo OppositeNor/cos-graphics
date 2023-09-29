@@ -6,7 +6,7 @@
 CGVisualComponent::CGVisualComponent() : CGComponent()
 {
     render_property = CGCreateRenderObjectProperty(CGConstructColor(1.0f, 1.0f, 1.0f,1.0f), 
-        transform.position, transform.scale, transform.rotation);
+        GetTransform().position, GetTransform().scale, GetTransform().rotation);
 }
 
 CGRenderObjectProperty* CGVisualComponent::GetRenderProperty() noexcept
@@ -22,7 +22,7 @@ const CGRenderObjectProperty* CGVisualComponent::GetRenderProperty() const noexc
 CGVisualComponent::CGVisualComponent(const CGVisualComponent& p_other) : CGComponent(p_other)
 {
     render_property = CGCreateRenderObjectProperty(p_other.render_property->color, 
-        p_other.transform.position, p_other.transform.scale, p_other.transform.rotation);
+        p_other.GetTransform().position, p_other.GetTransform().scale, p_other.GetTransform().rotation);
     visual = p_other.visual;
 }
 
@@ -41,7 +41,7 @@ CGVisualComponent::~CGVisualComponent()
 void CGVisualComponent::Tick(double p_delta_time)
 {
     CGComponent::Tick(p_delta_time);
-    render_property->z = transform.depth;
+    render_property->z = GetTransform().depth;
 
     CGTransform global_transform = GetGlobalTransform();
     render_property->transform = global_transform.position;
