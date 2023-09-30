@@ -12,12 +12,15 @@ CGComponent::CGTransform::CGTransform(const CGVector2& p_position, float p_rotat
 
 CGMat3::CGMat3 CGComponent::CGTransform::GetTransformMatrix() const noexcept
 {
-    return CGMat3::GetPositionMatrix(position) * CGMat3::GetRotationMatrix(rotation) * CGMat3::GetScaleMatrix(scale);
+    return CGMat3::GetScaleMatrix(scale) * CGMat3::GetRotationMatrix(rotation) * CGMat3::GetPositionMatrix(position);
 }
 
 CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
 {
-    return CGMat3::GetScaleMatrix((CGVector2){1.0f / scale.x, 1.0f / scale.y}) * CGMat3::GetRotationMatrix(-rotation) * CGMat3::GetPositionMatrix((CGVector2){-position.x, -position.y});
+    return CGMat3::GetScaleMatrix(
+        CGConstructVector2(CGUtils::GetReciprocal(scale.x), CGUtils::GetReciprocal(scale.y))) 
+        * CGMat3::GetRotationMatrix(-rotation) 
+        * CGMat3::GetPositionMatrix(CGConstructVector2(- position.x, -position.y ));
 }
 
 CGComponent::CGComponent()
@@ -149,22 +152,6 @@ void CGComponent::SetGlobalPosition(const CGVector2& global_position)
         transform.position = global_position;
     else
         transform.position = parent->GetGlobalInvTransformMatrix() * global_position;
-}
-
-CGComponent::CGTransform CGComponent::GetGlobalTransform() const
-{
-    if (parent == nullptr)
-        return transform;
-    const CGTransform& parent_transform = parent->GetTransform();
-    CGTransform global_transform = parent->GetGlobalTransform();
-    global_transform.position.x += transform.position.x * parent_transform.scale.x;
-    global_transform.position.y += transform.position.y * parent_transform.scale.y;
-    global_transform.rotation += transform.rotation;
-    
-    global_transform.scale.x *= transform.scale.x;
-    global_transform.scale.y *= transform.scale.y;
-    global_transform.position = CGUtils::GetVectorRotatedPosition(global_transform.position, parent_transform.rotation, parent_transform.position);
-    return global_transform;
 }
 
 void CGComponent::SetDepth(float p_depth)

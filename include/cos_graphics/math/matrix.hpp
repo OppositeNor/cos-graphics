@@ -16,9 +16,8 @@ private:
         float data[SIZE];
         float data_m[N][N];
     };
-    inline static CGMatrix<N> IDENTITY = CGMatrix<N>();
-    static float CGMatrix_buffer[SIZE];
-    static inline bool is_identity_initialized = false;
+    static float matrix_buffer[SIZE];
+    inline static bool is_identity_initialized = false;
 
 public:
     /**
@@ -74,26 +73,6 @@ public:
     }
 
     /**
-     * @brief The identity CGMatrix
-     * 
-     * @return const CGMatrix<N> The identity CGMatrix
-     */
-    inline static const CGMatrix<N>& Identity() noexcept
-    {
-        if (is_identity_initialized)
-            return IDENTITY;
-        for (int i = 0; i < N; ++i)
-        {
-            for (int j = 0; i < N; ++j)
-            {
-                IDENTITY[i][j] = (i == j) ? 1.0f : 0.0f;
-            }
-        }
-        is_identity_initialized = true;
-        return IDENTITY;
-    }
-
-    /**
      * @brief Constructor
      * @param list The list of values in the CGMatrix (row-major order)
      */
@@ -122,60 +101,78 @@ public:
         {
             for (int j = 0; j < N; ++j)
             {
-                CGMatrix_buffer[i * N + j] = data_m[j][i];
+                matrix_buffer[i * N + j] = data_m[j][i];
             }
         }
-        return CGMatrix_buffer;
+        return matrix_buffer;
     }
 
-    /**
-     * @brief Get the CGMatrix in column-major order
-     * 
-     * @return const CGMatrix<N> The CGMatrix in column-major order
-     */
-    inline CGMatrix<N> GetColumnMajorMatrix() const noexcept
+    inline const float* GetCMatrix() const noexcept
     {
-        return CGMatrix<N>(GetCColumnMajorMatrix(), SIZE);
+        for (int i = 0; i < SIZE; ++i)
+        {
+            matrix_buffer[i] = data[i];
+        }
+        return matrix_buffer;
     }
 
-    inline CGMatrix<N> operator*(const CGMatrix<N>& other) const noexcept
+    inline CGMatrix<N> operator*(const CGMatrix<N>& p_other) const noexcept
     {
         CGMatrix<N> result;
         for (int i = 0; i < N; ++i)
         {
-            for (int j = 0; i < N; ++j)
+            for (int j = 0; j < N; ++j)
             {
                 result[i][j] = 0;
                 for (int k = 0; k < N; ++k)
                 {
-                    result[i][j] += data_m[i][k] * other[k][j];
+                    result[i][j] += data_m[i][k] * p_other[k][j];
                 }
             }
         }
         return result;
     }
 
-    inline CGMatrix<N>& operator*=(const CGMatrix<N>& other) noexcept
-    {
-        *this = *this * other;
-        return *this;
-    }
-
-    inline CGMatrix<N> operator+(const CGMatrix<N>& other) noexcept
+    inline CGMatrix<N> operator*(float p_scalar) const noexcept
     {
         CGMatrix<N> result;
         for (int i = 0; i < SIZE; ++i)
         {
-            result.data[i] = data[i] + other.data[i];
+            result.data[i] = data[i] * p_scalar;
         }
         return result;
     }
 
-    inline CGMatrix<N>& operator+=(const CGMatrix<N>& other) noexcept
+    inline CGMatrix<N>& operator*=(float p_scalar) noexcept
     {
         for (int i = 0; i < SIZE; ++i)
         {
-            data[i] += other.data[i];
+            data[i] *= p_scalar;
+        }
+        return *this;
+    }
+
+    inline CGMatrix<N>& operator*=(const CGMatrix<N>& p_other) noexcept
+    {
+        *this = *this * p_other;
+        return *this;
+    }
+
+    inline CGMatrix<N> operator+(const CGMatrix<N>& p_other) noexcept
+    {
+        CGMatrix<N> result;
+        for (int i = 0; i < SIZE; ++i)
+        {
+            result.data[i] = data[i] + p_other.data[i];
+        }
+        return result;
+    }
+
+    inline CGMatrix<N>& operator+=(const CGMatrix<N>& p_other) noexcept
+    {
+        for (int i = 0; i < SIZE; ++i)
+        {
+            data[i] += p_other.data[i];
         }
         return *this;
     }
@@ -192,12 +189,7 @@ namespace CGMat3
      * @param position The position to get the matrix out from
      * @return CGMat3 The position matrix
      */
-    inline static CGMat3 GetPositionMatrix(const CGVector2& position) noexcept
-    {
-        return CGMat3({1.0f, 0.0f, position.x,
-                    0.0f, 1.0f, position.y,
-                    0.0f, 0.0f, 1.0f});
-    }
+    CGMat3 GetPositionMatrix(const CGVector2& p_position) noexcept;
 
     /**
      * @brief Get the rotation matrix
@@ -205,14 +197,7 @@ namespace CGMat3
      * @param rotation The rotation to get the matrix out from
      * @return CGMat3 The rotation matrix
      */
-    inline static CGMat3 GetRotationMatrix(float rotation) noexcept
-    {
-        float sin_theta = sin(rotation);
-        float cos_theta = cos(rotation);
-        return CGMat3({cos_theta, -sin_theta, 0.0f,
-                    sin_theta, cos_theta, 0.0f,
-                    0.0f, 0.0f, 1.0f});
-    }
+    CGMat3 GetRotationMatrix(float p_rotation) noexcept;
 
     /**
      * @brief Get the scale matrix
@@ -220,17 +205,12 @@ namespace CGMat3
      * @param scale The scale to get the matrix out from
      * @return CGMat3 The scale matrix
      */
-    inline static CGMat3 GetScaleMatrix(const CGVector2& scale) noexcept
-    {
-        return CGMat3({scale.x, 0.0f, 0.0f,
-                    0.0f, scale.y, 0.0f,
-                    0.0f, 0.0f, 1.0f});
-    }
+    CGMat3 GetScaleMatrix(const CGVector2& p_scale) noexcept;
 }
 
     
-inline static CGVector2 operator*(const CGMat3::CGMat3& m, const CGVector2& v) noexcept
+inline static CGVector2 operator*(const CGMat3::CGMat3& p_m, const CGVector2& p_v) noexcept
 {
-    return (CGVector2){.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2],
-                    .y = m[1][0] * v.x + m[1][1] * v.y + m[1][2]};
+    return CGConstructVector2(p_m[0][0] * p_v.x + p_m[0][1] * p_v.y + p_m[0][2],
+                        p_m[1][0] * p_v.x + p_m[1][1] * p_v.y + p_m[1][2]);
 }

@@ -11,6 +11,8 @@ class CGVisualComponent : public CGComponent
     CG_COMPONENT(CGVisualComponent)
 
     CGRenderObjectProperty* render_property;
+
+    float matrix_buffer[4][4];
 protected:
     /**
      * @brief Get the render property for objects to render.

@@ -43,12 +43,25 @@ void CGVisualComponent::Tick(double p_delta_time)
     CGComponent::Tick(p_delta_time);
     render_property->z = GetTransform().depth;
 
-    CGTransform global_transform = GetGlobalTransform();
-    render_property->transform = global_transform.position;
+    render_property->transform = GetTransform().position;
     if (CGGame::GetInstance()->GetMainCamera() != nullptr)
         render_property->transform -= CGGame::GetInstance()->GetMainCamera()->GetTransform().position;
-    render_property->rotation = global_transform.rotation;
-    render_property->scale = global_transform.scale;
+    render_property->rotation = GetTransform().rotation;
+    render_property->scale = GetTransform().scale;
+    if (GetParent() != nullptr)
+    {
+        auto parent_transform_matrix = GetParent()->GetGlobalTransformMatrix();
+        for (unsigned int i = 0; i < 4; ++i)
+        {
+            for (unsigned int j = 0; j < 4; ++j)
+            {
+                matrix_buffer[i][j] = (i < 3 && j < 3) ? parent_transform_matrix[j][i] : (i == j ? 1.0f : 0.0f);
+            }
+        }
+        render_property->modify_matrix = (float*)matrix_buffer;
+    }
+    else
+        render_property->modify_matrix = NULL;
     
     if (visual)
         Draw(p_delta_time);

@@ -1,10 +1,10 @@
-#if 0
+#if 1
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
 #include <cos_graphics/component/animation_sprite.h>
 #include <cos_graphics/log.h>
 #include <cos_graphics/component/camera.h>
-#include <cos_graphics/component/text_component.h>
+#include <cos_graphics/component/text.h>
 
 CGSprite* sprite2 = nullptr;
 CGSprite* sprite = nullptr;
@@ -33,12 +33,15 @@ int main()
     animation_sprite->GetTransform().scale = CGConstructVector2(5.0f, 5.0f);
     animation_sprite->PlayFromStart(CGSTR("test"));
     
-    auto text = new CGTextComponent(CGSTR("test_text"), CGConstructTextProperty(120, 120, 30, 10));
+    auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(120, 120, 30, 10));
     text->GetTransform().scale = CGConstructVector2(0.5f, 0.5f);
 
     CGGame::GetInstance()->SetWindowClearColor(CGConstructColor(0.2f, 0.2f, 0.0f, 1.0f));
     
     CGGame::StartGame();
+    delete sprite2;
+    delete sprite;
+    CGGame::ExitGame();
     return 0;
 }
 
@@ -105,7 +108,7 @@ void KeyCallback(CGWindow* window, int key, int action)
     }
 }
 #endif
-
+#if 0
 #include "cos_graphics/game.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"
@@ -125,3 +128,4 @@ int main()
     CGGame::GetInstance()->ExitGame();
     return 0;
 }
+#endif

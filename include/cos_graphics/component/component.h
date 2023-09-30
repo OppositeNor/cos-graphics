@@ -121,12 +121,6 @@ private:
     CGTransform transform;
 
 protected:
-    /**
-     * @brief Get the global transform matrix of the component.
-     * 
-     * @return CGMat3::CGMat3 The global transform matrix of the component.
-     */
-    CGMat3::CGMat3 GetGlobalTransformMatrix() const noexcept;
 
     /**
      * @brief Get the inverse global transform matrix of the component.
@@ -136,6 +130,12 @@ protected:
     CGMat3::CGMat3 GetGlobalInvTransformMatrix() const noexcept;
 
 public:
+    /**
+     * @brief Get the global transform matrix of the component.
+     * 
+     * @return CGMat3::CGMat3 The global transform matrix of the component.
+     */
+    CGMat3::CGMat3 GetGlobalTransformMatrix() const noexcept;
 
     /**
      * @brief Construct a new CGComponent object.
@@ -353,13 +353,6 @@ public:
      * @return CGVector2 The global position of the component.
      */
     CGVector2 SetGlobalPosition() const;
-
-    /**
-     * @brief Get the global transform of the component.
-     * 
-     * @return CGTransform The global transform of the component.
-    */
-    CGTransform GetGlobalTransform() const;
 
     /**
      * @brief Set the Depth object.
