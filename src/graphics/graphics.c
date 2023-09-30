@@ -1151,10 +1151,17 @@ static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRender
     CGSetShaderUniformVec4f(shader_program, "color", 
         property->color.r, property->color.g, property->color.b, property->color.alpha);
     float result[16] = {0};
+    if (property->modify_matrix != NULL)
+    {
+        memcpy(result, property->modify_matrix, sizeof(float) * 16);
+    }
+    else
+        memcpy(result, cg_normal_matrix, sizeof(float) * 16);
+
     float* tmp_mat = CGCreateTransformMatrix(property->transform);
     if (tmp_mat != NULL)
     {
-        memcpy(result, tmp_mat, sizeof(float) * 16);
+        CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
     }
     else
@@ -1172,11 +1179,6 @@ static void CGSetPropertyUniforms(CGShaderProgram shader_program, const CGRender
     {
         CGMatMultiply(result, tmp_mat, result, 4, 4);
         free(tmp_mat);
-    }
-
-    if (property->modify_matrix)
-    {
-        CGMatMultiply(result, property->modify_matrix, result, 4, 4);
     }
     CGSetShaderUniformMat4f(shader_program, "model_mat", result);
 }
