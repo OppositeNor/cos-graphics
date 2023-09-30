@@ -12,7 +12,7 @@ CGComponent::CGTransform::CGTransform(const CGVector2& p_position, float p_rotat
 
 CGMat3::CGMat3 CGComponent::CGTransform::GetTransformMatrix() const noexcept
 {
-    return CGMat3::GetScaleMatrix(scale) * CGMat3::GetRotationMatrix(rotation) * CGMat3::GetPositionMatrix(position);
+    return CGMat3::GetPositionMatrix(position) * CGMat3::GetRotationMatrix(rotation) * CGMat3::GetScaleMatrix(scale);
 }
 
 CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
