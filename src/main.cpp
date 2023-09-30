@@ -1,4 +1,4 @@
-#if 1
+#if 0
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
 #include <cos_graphics/component/animation_sprite.h>
@@ -19,10 +19,13 @@ int main()
         CGGame::GetInstance()->GetGameWindow());
     sprite2 = new CGSprite(image);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, 100.0f);
+    auto sprite3 = new CGSprite(image);
+    sprite3->GetTransform().position = CGConstructVector2(-100.0f, -100.0f);
     sprite = new CGSprite(std::move(image));
     sprite->GetTransform().position = CGConstructVector2(-100.0f, 100.0f);
 
     sprite->SetParent(sprite2);
+    sprite3->SetParent(sprite);
 
     CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
     animation_sprite->AddAnimation(CGSTR("test"), std::vector<CGVisualImage*>{
@@ -40,6 +43,7 @@ int main()
     
     CGGame::StartGame();
     delete sprite2;
+    delete sprite3;
     delete sprite;
     CGGame::ExitGame();
     return 0;
@@ -108,7 +112,7 @@ void KeyCallback(CGWindow* window, int key, int action)
     }
 }
 #endif
-#if 0
+#if 1
 #include "cos_graphics/game.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"

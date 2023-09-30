@@ -159,40 +159,40 @@ public:
 
     /**
      * @brief Get the width of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The width of the boarder.
      */
     inline virtual float GetBoarderWidth() const noexcept override { return 0.0f; };
     /**
      * @brief Get the height of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The height of the boarder.
      */
     inline virtual float GetBoarderHeight() const noexcept override { return 0.0f; };
 
     /**
      * @brief Get the y coordinate value of the top of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The y coordinate value of the top of the boarder.
      */
     virtual float GetBoarderTopY() const noexcept override;
     /**
      * @brief Get the y coordinate value of the bottom of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The y coordinate value of the bottom of the boarder.
      */
     virtual float GetBoarderBottomY() const noexcept override;
 
     /**
      * @brief Get the x coordinate value of the left of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The x coordinate value of the left of the boarder.
      */
     virtual float GetBoarderLeftX() const noexcept override;
 
     /**
      * @brief Get the x coordinate value of the right of the boarder.
-     * 
+     * @note rotation is not considered.
      * @return float The x coordinate value of the right of the boarder.
      */
     virtual float GetBoarderRightX() const noexcept override;
@@ -278,7 +278,7 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignBottomToTop(const CGIRectBoarder& target, float p_offset = 0.0f);
+    void AllignBottomToTop(const CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the top of the image to the bottom of a target component.
@@ -286,7 +286,7 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignTopToBottom(const CGIRectBoarder& target, float p_offset = 0.0f);
+    void AllignTopToBottom(const CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the left of the image to the right of a target component.
@@ -294,7 +294,7 @@ public:
      * @param target The target component.
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignLeftToRight(const CGIRectBoarder& target, float p_offset = 0.0f);
+    void AllignLeftToRight(const CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the right of the image to the left of the target component.
@@ -302,7 +302,7 @@ public:
      * @param target The target component
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignRightToLeft(const CGIRectBoarder& target, float p_offset = 0.0f);
+    void AllignRightToLeft(const CGIRectBoarder* target, float p_offset = 0.0f);
     
     /**
      * @brief Get the Transform object.
