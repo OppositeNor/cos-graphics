@@ -95,6 +95,11 @@ static inline CGVector2 operator*(const CGVector2& p_vec, float p_num) noexcept
     return {p_vec.x * p_num, p_vec.y * p_num};
 }
 
+static inline CGVector2 operator*(float p_num, const CGVector2& p_vec) noexcept
+{
+    return {p_vec.x * p_num, p_vec.y * p_num};
+}
+
 static inline CGVector2 operator/(const CGVector2& p_vec, float p_num)
 {
     return {p_vec.x / p_num, p_vec.y / p_num};

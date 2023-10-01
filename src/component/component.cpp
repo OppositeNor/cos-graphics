@@ -19,8 +19,8 @@ CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
 {
     return CGMat3::GetScaleMatrix(
         CGConstructVector2(CGUtils::GetReciprocal(scale.x), CGUtils::GetReciprocal(scale.y))) 
-        * CGMat3::GetRotationMatrix(-rotation) 
-        * CGMat3::GetPositionMatrix(CGConstructVector2(- position.x, -position.y ));
+        * CGMat3::GetInvRoationMatrix(rotation)
+        * CGMat3::GetPositionMatrix(-1 * position);
 }
 
 CGComponent::CGComponent()
@@ -52,64 +52,25 @@ CGComponent::~CGComponent()
         parent->DetachChild(this);
 }
 
-float CGComponent::GetBoarderTopY() const noexcept
-{
-    if (children.empty())
-        return GetGlobalPosition().y;
-    float top_y = 0;
-    for (auto& child : children)
-    {
-        float child_top_y = child->GetTransform().position.y + child->GetBoarderTopY() * transform.scale.y;
-        if (child_top_y > top_y)
-            top_y = child_top_y;
-    }
-    top_y += GetGlobalPosition().y;
-    return top_y;
+#define CGBoarderFunc(Direction, AXIS, axis, comp)                          \
+float CGComponent::GetBoarder##Direction##AXIS() const noexcept             \
+{                                                                           \
+    if (children.empty())                                                   \
+        return GetGlobalPosition().y;                                       \
+    float result = GetGlobalPosition().y;                                   \
+    for (auto& child : children)                                            \
+    {                                                                       \
+        float child_direct_axis = child->GetBoarder##Direction##AXIS();     \
+        if (child_direct_axis comp result)                                  \
+            result = child_direct_axis;                                     \
+    }                                                                       \
+    return result;                                                          \
 }
 
-float CGComponent::GetBoarderBottomY() const noexcept
-{
-    if (children.empty())
-        return GetGlobalPosition().y;
-    float bottom_y = 0;
-    for (auto& child : children)
-    {
-        float child_bottom_y = child->GetTransform().position.y - child->GetBoarderBottomY() * transform.scale.y;
-        if (child_bottom_y < bottom_y)
-            bottom_y = child_bottom_y;
-    }
-    bottom_y += GetGlobalPosition().y;
-    return bottom_y;
-}
-
-float CGComponent::GetBoarderLeftX() const noexcept
-{
-    if (children.empty())
-        return GetGlobalPosition().x;
-    float left_x = 0;
-    for (auto& child : children)
-    {
-        float child_left_x = child->GetTransform().position.x - child->GetBoarderLeftX() * transform.scale.x;
-        if (child_left_x < left_x)
-            left_x = child_left_x;
-    }
-    left_x += GetGlobalPosition().x;
-    return left_x;
-}
-
-float CGComponent::GetBoarderRightX() const noexcept
-{
-    if (children.empty())
-        return GetGlobalPosition().x;
-    float right_x = 0;
-    for (auto& child : children)
-    {
-        float child_right_x = child->GetTransform().position.x + child->GetBoarderRightX() * transform.scale.x;
-        if (child_right_x > right_x)
-            right_x = child_right_x;
-    }
-    return right_x;
-}
+CGBoarderFunc(Top, Y, y, >)
+CGBoarderFunc(Bottom, Y, y, <)
+CGBoarderFunc(Left, X, x, <)
+CGBoarderFunc(Right, X, x, >)
 
 void CGComponent::Tick(double p_delta_time)
 {
@@ -235,14 +196,14 @@ void CGComponent::AllignTop(float p_offset)
 void CGComponent::AllignBottom(float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.y = -1 * CGGame::GetInstance()->GetGameWindow()->height / 2.0f - GetBoarderBottomY() + p_offset;
+    global_position.y = CGGame::GetInstance()->GetGameWindow()->height / -2.0f - GetBoarderBottomY() + p_offset;
     SetGlobalPosition(global_position);
 }
 
 void CGComponent::AllignLeft(float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.x = -1 * CGGame::GetInstance()->GetGameWindow()->width / 2.0f - GetBoarderLeftX() + p_offset;
+    global_position.x = CGGame::GetInstance()->GetGameWindow()->width / -2.0f - GetBoarderLeftX() + p_offset;
     SetGlobalPosition(global_position);
 }
 

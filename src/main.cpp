@@ -124,10 +124,11 @@ int main()
     sprite->AddChild(sprite2);
     sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, -100.0f);
-    sprite->AllignRight();
+    sprite->AllignTop();
     auto sprite3 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
     sprite3->AllignLeftToRight(sprite2);
+    
     //auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(60, 60, 20, 5));
     CGGame::GetInstance()->StartGame();
     delete sprite;

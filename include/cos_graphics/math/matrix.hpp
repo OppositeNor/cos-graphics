@@ -200,6 +200,14 @@ namespace CGMat3
     CGMat3 GetRotationMatrix(float p_rotation) noexcept;
 
     /**
+     * @brief Get the inverse rotation matrix
+     * 
+     * @param p_rotation The rotation to get the matrix out from
+     * @return CGMat3 The inverse rotation matrix
+     */
+    CGMat3 GetInvRoationMatrix(float p_rotation) noexcept;
+
+    /**
      * @brief Get the scale matrix
      * 
      * @param scale The scale to get the matrix out from

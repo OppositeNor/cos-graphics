@@ -21,7 +21,7 @@ float CGTextureContainer::GetBoarder##Direction##AXIS() const noexcept      \
     for (auto& child : children)                                            \
     {                                                                       \
         float child_direct_axis = child->GetBoarder##Direction##AXIS();     \
-        if (child_direct_axis comp result.axis)                                \
+        if (child_direct_axis comp result.axis)                             \
             result.axis = child_direct_axis;                                \
     }                                                                       \
     return result.axis;                                                     \
@@ -81,12 +81,12 @@ float CGTextureContainer::GetHeight() const noexcept
 
 float CGTextureContainer::GetTopY() const noexcept
 {
-    return (float)texture->img_height * 2.0f;
+    return (float)texture->img_height / 2.0f;
 }
 
 float CGTextureContainer::GetBottomY() const noexcept
 {
-    return -1 * (float)texture->img_height * 2.0f;
+    return -1 * (float)texture->img_height / 2.0f;
 }
 
 float CGTextureContainer::GetLeftX() const noexcept 

@@ -17,6 +17,15 @@ namespace CGMat3
                     sin_theta, cos_theta, 0.0f,
                     0.0f, 0.0f, 1.0f});
     }
+
+    CGMat3 GetInvRoationMatrix(float p_rotation) noexcept
+    {
+        float sin_theta = sin(p_rotation);
+        float cos_theta = cos(p_rotation);
+        return CGMat3({cos_theta, sin_theta, 0.0f,
+                    -sin_theta, cos_theta, 0.0f,
+                    0.0f, 0.0f, 1.0f});
+    }
     
     CGMat3 GetScaleMatrix(const CGVector2& p_scale) noexcept
     {
