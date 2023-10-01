@@ -222,27 +222,27 @@ public:
      * 
      * @return float The y coordinate value of the top of the shape.
      */
-    inline virtual float GetTopY() const noexcept override { return transform.position.y; }
+    inline virtual float GetTopY() const noexcept override { return 0.0f; }
     /**
      * @brief Get the y coordinate value of the bottom of the shape.
      * 
      * @return float The y coordinate value of the bottom of the shape.
      */
-    inline virtual float GetBottomY() const noexcept override { return transform.position.y; }
+    inline virtual float GetBottomY() const noexcept override { return 0.0f; }
 
     /**
      * @brief Get the x coordinate value of the left of the shape.
      * 
      * @return float The x coordinate value of the left of the shape.
      */
-    inline virtual float GetLeftX() const noexcept override { return transform.position.x; }
+    inline virtual float GetLeftX() const noexcept override { return 0.0f; }
 
     /**
      * @brief Get the x coordinate value of the right of the shape.
      * 
      * @return float The x coordinate value of the right of the shape.
      */
-    inline virtual float GetRightX() const noexcept override { return transform.position.x; }
+    inline virtual float GetRightX() const noexcept override { return 0.0f; }
     
     /**
      * @brief Allign the top of the image to the top of the window.
