@@ -23,6 +23,22 @@ CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
         * CGMat3::GetPositionMatrix(-1 * position);
 }
 
+void CGComponent::ShouldUpdateMatrix()
+{
+    should_update_matrix = true;
+    for (auto child : children)
+    {
+        if (!child->should_update_matrix)
+            child->ShouldUpdateMatrix();
+    }
+}
+
+CGComponent::CGTransform& CGComponent::GetTransform() noexcept 
+{
+    ShouldUpdateMatrix();
+    return transform;
+}
+
 CGComponent::CGComponent()
 {
     CGGame::GetInstance()->AddComponent(this);
@@ -53,7 +69,7 @@ CGComponent::~CGComponent()
 }
 
 #define CGBoarderFunc(Direction, AXIS, axis, comp)                          \
-float CGComponent::GetBoarder##Direction##AXIS() const noexcept             \
+float CGComponent::GetBoarder##Direction##AXIS() noexcept                   \
 {                                                                           \
     if (children.empty())                                                   \
         return GetGlobalPosition().y;                                       \
@@ -84,11 +100,16 @@ CGVector2 CGComponent::GetGlobalPosition() const
     return parent->GetGlobalTransformMatrix() * transform.position;
 }
 
-CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() const noexcept
+CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() noexcept
 {
     if (parent == nullptr)
         return transform.GetTransformMatrix();
-    return parent->GetGlobalTransformMatrix() * transform.GetTransformMatrix();
+    if (should_update_matrix)
+    {
+        global_transform_matrix = parent->GetGlobalTransformMatrix() * transform.GetTransformMatrix();
+        should_update_matrix = false;
+    }
+    return global_transform_matrix;
 }
 
 CGMat3::CGMat3 CGComponent::GetGlobalInvTransformMatrix() const noexcept
@@ -214,30 +235,58 @@ void CGComponent::AllignRight(float p_offset)
     SetGlobalPosition(global_position);
 }
 
-void CGComponent::AllignBottomToTop(const CGIRectBoarder* target, float p_offset)
+void CGComponent::AllignBottomToTop(CGIRectBoarder* p_target, float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.y = target->GetBoarderTopY() + GetBoarderHeight() / 2.0f + p_offset;
+    global_position.y = p_target->GetBoarderTopY() + GetBoarderHeight() / 2.0f + p_offset;
     SetGlobalPosition(global_position);
 }
 
-void CGComponent::AllignTopToBottom(const CGIRectBoarder* target, float p_offset)
+void CGComponent::AllignTopToTop(CGIRectBoarder* p_target, float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.y = target->GetBoarderBottomY() - GetBoarderHeight() / 2.0f + p_offset;
+    global_position.y = p_target->GetBoarderTopY() - GetBoarderHeight() / 2.0f + p_offset;
     SetGlobalPosition(global_position);
 }
 
-void CGComponent::AllignLeftToRight(const CGIRectBoarder* target, float p_offset)
+void CGComponent::AllignTopToBottom(CGIRectBoarder* p_target, float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.x = target->GetBoarderRightX() + GetBoarderWidth() / 2.0f + p_offset;
+    global_position.y = p_target->GetBoarderBottomY() - GetBoarderHeight() / 2.0f + p_offset;
     SetGlobalPosition(global_position);
 }
 
-void CGComponent::AllignRightToLeft(const CGIRectBoarder* target, float p_offset)
+void CGComponent::AlignBottomToBottom(CGIRectBoarder* p_target, float p_offset)
 {
     auto global_position = GetGlobalPosition();
-    global_position.x = target->GetBoarderLeftX() - GetBoarderWidth() / 2.0f + p_offset;
+    global_position.y = p_target->GetBoarderBottomY() + GetBoarderHeight() / 2.0f + p_offset;
+    SetGlobalPosition(global_position);
+}
+
+void CGComponent::AllignLeftToRight(CGIRectBoarder* p_target, float p_offset)
+{
+    auto global_position = GetGlobalPosition();
+    global_position.x = p_target->GetBoarderRightX() + GetBoarderWidth() / 2.0f + p_offset;
+    SetGlobalPosition(global_position);
+}
+
+void CGComponent::AllignRightToRight(CGIRectBoarder* p_target, float p_offset)
+{
+    auto global_position = GetGlobalPosition();
+    global_position.x = p_target->GetBoarderRightX() - GetBoarderWidth() / 2.0f + p_offset;
+    SetGlobalPosition(global_position);
+}
+
+void CGComponent::AllignRightToLeft(CGIRectBoarder* p_target, float p_offset)
+{
+    auto global_position = GetGlobalPosition();
+    global_position.x = p_target->GetBoarderLeftX() - GetBoarderWidth() / 2.0f + p_offset;
+    SetGlobalPosition(global_position);
+}
+
+void CGComponent::AllignLeftToLeft(CGIRectBoarder* p_target, float p_offset)
+{
+    auto global_position = GetGlobalPosition();
+    global_position.x = p_target->GetBoarderLeftX() + GetBoarderWidth() / 2.0f + p_offset;
     SetGlobalPosition(global_position);
 }

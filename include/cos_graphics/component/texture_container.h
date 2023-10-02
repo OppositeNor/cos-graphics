@@ -34,40 +34,40 @@ public:
      * 
      * @return float The width of the visual component.
      */
-    virtual float GetBoarderWidth() const noexcept override;
+    virtual float GetBoarderWidth() noexcept override;
     /**
      * @brief Get the height of the visual component
      * 
      * @return float The height of the visual component
      */
-    virtual float GetBoarderHeight() const noexcept override;
+    virtual float GetBoarderHeight() noexcept override;
 
     /**
      * @brief Get the y coordinate value of the top of the boarder.
      * 
      * @return float The y coordinate value of the top of the boarder.
      */
-    virtual float GetBoarderTopY() const noexcept override;
+    virtual float GetBoarderTopY() noexcept override;
     /**
      * @brief Get the y coordinate value of the bottom of the boarder.
      * 
      * @return float The y coordinate value of the bottom of the boarder.
      */
-    virtual float GetBoarderBottomY() const noexcept override;
+    virtual float GetBoarderBottomY() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the left of the boarder.
      * 
      * @return float The x coordinate value of the left of the boarder.
      */
-    virtual float GetBoarderLeftX() const noexcept override;
+    virtual float GetBoarderLeftX() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the right of the boarder.
      * 
      * @return float The x coordinate value of the right of the boarder.
      */
-    virtual float GetBoarderRightX() const noexcept override;
+    virtual float GetBoarderRightX() noexcept override;
 
     /**
      * @brief Get the width of the shape.

@@ -46,6 +46,26 @@ class CGComponent :
      */
     std::vector<CGComponent*> children;
 
+    /**
+     * @brief Should the global transform matrix and the inv global transform matrix been updated.
+     */
+    bool should_update_matrix = true;
+
+    /**
+     * @brief The global transform matrix.
+     */
+    CGMat3::CGMat3 global_transform_matrix;
+
+    /**
+     * @brief The inverse of the global transform matrix.
+     */
+    CGMat3::CGMat3 global_inv_transform_matrix;
+
+    /**
+     * @brief Setup the should_update_matrix flag.
+     */
+    void ShouldUpdateMatrix();
+
 public:
     /**
      * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
@@ -135,7 +155,7 @@ public:
      * 
      * @return CGMat3::CGMat3 The global transform matrix of the component.
      */
-    CGMat3::CGMat3 GetGlobalTransformMatrix() const noexcept;
+    CGMat3::CGMat3 GetGlobalTransformMatrix() noexcept;
 
     /**
      * @brief Construct a new CGComponent object.
@@ -162,40 +182,40 @@ public:
      * @note rotation is not considered.
      * @return float The width of the boarder.
      */
-    inline virtual float GetBoarderWidth() const noexcept override { return 0.0f; };
+    inline virtual float GetBoarderWidth() noexcept override { return 0.0f; };
     /**
      * @brief Get the height of the boarder.
      * @note rotation is not considered.
      * @return float The height of the boarder.
      */
-    inline virtual float GetBoarderHeight() const noexcept override { return 0.0f; };
+    inline virtual float GetBoarderHeight() noexcept override { return 0.0f; };
 
     /**
      * @brief Get the y coordinate value of the top of the boarder.
      * @note rotation is not considered.
      * @return float The y coordinate value of the top of the boarder.
      */
-    virtual float GetBoarderTopY() const noexcept override;
+    virtual float GetBoarderTopY() noexcept override;
     /**
      * @brief Get the y coordinate value of the bottom of the boarder.
      * @note rotation is not considered.
      * @return float The y coordinate value of the bottom of the boarder.
      */
-    virtual float GetBoarderBottomY() const noexcept override;
+    virtual float GetBoarderBottomY() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the left of the boarder.
      * @note rotation is not considered.
      * @return float The x coordinate value of the left of the boarder.
      */
-    virtual float GetBoarderLeftX() const noexcept override;
+    virtual float GetBoarderLeftX() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the right of the boarder.
      * @note rotation is not considered.
      * @return float The x coordinate value of the right of the boarder.
      */
-    virtual float GetBoarderRightX() const noexcept override;
+    virtual float GetBoarderRightX() noexcept override;
 
     /**
      * @brief Called every frame by the engine.
@@ -278,7 +298,7 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignBottomToTop(const CGIRectBoarder* target, float p_offset = 0.0f);
+    void AllignBottomToTop(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the top of the image to the bottom of a target component.
@@ -286,7 +306,23 @@ public:
      * @param target The target component.
      * @param p_offset The y offset of the image after allignment.
      */
-    void AllignTopToBottom(const CGIRectBoarder* target, float p_offset = 0.0f);
+    void AllignTopToTop(CGIRectBoarder* target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the top of the image to the bottom of a target component.
+     * 
+     * @param target The target component.
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AllignTopToBottom(CGIRectBoarder* target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the bottom of the image to the bottom of a target component.
+     * 
+     * @param target The target component.
+     * @param p_offset The y offset of the image after allignment.
+     */
+    void AlignBottomToBottom(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
      * @brief Allign the left of the image to the right of a target component.
@@ -294,15 +330,31 @@ public:
      * @param target The target component.
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignLeftToRight(const CGIRectBoarder* target, float p_offset = 0.0f);
+    void AllignLeftToRight(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the right of the image to the left of the target component.
+     * @brief Allign the left of the image to the left of the target component.
      * 
      * @param target The target component
      * @param p_offset The x offset of the image after allignment.
      */
-    void AllignRightToLeft(const CGIRectBoarder* target, float p_offset = 0.0f);
+    void AllignRightToRight(CGIRectBoarder* target, float p_offset = 0.0f);
+
+    /**
+     * @brief Allign the right of the component to the left of the target component.
+     * 
+     * @param target The target component
+     * @param p_offset The x offset of the image after allignment.
+     */
+    void AllignRightToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
+    
+    /**
+     * @brief Allign the left of the 
+     * 
+     * @param target 
+     * @param p_offset 
+     */
+    void AllignLeftToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
     
     /**
      * @brief Get the Transform object.
@@ -316,7 +368,7 @@ public:
      * 
      * @return CGComponent::CGTransform& The reference of the transform object.
      */
-    inline CGTransform& GetTransform() noexcept { return transform; };
+    CGTransform& GetTransform() noexcept;
     
     /**
      * @brief Convert a global position to a relative position.

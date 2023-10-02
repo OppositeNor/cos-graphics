@@ -1,7 +1,7 @@
 #include "cos_graphics/component/texture_container.h"
 
 #define CGBoarderFunc(Direction, AXIS, axis, comp)                          \
-float CGTextureContainer::GetBoarder##Direction##AXIS() const noexcept      \
+float CGTextureContainer::GetBoarder##Direction##AXIS() noexcept            \
 {                                                                           \
     auto& children = GetChildren();                                         \
     CGVector2 result = CGConstructVector2(0.0f, 0.0f);                      \
@@ -35,7 +35,7 @@ CGTextureContainer::~CGTextureContainer()
 }
 
 
-float CGTextureContainer::GetBoarderWidth() const noexcept
+float CGTextureContainer::GetBoarderWidth() noexcept
 {
     if (texture == nullptr)
         return 0;
@@ -44,7 +44,7 @@ float CGTextureContainer::GetBoarderWidth() const noexcept
     return GetBoarderRightX() - GetBoarderLeftX();
 }
 
-float CGTextureContainer::GetBoarderHeight() const noexcept
+float CGTextureContainer::GetBoarderHeight() noexcept
 {
     if (texture == nullptr)
         return 0;

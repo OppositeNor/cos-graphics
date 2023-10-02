@@ -13,38 +13,38 @@ public:
      * 
      * @return float The width of the boarder.
      */
-    virtual float GetBoarderWidth() const = 0;
+    virtual float GetBoarderWidth() = 0;
     /**
      * @brief Get the height of the boarder.
      * 
      * @return float The height of the boarder.
      */
-    virtual float GetBoarderHeight() const = 0;
+    virtual float GetBoarderHeight() = 0;
 
     /**
      * @brief Get the y coordinate value of the top of the boarder.
      * 
      * @return float The y coordinate value of the top of the boarder.
      */
-    virtual float GetBoarderTopY() const = 0;
+    virtual float GetBoarderTopY() = 0;
     /**
      * @brief Get the y coordinate value of the bottom of the boarder.
      * 
      * @return float The y coordinate value of the bottom of the boarder.
      */
-    virtual float GetBoarderBottomY() const = 0;
+    virtual float GetBoarderBottomY() = 0;
 
     /**
      * @brief Get the x coordinate value of the left of the boarder.
      * 
      * @return float The x coordinate value of the left of the boarder.
      */
-    virtual float GetBoarderLeftX() const = 0;
+    virtual float GetBoarderLeftX() = 0;
 
     /**
      * @brief Get the x coordinate value of the right of the boarder.
      * 
      * @return float The x coordinate value of the right of the boarder.
      */
-    virtual float GetBoarderRightX() const = 0;
+    virtual float GetBoarderRightX() = 0;
 };

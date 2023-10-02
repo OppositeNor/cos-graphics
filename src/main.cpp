@@ -1,4 +1,4 @@
-#if 0
+#if 1
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
 #include <cos_graphics/component/animation_sprite.h>
@@ -112,7 +112,7 @@ void KeyCallback(CGWindow* window, int key, int action)
     }
 }
 #endif
-#if 1
+#if 0
 #include "cos_graphics/game.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"
