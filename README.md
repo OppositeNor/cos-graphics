@@ -1,34 +1,85 @@
-# CosGraphics
+<p align="center">
+    <image src="./assets/cos-graphics-white-with-background-high-res.png">
+</p>
+<h1 align="center"> <font size="10"> <b>CosGraphics</b> </font> </h1>
 
-[![State-of-the-art Shitcode](https://img.shields.io/static/v1?label=State-of-the-art&message=Shitcode&color=7B5804)](https://github.com/trekhleb/state-of-the-art-shitcode)
+# Discription: :sparkles: 
 
-This is a simple 2D graphics library that can be used in simple 2D rendering 
+CosGraphics is a graphics library that can do simple 2D rendering. It is based on OpenGL and GLFW under [MIT Licence](https://github.com/OppositeNor/cos-graphics/blob/main/LICENCE). It is still under development, and the API may change in the future.
 
-## Build
+# Branches :palm_tree:
 
-Clone repository
+* [main](https://github.com/OppositeNor/cos-graphics/tree/main)
 
-```
-git clone https://github.com/OppositeNor/cos-graphics.git --recursive
-```
+* [develop](https://github.com/OppositeNor/cos-graphics/tree/develop)
 
-For Linux Debian you have to install dependencies:
+* [cpp_version](https://github.com/OppositeNor/cos-graphics/tree/cpp_version)
 
+# Features: :high_brightness:
 
-```
-sudo apt install build-essential cmake libglfw3-dev libgl1-mesa-dev
-```
+## Ready to use :heavy_check_mark:
 
-For Windows you have to download [MinGW](https://www.mingw-w64.org) or [MSVC](https://visualstudio.microsoft.com), and [CMake](https://cmake.org/) to compile this program.
+* ### C Version
 
-build
-```
-mkdir build
-cmake --build build
-```
+    * Resource wrapping
 
-build files is in `./bin/lib/` and `./bin/exe/`
+    * Image Rendering
 
-Currently the shaders are not built within the library, and needs to be loaded while running the program. So please make sure that the shaders are at the same path with your program.
+    * Convex quadrangl rendering
+
+    * Triangle rendering
+
+    * Text rendering
+
+* ### CPP Version
+
+    * Resource wrapping
+
+    * Image(Sprite) rendering
+
+    * Text rendering
+
+    * Component allignment
+
+    * Component inheritance
+
+    * Component rendering
 
 ---
+
+## Untested :warning:
+
+* ### C Version
+
+    * Modified shader support
+
+* ### CPP Version
+
+    * Modified shader support
+
+## Unfinished :no_entry:
+
+* ### C Version
+
+    * Multiple window support
+
+## Planned :arrow_heading_up:
+
+* ### C Version
+
+    * Tutorial on how to use.
+
+    * API Reference Documentation.
+
+    * 2D Lighting
+
+* ### Cpp Version
+
+    * Multiple window support
+
+    * Tutorial on how to use.
+
+    * API Reference Documentation.
+
+    * Scene management
+
