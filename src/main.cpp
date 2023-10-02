@@ -1,4 +1,4 @@
-#if 1
+#if 0
 #include <cos_graphics/game.h>
 #include <cos_graphics/component/sprite.h>
 #include <cos_graphics/component/animation_sprite.h>
@@ -112,7 +112,7 @@ void KeyCallback(CGWindow* window, int key, int action)
     }
 }
 #endif
-#if 0
+#if 1
 #include "cos_graphics/game.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"
@@ -124,7 +124,7 @@ int main()
     sprite->AddChild(sprite2);
     sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, -100.0f);
-    sprite->AllignTop();
+    sprite->AllignLeft();
     auto sprite3 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
     sprite3->AllignLeftToRight(sprite2);

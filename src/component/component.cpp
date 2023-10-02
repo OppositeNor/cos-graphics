@@ -96,17 +96,17 @@ void CGComponent::Tick(double p_delta_time)
 CGVector2 CGComponent::GetGlobalPosition() const
 {
     if (parent == nullptr)
-        return transform.position;
-    return parent->GetGlobalTransformMatrix() * transform.position;
+        return GetTransform().position;
+    return parent->GetGlobalTransformMatrix() * GetTransform().position;
 }
 
 CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() noexcept
 {
     if (parent == nullptr)
-        return transform.GetTransformMatrix();
+        return GetTransform().GetTransformMatrix();
     if (should_update_matrix)
     {
-        global_transform_matrix = parent->GetGlobalTransformMatrix() * transform.GetTransformMatrix();
+        global_transform_matrix = parent->GetGlobalTransformMatrix() * GetTransform().GetTransformMatrix();
         should_update_matrix = false;
     }
     return global_transform_matrix;
@@ -115,15 +115,15 @@ CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() noexcept
 CGMat3::CGMat3 CGComponent::GetGlobalInvTransformMatrix() const noexcept
 {
     if (parent == nullptr)
-        return transform.GetInvTransformMatrix();
-    return transform.GetInvTransformMatrix() * parent->GetGlobalInvTransformMatrix();
+        return GetTransform().GetInvTransformMatrix();
+    return GetTransform().GetInvTransformMatrix() * parent->GetGlobalInvTransformMatrix();
 }
 
 CGVector2 CGComponent::ToRelativePosition(const CGVector2& global_position) const
 {
     if (parent == nullptr)
         return global_position;
-    return parent->GetGlobalInvTransformMatrix() * transform.GetInvTransformMatrix() * global_position;
+    return parent->GetGlobalInvTransformMatrix() * GetTransform().GetInvTransformMatrix() * global_position;
 }
 
 CGVector2 CGComponent::ToGlobalPosition(const CGVector2& relative_position) const
@@ -136,14 +136,14 @@ CGVector2 CGComponent::ToGlobalPosition(const CGVector2& relative_position) cons
 void CGComponent::SetGlobalPosition(const CGVector2& global_position)
 {
     if (parent == nullptr)
-        transform.position = global_position;
+        GetTransform().position = global_position;
     else
-        transform.position = parent->GetGlobalInvTransformMatrix() * global_position;
+        GetTransform().position = parent->GetGlobalInvTransformMatrix() * global_position;
 }
 
 void CGComponent::SetDepth(float p_depth)
 {
-    transform.depth = p_depth;
+    GetTransform().depth = p_depth;
 }
 
 void CGComponent::AddChild(CGComponent* p_child)
