@@ -8,7 +8,4 @@ CMakeSettings.json
 CppProperties.json
 
 # testing resources
-*.jpg
-*.png
-*.ttf
-*.ttc
+test_assets
