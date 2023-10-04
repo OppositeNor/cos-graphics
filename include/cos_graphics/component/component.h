@@ -66,6 +66,11 @@ class CGComponent :
      */
     void ShouldUpdateMatrix();
 
+    /**
+     * @brief The label of the component. The label is used to identify the component.
+     */
+    CGString label = CGSTR("");
+
 public:
     /**
      * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
@@ -73,7 +78,22 @@ public:
      * @return CGString 
      */
     inline virtual CGString GetComponentType() const noexcept {return CGSTR("CGComponent");}
+
+    /**
+     * @brief Get the label of the component.
+     */
+    inline const CGString& GetLabel() const noexcept { return GetComponentType() + CGSTR(": ") + label; }
     
+    /**
+     * @brief Get the label without the type of the component.
+     */
+    inline const CGString& GetLabelRaw() const noexcept { return label; }
+
+    /**
+     * @brief Get the label of the component.
+     */
+    CGString& GetLabel() noexcept { return label; }
+
     /**
      * @brief Transform component that contains the transformation of components.
      * 
