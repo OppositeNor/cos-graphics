@@ -82,7 +82,7 @@ public:
     /**
      * @brief Get the label of the component.
      */
-    inline const CGString& GetLabel() const noexcept { return GetComponentType() + CGSTR(": ") + label; }
+    inline const CGString GetLabel() const noexcept { return GetComponentType() + CGSTR(": ") + label; }
     
     /**
      * @brief Get the label without the type of the component.
