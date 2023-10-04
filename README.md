@@ -37,6 +37,8 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Image(Sprite) rendering
 
+    * Frame animation
+
     * Text rendering
 
     * Component allignment
@@ -63,6 +65,10 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Multiple window support
 
+* ### CPP Version
+
+    * Coroutine
+
 ## Planned :arrow_heading_up:
 
 * ### C Version
@@ -87,6 +93,7 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
 * ## CosGraphics:
 
+```
 MIT License
 
 Copyright (c) 2023 OppositeNor
@@ -108,9 +115,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
 
 * ## Smily Sans 得意黑:
 
+```
 Copyright (c) 2022--2023, atelierAnchor <https://atelier-anchor.com>, with Reserved Font Name <Smiley> and <得意黑>.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is copied below, and is also available with a FAQ at: <http://scripts.sil.org/OFL>
@@ -201,11 +210,11 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
-
----
+```
 
 * ## GLFW:
 
+```
 Copyright (c) 2002-2006 Marcus Geelnard
 
 Copyright (c) 2006-2019 Camilla Löwy
@@ -219,11 +228,11 @@ The origin of this software must not be misrepresented; you must not claim that 
 Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 
 This notice may not be removed or altered from any source distribution.
-
----
+```
 
 * ## GLAD:
 
+```
 Copyright (c) 2013-2022 David Herberth
 
 The glad source code:
@@ -248,9 +257,11 @@ The glad source code:
     COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
 * ## STB:
 
+```
 MIT License
 Copyright (c) 2017 Sean Barrett
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -268,3 +279,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
