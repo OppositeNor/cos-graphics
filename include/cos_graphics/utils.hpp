@@ -95,6 +95,13 @@ static inline CGVector2 operator*(const CGVector2& p_vec, float p_num) noexcept
     return {p_vec.x * p_num, p_vec.y * p_num};
 }
 
+static inline CGVector2& operator*=(CGVector2& p_vec, float p_num) noexcept
+{
+    p_vec.x *= p_num;
+    p_vec.y *= p_num;
+    return p_vec;
+}
+
 static inline CGVector2 operator*(float p_num, const CGVector2& p_vec) noexcept
 {
     return {p_vec.x * p_num, p_vec.y * p_num};
@@ -103,4 +110,32 @@ static inline CGVector2 operator*(float p_num, const CGVector2& p_vec) noexcept
 static inline CGVector2 operator/(const CGVector2& p_vec, float p_num)
 {
     return {p_vec.x / p_num, p_vec.y / p_num};
+}
+
+static inline CGColor operator*(const CGColor& p_color, float p_num) noexcept
+{
+    return {p_color.r * p_num, p_color.g * p_num, p_color.b * p_num, p_color.alpha * p_num};
+}
+
+static inline CGColor& operator*=(CGColor& p_color, float p_num) noexcept
+{
+    p_color.r *= p_num;
+    p_color.g *= p_num;
+    p_color.b *= p_num;
+    p_color.alpha *= p_num;
+    return p_color;
+}
+
+static inline CGColor operator*(const CGColor& p_color1, const CGColor& p_color2) noexcept
+{
+    return {p_color1.r * p_color2.r, p_color1.g * p_color2.g, p_color1.b * p_color2.b, p_color1.alpha * p_color2.alpha};
+}
+
+static inline CGColor& operator*=(CGColor& p_color1, const CGColor& p_color2) noexcept
+{
+    p_color1.r *= p_color2.r;
+    p_color1.g *= p_color2.g;
+    p_color1.b *= p_color2.b;
+    p_color1.alpha *= p_color2.alpha;
+    return p_color1;
 }
