@@ -23,14 +23,14 @@ CGVisualComponent::CGVisualComponent(const CGVisualComponent& p_other) : CGCompo
 {
     render_property = CGCreateRenderObjectProperty(p_other.render_property->color, 
         p_other.GetTransform().position, p_other.GetTransform().scale, p_other.GetTransform().rotation);
-    visual = p_other.visual;
+    visible = p_other.visible;
 }
 
 CGVisualComponent::CGVisualComponent(CGVisualComponent&& p_other) : CGComponent(std::move(p_other))
 {
     render_property = p_other.render_property;
     p_other.render_property = nullptr;
-    visual = p_other.visual;
+    visible = p_other.visible;
 }
 
 CGVisualComponent::~CGVisualComponent()
@@ -41,6 +41,9 @@ CGVisualComponent::~CGVisualComponent()
 void CGVisualComponent::Tick(double p_delta_time)
 {
     CGComponent::Tick(p_delta_time);
+    if (!visible)
+        return;
+
     render_property->z = GetTransform().depth;
 
     render_property->transform = GetTransform().position;
@@ -63,18 +66,17 @@ void CGVisualComponent::Tick(double p_delta_time)
     else
         render_property->modify_matrix = NULL;
     
-    if (visual)
-        Draw(p_delta_time);
+    Draw(p_delta_time);
 }
 
-void CGVisualComponent::SetVisual(bool p_visual) noexcept
+void CGVisualComponent::SetVisible(bool p_visible) noexcept
 {
-    visual = p_visual;
+    visible = p_visible;
 }
 
-bool CGVisualComponent::IsVisual() const noexcept
+bool CGVisualComponent::IsVisible() const noexcept
 {
-    return visual;
+    return visible;
 }
 
 void CGVisualComponent::SetColor(const CGColor& p_color) noexcept

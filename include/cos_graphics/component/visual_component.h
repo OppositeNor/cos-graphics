@@ -3,7 +3,7 @@
 #include "cos_graphics/graphics.h"
 
 /**
- * @brief Visual component is the base class for all objects that are visual in the game world.
+ * @brief Visual component is the base class for all objects that are visible in the game world.
  * 
  */
 class CGVisualComponent : public CGComponent
@@ -22,14 +22,14 @@ protected:
     const CGRenderObjectProperty* GetRenderProperty() const noexcept;
 
     /**
-     * @brief Is the component visual in the game.
+     * @brief Is the component visible in the game.
      */
-    bool visual = true;
+    bool visible = true;
 
     /**
      * @brief Draw component on the window.
      */
-    virtual void Draw(float p_delta) = 0;
+    virtual void Draw(float p_delta) {};
 public:
     /**
      * @brief Construct a new CGVisualComponent object.
@@ -62,19 +62,19 @@ public:
     virtual void Tick(double p_delta_time) override;
 
     /**
-     * @brief Set the Visual object
+     * @brief Set if the component is visible in the game
      * 
-     * @param p_visual The new value of visual
+     * @param p_visible The new value of visible
      */
-    void SetVisual(bool p_visual) noexcept;
+    void SetVisible(bool p_visible) noexcept;
 
     /**
-     * @brief Is the component visual in the game
+     * @brief Is the component visible in the game
      * 
-     * @return true The component is visual in the game
-     * @return false The component is not visual in the game
+     * @return true The component is visible in the game
+     * @return false The component is not visible in the game
      */
-    bool IsVisual() const noexcept;
+    bool IsVisible() const noexcept;
 
     /**
      * @brief Set the color of the component.
