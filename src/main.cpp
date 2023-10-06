@@ -26,7 +26,6 @@ int main()
 
     sprite->SetParent(sprite2);
     sprite3->SetParent(sprite);
-
     CGAnimationSprite* animation_sprite = new CGAnimationSprite(5.0f);
     animation_sprite->AddAnimation(CGSTR("test"), std::vector<CGVisualImage*>{
         CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()),
@@ -129,6 +128,7 @@ int main()
     sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
     sprite3->AllignLeftToRight(sprite2);
     sprite->SetVisible(false);
+    CGGame::GetInstance()->QueueFree(sprite3);
     //auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(60, 60, 20, 5));
     CGGame::GetInstance()->StartGame();
     delete sprite;

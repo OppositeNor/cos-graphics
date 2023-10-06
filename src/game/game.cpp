@@ -164,7 +164,10 @@ void CGGame::Tick(float p_delta)
     for (auto& i : component_list)
         i->Tick(p_delta);
     while (!component_free_list.empty())
-        delete *component_free_list.begin();
+    {
+        delete *(component_free_list.begin());
+        component_free_list.erase(component_free_list.begin());
+    }
 }
 
 void CGGame::GameLoop()
