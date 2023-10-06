@@ -54,7 +54,7 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
         p_resizable, p_boarderless, p_transparent, p_topmost);
     CG_PRINT(CGSTR("Creating window..."));
     
-    CGWindowSubProperty window_sub_property;
+    CGWindowSubProperty window_sub_property = CGConstructDefaultWindowSubProperty();
     window_sub_property.use_full_screen = p_fullscreen;
     window_sub_property.resizable = p_resizable;
     window_sub_property.boarderless = p_boarderless;
