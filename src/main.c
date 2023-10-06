@@ -174,6 +174,7 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    window_property.viewport_scale_mode = CG_VIEWPORT_SCALE_EXPAND;
     window_property.resizable = CG_TRUE;
     CGWindow* window = CGCreateWindow(1280, 720, CGSTR("Graphics test"), window_property);
     CGSetClearScreenColor(CGConstructColor(0.3f, 0.3f, 0.3f, 0.2f));

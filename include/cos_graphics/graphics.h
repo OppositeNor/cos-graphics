@@ -4,6 +4,10 @@
 #include "linked_list.h"
 #include "resource.h"
 
+#define CG_VIEWPORT_SCALE_EXPAND 0
+#define CG_VIEWPORT_SCALE_FILL 1
+#define CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO 2
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -96,6 +100,11 @@ typedef struct{
      * @default CG_FALSE
      */
     CG_BOOL topmost;
+    /**
+     * @brief How the viewport is going to be scaled.
+     * @default CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO
+     */
+    CGByte viewport_scale_mode;
 } CGWindowSubProperty;
 
 /**
@@ -106,13 +115,41 @@ typedef struct{
      * @brief The title of the window.
      */
     CGChar title[256];
+    /**
+     * @brief The width of the window.
+     */
     int width;
+    /**
+     * @brief The height of the window.
+     */
     int height;
+    /**
+     * @brief The aspect ratio of the window.
+     */
+    float aspect_ratio;
+    /**
+     * @brief The GLFW window instance.
+     */
     void* glfw_window_instance;
+    /**
+     * @brief The vao for rendering triangle.
+     */
     unsigned int triangle_vao;
+    /**
+     * @brief The vao for rendering quadrangle.
+     */
     unsigned int quadrangle_vao;
+    /**
+     * @brief The vao for rendering visual_image.
+     */
     unsigned int visual_image_vao;
+    /**
+     * @brief The list of rendering objects.
+     */
     CGRenderNode* render_list;
+    /**
+     * @brief The sub property of the window.
+     */
     CGWindowSubProperty sub_property;
 } CGWindow;
 
