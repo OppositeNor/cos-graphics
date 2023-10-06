@@ -70,6 +70,11 @@ class CGComponent :
      * @brief The label of the component. The label is used to identify the component.
      */
     CGString label = CGSTR("");
+protected:
+    /**
+     * @brief Is the component visible in the game.
+     */
+    bool visible = true;
 
 public:
     /**
@@ -141,6 +146,46 @@ public:
 
         virtual ~CGTransform() {}
     };
+    
+
+    /**
+     * @brief Set if the component is visible in the game
+     * 
+     * @param p_visible The new value of visible
+     */
+    void SetVisible(bool p_visible) noexcept;
+
+    /**
+     * @brief Get if the component is visible.
+     * @note This function is different from @ref IsVisible(). IsVisible will return true
+     * if the component is globaly visible, and this function will only return if the
+     * component is locally visible. Such as when you call SetVisible and set the visible
+     * to true for the component, it can still be invisible if the parent is invisible in
+     * the game. In this case IsVisible() will return false and GetVisible() will return 
+     * true.
+     * @return true The component is locally visible
+     * @return false The component is locally invisible
+     */
+    bool GetVisible() const noexcept;
+
+    /**
+     * @brief Is the component visible in the game
+     * 
+     * @note This function is different from @ref GetVisible(). IsVisible will return true
+     * if the component is globaly visible, and this function will only return if the
+     * component is locally visible. Such as when you call SetVisible and set the visible
+     * to true for the component, it can still be invisible if the parent is invisible in
+     * the game. In this case IsVisible() will return false and GetVisible() will return 
+     * true.
+     * @return true The component is visible in the game
+     * @return false The component is not visible in the game
+     */
+    bool IsVisible() const noexcept;
+
+    /**
+     * @brief Called when the component is added to the game.
+     */
+    void OnEnter();
 
     /**
      * @brief Called once when the component is created.

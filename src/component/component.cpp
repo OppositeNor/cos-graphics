@@ -23,6 +23,15 @@ CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
         * CGMat3::GetPositionMatrix(-1 * position);
 }
 
+void CGComponent::OnEnter()
+{
+    for (auto& child : children)
+    {
+        child->OnEnter();
+    }
+    Ready();
+}
+
 void CGComponent::ShouldUpdateMatrix()
 {
     should_update_matrix = true;
@@ -81,6 +90,26 @@ float CGComponent::GetBoarder##Direction##AXIS() noexcept                   \
             result = child_direct_axis;                                     \
     }                                                                       \
     return result;                                                          \
+}
+
+
+void CGComponent::SetVisible(bool p_visible) noexcept
+{
+    visible = p_visible;
+}
+
+bool CGComponent::IsVisible() const noexcept
+{
+    if (!visible)
+        return false;
+    if (GetParent() == nullptr)
+        return true;
+    return GetParent()->IsVisible();
+}
+
+bool CGComponent::GetVisible() const noexcept
+{
+    return visible;
 }
 
 CGBoarderFunc(Top, Y, y, >)

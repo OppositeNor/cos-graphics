@@ -41,7 +41,7 @@ CGVisualComponent::~CGVisualComponent()
 void CGVisualComponent::Tick(double p_delta_time)
 {
     CGComponent::Tick(p_delta_time);
-    if (!visible)
+    if (!IsVisible())
         return;
 
     render_property->z = GetTransform().depth;
@@ -67,16 +67,6 @@ void CGVisualComponent::Tick(double p_delta_time)
         render_property->modify_matrix = NULL;
     
     Draw(p_delta_time);
-}
-
-void CGVisualComponent::SetVisible(bool p_visible) noexcept
-{
-    visible = p_visible;
-}
-
-bool CGVisualComponent::IsVisible() const noexcept
-{
-    return visible;
 }
 
 void CGVisualComponent::SetColor(const CGColor& p_color) noexcept

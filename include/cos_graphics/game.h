@@ -58,7 +58,7 @@ class CGGame
     /**
      * @brief The component that are prepared, but have not called the Ready() function.
      */
-    std::vector<CGComponent*> component_prepare_list;
+    std::vector<CGComponent*> component_free_list;
 
     bool game_initialized = false;
 
@@ -206,6 +206,13 @@ public:
      * @param p_camera The camera that the main camera will be set to.
      */
     void SetMainCamera(CGCamera* p_camera) noexcept;
+
+    /**
+     * @brief Free a component at the end of the frame.
+     * 
+     * @param p_component The component to be freed.
+     */
+    void QueueFree(CGComponent* p_component);
     
 private:
 

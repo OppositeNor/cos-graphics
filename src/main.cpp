@@ -128,7 +128,7 @@ int main()
     auto sprite3 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
     sprite3->AllignLeftToRight(sprite2);
-    
+    sprite->SetVisible(false);
     //auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(60, 60, 20, 5));
     CGGame::GetInstance()->StartGame();
     delete sprite;

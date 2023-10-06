@@ -105,7 +105,6 @@ void CGGame::ExitGame()
 void CGGame::AddComponent(CGComponent* p_component)
 {
     component_list.insert(component_list.end(), p_component);
-    component_prepare_list.insert(component_prepare_list.end(), p_component);
 }
 
 void CGGame::RemoveComponent(CGComponent* p_component)
@@ -119,14 +118,6 @@ void CGGame::RemoveComponent(CGComponent* p_component)
         {
             component_list.erase(iter);
             break;
-        }
-    }
-    for (auto iter = component_prepare_list.begin(); iter < component_prepare_list.end(); ++iter)
-    {
-        if (*iter == p_component)
-        {
-            component_prepare_list.erase(iter);
-            return;
         }
     }
 }
@@ -152,6 +143,11 @@ void CGGame::SetMainCamera(CGCamera* p_camera) noexcept
     main_camera = p_camera;
 }
 
+void CGGame::QueueFree(CGComponent* p_component)
+{
+    component_free_list.insert(component_free_list.end(), p_component);
+}
+
 const CGWindow* CGGame::GetGameWindow() const noexcept
 {
     return game_window;
@@ -164,15 +160,11 @@ CGWindow* CGGame::GetGameWindow() noexcept
 
 void CGGame::Tick(float p_delta)
 {
-    while (!component_prepare_list.empty())
-    {
-        (*component_prepare_list.begin())->Ready();
-        component_prepare_list.erase(component_prepare_list.begin());
-    }
-    component_prepare_list.clear();
     Update(p_delta);
     for (auto& i : component_list)
         i->Tick(p_delta);
+    while (!component_free_list.empty())
+        delete *component_free_list.begin();
 }
 
 void CGGame::GameLoop()
