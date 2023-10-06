@@ -373,7 +373,44 @@ static void CGFrameBufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     if (window != glfwGetCurrentContext())
         glfwMakeContextCurrent(window);
-    glViewport(0, 0, width, height);
+    
+    CGWindowListNode* p = cg_window_list->next;
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next)
+    {
+        CG_ERROR_CONDITION(p == NULL, CGSTR("Failed to find window instance in window list."));
+    }
+    CGWindow* cg_window = (CGWindow*)p->data;
+    if (cg_window->glfw_window_instance == window)
+    {
+        switch (cg_window->sub_property.viewport_scale_mode)
+        {
+        case CG_VIEWPORT_SCALE_EXPAND:
+            glViewport(0, 0, width, height);
+            cg_window->width = width;
+            cg_window->height = height;
+            break;
+        case CG_VIEWPORT_SCALE_FILL:
+            glViewport(0, 0, width, height);
+            break;
+        case CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO:
+            if ((float)width / (float)height > cg_window->aspect_ratio)
+            {
+                int new_width = (int)((float)height * cg_window->aspect_ratio);
+                int x_offset = (width - new_width) / 2;
+                glViewport(x_offset, 0, new_width, height);
+            }
+            else
+            {
+                int new_height = (int)((float)width / cg_window->aspect_ratio);
+                int y_offset = (height - new_height) / 2;
+                glViewport(0, y_offset, width, new_height);
+            }
+            break;
+        default:
+            CG_ERROR_COND_EXIT(CG_TRUE, -1, CGSTR("Viewport scale mode not supported."));
+            break;
+        }
+    }
 }
 
 static void CGInitGLFW(CGWindowSubProperty window_sub_property)
@@ -493,6 +530,7 @@ CGWindow* CGCreateWindow(int width, int height, const CGChar* title, CGWindowSub
     CG_ERROR_COND_RETURN(window == NULL, NULL, CGSTR("Failed to allocate memory for window."));
     window->width = width;
     window->height = height;
+    window->aspect_ratio = (float)width / (float)height;
     CG_STRCPY(window->title, title);
     window->sub_property = sub_property;
 #ifdef CG_USE_WCHAR
@@ -541,6 +579,7 @@ CGWindowSubProperty CGConstructDefaultWindowSubProperty()
     property.use_full_screen = CG_FALSE;
     property.transparent = CG_FALSE;
     property.topmost = CG_FALSE;
+    property.viewport_scale_mode = CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO;
     return property;
 }
 
@@ -563,7 +602,10 @@ static void CGGLFWKeyCallback(GLFWwindow* window, int key, int scancode, int act
     if (cg_key_callback == NULL)
         return;
     CGWindowListNode* p = cg_window_list->next;
-    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next)
+    {
+        CG_ERROR_CONDITION(p == NULL, CGSTR("Failed to find window instance in window list."));
+    }
     if (p == NULL)
     {
         CG_WARNING(CGSTR("Failed to find window instance in window list."));
@@ -577,7 +619,10 @@ static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action
     if (cg_mouse_button_callback == NULL)
         return;
     CGWindowListNode* p = cg_window_list->next;
-    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next)
+    {
+        CG_ERROR_CONDITION(p == NULL, CGSTR("Failed to find window instance in window list."));
+    }
     if (p == NULL)
     {
         CG_WARNING(CGSTR("Failed to find window instance in window list."));
@@ -591,7 +636,10 @@ static void CGGLFWCursorPositionCallback(GLFWwindow* window, double x, double y)
     if (cg_cursor_position_callback == NULL)
         return;
     CGWindowListNode* p = cg_window_list->next;
-    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next);
+    for (; p != NULL && ((CGWindow*)(p->data))->glfw_window_instance != window; p = p->next)
+    {
+        CG_ERROR_CONDITION(p == NULL, CGSTR("Failed to find window instance in window list."));
+    }
     if (p == NULL)
     {
         CG_WARNING(CGSTR("Failed to find window instance in window list."));
