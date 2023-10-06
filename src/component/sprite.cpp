@@ -17,7 +17,6 @@ CGSprite::CGSprite(CGVisualImage*& p_texture) : CGTextureContainer()
 
 CGSprite::~CGSprite()
 {
-    
 }
 
 void CGSprite::Draw(float p_delta)

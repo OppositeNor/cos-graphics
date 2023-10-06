@@ -20,6 +20,11 @@ class CGGame
     inline static CGGame* game_instance = nullptr;
 
     /**
+     * @brief The root component of the game.
+     */
+    CGComponent* root_component = nullptr;
+
+    /**
      * @brief The window for the game to run on.
      */
     CGWindow* game_window = nullptr;
@@ -85,6 +90,13 @@ public:
      * @brief Destroy the CGGame object
      */
     virtual ~CGGame();
+
+    /**
+     * @brief Get the root component of the game.
+     * 
+     * @return CGComponent* The root component of the game.
+     */
+    inline CGComponent* GetRootComponent() noexcept { return root_component; };
 
     /**
      * @brief Get the instance of the game. If the game is not started, this will return nullptr.

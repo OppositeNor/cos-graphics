@@ -89,6 +89,8 @@ void CGGame::StartGame()
 {
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before starting the game."));
     game_instance->Ready();
+    game_instance->root_component = game_factory->CreateRootComponent();
+    game_instance->root_component->OnEnter();
     game_instance->GameLoop();
 }
 
@@ -109,7 +111,6 @@ void CGGame::AddComponent(CGComponent* p_component)
 
 void CGGame::RemoveComponent(CGComponent* p_component)
 {
-    auto iter = component_list.begin();
     for (auto iter = component_list.begin(); iter < component_list.end(); ++iter)
     {
         if (*iter != p_component)
@@ -163,11 +164,6 @@ void CGGame::Tick(float p_delta)
     Update(p_delta);
     for (auto& i : component_list)
         i->Tick(p_delta);
-    while (!component_free_list.empty())
-    {
-        delete *(component_free_list.begin());
-        component_free_list.erase(component_free_list.begin());
-    }
 }
 
 void CGGame::GameLoop()
@@ -181,6 +177,11 @@ void CGGame::GameLoop()
         CGTickRenderStart(game_window);
         Tick(delta);
         CGWindowDraw(game_window);
+        while (!component_free_list.empty())
+        {
+            delete *(component_free_list.begin());
+            component_free_list.erase(component_free_list.begin());
+        }
         CGTickRenderEnd();
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;

@@ -25,10 +25,13 @@ CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
 
 void CGComponent::OnEnter()
 {
+    if (activated)
+        return;
     for (auto& child : children)
     {
         child->OnEnter();
     }
+    activated = true;
     Ready();
 }
 
@@ -68,13 +71,13 @@ CGComponent::CGComponent(CGComponent&& other) noexcept : CGComponent()
 
 CGComponent::~CGComponent()
 {
-    CGGame::GetInstance()->RemoveComponent(this);
     for (auto& child : children)
     {
         DetachChild(child);
     }
     if (parent != nullptr)
         parent->DetachChild(this);
+    CGGame::GetInstance()->RemoveComponent(this);
 }
 
 #define CGBoarderFunc(Direction, AXIS, axis, comp)                          \
@@ -191,6 +194,8 @@ void CGComponent::AddChild(CGComponent* p_child)
         }
     }
     children.push_back(p_child);
+    if (activated)
+        p_child->OnEnter();
     p_child->parent = this;
 }
 
@@ -204,6 +209,8 @@ void CGComponent::SetParent(CGComponent* p_parent)
     if (parent != nullptr)
         parent->DetachChild(this);
     p_parent->AddChild(this);
+    if (p_parent->activated)
+        OnEnter();
 }
 
 void CGComponent::DetachChild(CGComponent* p_child)

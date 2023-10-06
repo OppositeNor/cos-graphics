@@ -70,6 +70,11 @@ class CGComponent :
      * @brief The label of the component. The label is used to identify the component.
      */
     CGString label = CGSTR("");
+
+    /**
+     * @brief Is the component activated.
+     */
+    bool activated = false;
 protected:
     /**
      * @brief Is the component visible in the game.
