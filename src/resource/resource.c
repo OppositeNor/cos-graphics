@@ -12,10 +12,6 @@
 #ifdef CG_TG_WIN
     #include <windows.h>
 
-    // test
-    #define _CRTDBG_MAP_ALLOC
-    #include <crtdbg.h>
-
     #define CG_FILE_SPLITTER (CGChar)'\\'
 
     static void CGGetExecDir(CGChar* buff, unsigned int size)
@@ -597,15 +593,12 @@ void CGRegisterTextureResource(const CGChar* key, unsigned int texture_id)
 unsigned int CGGetTextureResource(const CGChar* file_rk)
 {
     CGTextureResource* p = cg_texture_res_head->next;
-    if (p != NULL)
+    for (; p != NULL; p = p->next)
     {
-        for (; p->next != NULL; p = p->next)
+        if (CG_STRCMP(p->key, file_rk) == 0)
         {
-            if (CG_STRCMP(p->key, file_rk) == 0)
-            {
-                ++p->reference_count;
-                return p->texture_id;
-            }
+            ++p->reference_count;
+            return p->texture_id;
         }
     }
 
