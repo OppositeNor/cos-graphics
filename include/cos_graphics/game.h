@@ -218,13 +218,6 @@ public:
      * @param p_camera The camera that the main camera will be set to.
      */
     void SetMainCamera(CGCamera* p_camera) noexcept;
-
-    /**
-     * @brief Free a component at the end of the frame.
-     * 
-     * @param p_component The component to be freed.
-     */
-    void QueueFree(CGComponent* p_component);
     
 private:
 

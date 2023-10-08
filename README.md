@@ -41,7 +41,7 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Text rendering
 
-    * Component allignment
+    * Component alignment
 
     * Component inheritance
 

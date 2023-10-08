@@ -119,20 +119,23 @@ int main()
 {
     CGGame::InitGame(1280, 720, CGSTR(""));
     auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
+    sprite->GetLabel() = CGSTR("sprite");
     auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
+    sprite2->GetLabel() = CGSTR("sprite2");
     sprite->AddChild(sprite2);
-    sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
+    //sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
     sprite2->GetTransform().position = CGConstructVector2(100.0f, -100.0f);
-    sprite->AllignLeft();
+    //sprite->AlignLeft();
     auto sprite3 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
+    sprite3->GetLabel() = CGSTR("sprite3");
     sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
-    sprite3->AllignLeftToRight(sprite2);
+    //sprite3->AlignLeftToRight(sprite2);
     //sprite->SetVisible(false);
-    CGGame::GetInstance()->QueueFree(sprite3);
+    sprite3->QueueFree();
     //auto text = new CGText(CGSTR("test_text"), CGConstructTextProperty(60, 60, 20, 5));
     CGGame::GetInstance()->StartGame();
     delete sprite;
-    delete sprite2;
+    //delete sprite2;
     CGGame::GetInstance()->ExitGame();
     return 0;
 }

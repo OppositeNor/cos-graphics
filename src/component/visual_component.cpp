@@ -41,7 +41,7 @@ CGVisualComponent::~CGVisualComponent()
 void CGVisualComponent::Tick(double p_delta_time)
 {
     CGComponent::Tick(p_delta_time);
-    if (!IsVisible())
+    if (!IsVisible() || IsQueueFreed())
         return;
 
     render_property->z = GetTransform().depth;

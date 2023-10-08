@@ -144,11 +144,6 @@ void CGGame::SetMainCamera(CGCamera* p_camera) noexcept
     main_camera = p_camera;
 }
 
-void CGGame::QueueFree(CGComponent* p_component)
-{
-    component_free_list.insert(component_free_list.end(), p_component);
-}
-
 const CGWindow* CGGame::GetGameWindow() const noexcept
 {
     return game_window;
@@ -163,7 +158,11 @@ void CGGame::Tick(float p_delta)
 {
     Update(p_delta);
     for (auto& i : component_list)
+    {
         i->Tick(p_delta);
+        if (i->IsQueueFreed())
+            component_free_list.insert(component_free_list.end(), i);
+    }
 }
 
 void CGGame::GameLoop()
@@ -174,15 +173,17 @@ void CGGame::GameLoop()
         static double tick_start_time = 0;
         static double delta = 0.01;
         tick_start_time = CGGetCurrentTime();
+        
         CGTickRenderStart(game_window);
         Tick(delta);
         CGWindowDraw(game_window);
-        while (!component_free_list.empty())
+        for (auto i = component_free_list.begin(); i < component_free_list.end(); ++i)
         {
-            delete *(component_free_list.begin());
-            component_free_list.erase(component_free_list.begin());
+            delete *i;
+            component_free_list.erase(i);
         }
         CGTickRenderEnd();
+
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }

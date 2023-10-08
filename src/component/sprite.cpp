@@ -23,7 +23,6 @@ void CGSprite::Draw(float p_delta)
 {
     if (texture == nullptr)
         return;
-    
     CGDrawVisualImage(texture, GetRenderProperty(), CGGame::GetInstance()->GetGameWindow());
 }
 

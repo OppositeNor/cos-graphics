@@ -81,6 +81,10 @@ protected:
      */
     bool visible = true;
 
+    /**
+     * @brief Is the component queued to be freed.
+     */
+    bool is_queue_freed = false;
 public:
     /**
      * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
@@ -98,6 +102,14 @@ public:
      * @brief Get the label without the type of the component.
      */
     inline const CGString& GetLabelRaw() const noexcept { return label; }
+
+    /**
+     * @brief Is the component queued to free.
+     * 
+     * @return true The component is queued to free.
+     * @return false The component is not queued to free.
+     */
+    inline const bool IsQueueFreed() const noexcept { return is_queue_freed; }
 
     /**
      * @brief Get the label of the component.
@@ -191,6 +203,11 @@ public:
      * @brief Called when the component is added to the game.
      */
     void OnEnter();
+
+    /**
+     * @brief Queue the component to be freed at the end of the frame.
+     */
+    void QueueFree();
 
     /**
      * @brief Called once when the component is created.
@@ -335,96 +352,96 @@ public:
     inline virtual float GetRightX() const noexcept override { return 0.0f; }
     
     /**
-     * @brief Allign the top of the image to the top of the window.
+     * @brief Align the top of the image to the top of the window.
      * 
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
-    void AllignTop(float p_offset = 0.0f);
+    void AlignTop(float p_offset = 0.0f);
 
     /**
-     * @brief Allign the bottom of the image to the bottom of the window.
+     * @brief Align the bottom of the image to the bottom of the window.
      * 
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
-    void AllignBottom(float p_offset = 0.0f);
+    void AlignBottom(float p_offset = 0.0f);
 
     /**
-     * @brief Allign the left of the image to the left of the window.
+     * @brief Align the left of the image to the left of the window.
      * 
-     * @param p_offset The x offset of the image after allignment.
+     * @param p_offset The x offset of the image after alignment.
      */
-    void AllignLeft(float p_offset = 0.0f);
+    void AlignLeft(float p_offset = 0.0f);
 
     /**
-     * @brief Allign the right of the image to the right of the window.
+     * @brief Align the right of the image to the right of the window.
      * 
-     * @param p_offset The x offset of the image after allignment.
+     * @param p_offset The x offset of the image after alignment.
      */
-    void AllignRight(float p_offset = 0.0f);
+    void AlignRight(float p_offset = 0.0f);
 
     /**
-     * @brief Allign the bottom of the image to the top of a target component.
+     * @brief Align the bottom of the image to the top of a target component.
      * 
      * @param target The target component.
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
-    void AllignBottomToTop(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignBottomToTop(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the top of the image to the bottom of a target component.
+     * @brief Align the top of the image to the bottom of a target component.
      * 
      * @param target The target component.
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
-    void AllignTopToTop(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignTopToTop(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the top of the image to the bottom of a target component.
+     * @brief Align the top of the image to the bottom of a target component.
      * 
      * @param target The target component.
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
-    void AllignTopToBottom(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignTopToBottom(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the bottom of the image to the bottom of a target component.
+     * @brief Align the bottom of the image to the bottom of a target component.
      * 
      * @param target The target component.
-     * @param p_offset The y offset of the image after allignment.
+     * @param p_offset The y offset of the image after alignment.
      */
     void AlignBottomToBottom(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the left of the image to the right of a target component.
+     * @brief Align the left of the image to the right of a target component.
      * 
      * @param target The target component.
-     * @param p_offset The x offset of the image after allignment.
+     * @param p_offset The x offset of the image after alignment.
      */
-    void AllignLeftToRight(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignLeftToRight(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the left of the image to the left of the target component.
+     * @brief Align the left of the image to the left of the target component.
      * 
      * @param target The target component
-     * @param p_offset The x offset of the image after allignment.
+     * @param p_offset The x offset of the image after alignment.
      */
-    void AllignRightToRight(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignRightToRight(CGIRectBoarder* target, float p_offset = 0.0f);
 
     /**
-     * @brief Allign the right of the component to the left of the target component.
+     * @brief Align the right of the component to the left of the target component.
      * 
      * @param target The target component
-     * @param p_offset The x offset of the image after allignment.
+     * @param p_offset The x offset of the image after alignment.
      */
-    void AllignRightToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignRightToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
     
     /**
-     * @brief Allign the left of the 
+     * @brief Align the left of the 
      * 
      * @param target 
      * @param p_offset 
      */
-    void AllignLeftToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
+    void AlignLeftToLeft(CGIRectBoarder* target, float p_offset = 0.0f);
     
     /**
      * @brief Get the Transform object.
