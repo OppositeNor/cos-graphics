@@ -3,7 +3,7 @@
 </p>
 <h1 align="center"> <font size="10"> <b>CosGraphics</b> </font> </h1>
 
-# Discription: :sparkles: 
+# Description: :sparkles: 
 
 CosGraphics is a graphics library that can do simple 2D rendering. It is based on OpenGL and GLFW under [MIT Licence](https://github.com/OppositeNor/cos-graphics/blob/main/LICENCE). It is still under development, and the API may change in the future.
 
