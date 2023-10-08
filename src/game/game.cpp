@@ -97,6 +97,7 @@ void CGGame::StartGame()
 void CGGame::ExitGame()
 {
     CG_ERROR_CONDITION(game_instance == nullptr || !game_instance->game_initialized, CGSTR("Game is not initialized. Please initialize the game before exiting the game."));
+    delete game_instance->root_component;
     delete game_instance;
     game_instance = nullptr;
     CGTerminateGraphics();
