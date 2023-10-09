@@ -9,19 +9,6 @@ class CGTextureContainer : public CGVisualComponent
 protected:
     CGVisualImage* texture;
 public:
-    /**
-     * @brief Construct a new CGTextureContainer object
-     */
-    CGTextureContainer() : texture(nullptr), CGVisualComponent() {}
-    /**
-     * @brief Copy constructor
-     */
-    CGTextureContainer(const CGTextureContainer& p_other);
-
-    /**
-     * @brief Move constructor
-     */
-    CGTextureContainer(CGTextureContainer&& p_other) noexcept;
 
     /**
      * @brief Destroy the CGTextureContainer object
@@ -108,4 +95,18 @@ public:
      * @return float The x coordinate value of the right of the shape.
      */
     virtual float GetRightX() const noexcept override;
+    
+    /**
+     * @brief Construct a new CGTextureContainer object
+     */
+    CGTextureContainer() : texture(nullptr), CGVisualComponent() {}
+    /**
+     * @brief Copy constructor
+     */
+    CGTextureContainer(const CGTextureContainer& p_other);
+
+    /**
+     * @brief Move constructor
+     */
+    CGTextureContainer(CGTextureContainer&& p_other) noexcept;
 };

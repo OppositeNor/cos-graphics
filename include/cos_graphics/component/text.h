@@ -16,7 +16,7 @@ private:
 
     void UpdateTextImage();
 protected:
-    virtual void Draw(float p_delta) override;
+    void Draw(float p_delta) override;
 
 public:
     /**

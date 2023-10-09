@@ -6,10 +6,6 @@ class CGGame;
 class CGGameFactory
 {
     friend CGGame;
-public:
-    CGGameFactory();
-    virtual ~CGGameFactory();
-
 private:
     /**
      * @brief Create a instance of the game.
@@ -24,4 +20,9 @@ private:
      * @return CGComponent* 
      */
     virtual class CGComponent* CreateRootComponent() const;
+
+public:
+    CGGameFactory();
+    virtual ~CGGameFactory();
+
 };

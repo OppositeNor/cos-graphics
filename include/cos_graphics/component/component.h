@@ -75,6 +75,124 @@ class CGComponent :
      * @brief Is the component activated.
      */
     bool activated = false;
+
+public:
+
+    /**
+     * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
+     * 
+     * @return CGString 
+     */
+    inline virtual CGString GetComponentType() const noexcept {return CGSTR("CGComponent");}
+
+    /**
+     * @brief Called once when the component is created.
+     */
+    virtual void Ready() {}
+
+    /**
+     * @brief Called every frame after the component is created.
+     * 
+     * @param p_delta_time the time in seconds since the last frame.
+     */
+    virtual void Update(double p_delta_time) {}
+    
+
+    /**
+     * @brief Move constructor.
+     * @param other The other CGComponent object.
+     */
+    CGComponent(CGComponent&& other) noexcept;
+
+    virtual ~CGComponent();
+
+    /**
+     * @brief Get the width of the boarder.
+     * @note rotation is not considered.
+     * @return float The width of the boarder.
+     */
+    inline virtual float GetBoarderWidth() noexcept override { return 0.0f; };
+    /**
+     * @brief Get the height of the boarder.
+     * @note rotation is not considered.
+     * @return float The height of the boarder.
+     */
+    inline virtual float GetBoarderHeight() noexcept override { return 0.0f; };
+
+    /**
+     * @brief Get the y coordinate value of the top of the boarder.
+     * @note rotation is not considered.
+     * @return float The y coordinate value of the top of the boarder.
+     */
+    virtual float GetBoarderTopY() noexcept override;
+    /**
+     * @brief Get the y coordinate value of the bottom of the boarder.
+     * @note rotation is not considered.
+     * @return float The y coordinate value of the bottom of the boarder.
+     */
+    virtual float GetBoarderBottomY() noexcept override;
+
+    /**
+     * @brief Get the x coordinate value of the left of the boarder.
+     * @note rotation is not considered.
+     * @return float The x coordinate value of the left of the boarder.
+     */
+    virtual float GetBoarderLeftX() noexcept override;
+
+    /**
+     * @brief Get the x coordinate value of the right of the boarder.
+     * @note rotation is not considered.
+     * @return float The x coordinate value of the right of the boarder.
+     */
+    virtual float GetBoarderRightX() noexcept override;
+
+    /**
+     * @brief Called every frame by the engine.
+     * 
+     * @param p_delta_time The difference in time between frames.
+     */
+    virtual void Tick(double p_delta_time);
+
+    /**
+     * @brief Get the width of the shape.
+     * 
+     * @return float The width of the shape.
+     */
+    inline virtual float GetWidth() const noexcept override { return 0.0f; };
+    /**
+     * @brief Get the height of the shape.
+     * 
+     * @return float The height of the shape.
+     */
+    inline virtual float GetHeight() const noexcept override { return 0.0f; };
+
+    /**
+     * @brief Get the y coordinate value of the top of the shape.
+     * 
+     * @return float The y coordinate value of the top of the shape.
+     */
+    inline virtual float GetTopY() const noexcept override { return 0.0f; }
+    /**
+     * @brief Get the y coordinate value of the bottom of the shape.
+     * 
+     * @return float The y coordinate value of the bottom of the shape.
+     */
+    inline virtual float GetBottomY() const noexcept override { return 0.0f; }
+
+    /**
+     * @brief Get the x coordinate value of the left of the shape.
+     * 
+     * @return float The x coordinate value of the left of the shape.
+     */
+    inline virtual float GetLeftX() const noexcept override { return 0.0f; }
+
+    /**
+     * @brief Get the x coordinate value of the right of the shape.
+     * 
+     * @return float The x coordinate value of the right of the shape.
+     */
+    inline virtual float GetRightX() const noexcept override { return 0.0f; }
+
 protected:
     /**
      * @brief Is the component visible in the game.
@@ -86,12 +204,6 @@ protected:
      */
     bool is_queue_freed = false;
 public:
-    /**
-     * @brief The type of the component. The CG_COMPONENT_TYPE macro will automatically override this function.
-     * 
-     * @return CGString 
-     */
-    inline virtual CGString GetComponentType() const noexcept {return CGSTR("CGComponent");}
 
     /**
      * @brief Get the label of the component.
@@ -208,18 +320,6 @@ public:
      * @brief Queue the component to be freed at the end of the frame.
      */
     void QueueFree();
-
-    /**
-     * @brief Called once when the component is created.
-     */
-    virtual void Ready() {}
-
-    /**
-     * @brief Called every frame after the component is created.
-     * 
-     * @param p_delta_time the time in seconds since the last frame.
-     */
-    virtual void Update(double p_delta_time) {}
 private:
 
     /**
@@ -255,101 +355,6 @@ public:
      * @param other The other CGComponent object.
      */
     CGComponent(const CGComponent& other);
-
-    /**
-     * @brief Move constructor.
-     * @param other The other CGComponent object.
-     */
-    CGComponent(CGComponent&& other) noexcept;
-
-    virtual ~CGComponent();
-
-    /**
-     * @brief Get the width of the boarder.
-     * @note rotation is not considered.
-     * @return float The width of the boarder.
-     */
-    inline virtual float GetBoarderWidth() noexcept override { return 0.0f; };
-    /**
-     * @brief Get the height of the boarder.
-     * @note rotation is not considered.
-     * @return float The height of the boarder.
-     */
-    inline virtual float GetBoarderHeight() noexcept override { return 0.0f; };
-
-    /**
-     * @brief Get the y coordinate value of the top of the boarder.
-     * @note rotation is not considered.
-     * @return float The y coordinate value of the top of the boarder.
-     */
-    virtual float GetBoarderTopY() noexcept override;
-    /**
-     * @brief Get the y coordinate value of the bottom of the boarder.
-     * @note rotation is not considered.
-     * @return float The y coordinate value of the bottom of the boarder.
-     */
-    virtual float GetBoarderBottomY() noexcept override;
-
-    /**
-     * @brief Get the x coordinate value of the left of the boarder.
-     * @note rotation is not considered.
-     * @return float The x coordinate value of the left of the boarder.
-     */
-    virtual float GetBoarderLeftX() noexcept override;
-
-    /**
-     * @brief Get the x coordinate value of the right of the boarder.
-     * @note rotation is not considered.
-     * @return float The x coordinate value of the right of the boarder.
-     */
-    virtual float GetBoarderRightX() noexcept override;
-
-    /**
-     * @brief Called every frame by the engine.
-     * 
-     * @param p_delta_time The difference in time between frames.
-     */
-    virtual void Tick(double p_delta_time);
-
-    /**
-     * @brief Get the width of the shape.
-     * 
-     * @return float The width of the shape.
-     */
-    inline virtual float GetWidth() const noexcept override { return 0.0f; };
-    /**
-     * @brief Get the height of the shape.
-     * 
-     * @return float The height of the shape.
-     */
-    inline virtual float GetHeight() const noexcept override { return 0.0f; };
-
-    /**
-     * @brief Get the y coordinate value of the top of the shape.
-     * 
-     * @return float The y coordinate value of the top of the shape.
-     */
-    inline virtual float GetTopY() const noexcept override { return 0.0f; }
-    /**
-     * @brief Get the y coordinate value of the bottom of the shape.
-     * 
-     * @return float The y coordinate value of the bottom of the shape.
-     */
-    inline virtual float GetBottomY() const noexcept override { return 0.0f; }
-
-    /**
-     * @brief Get the x coordinate value of the left of the shape.
-     * 
-     * @return float The x coordinate value of the left of the shape.
-     */
-    inline virtual float GetLeftX() const noexcept override { return 0.0f; }
-
-    /**
-     * @brief Get the x coordinate value of the right of the shape.
-     * 
-     * @return float The x coordinate value of the right of the shape.
-     */
-    inline virtual float GetRightX() const noexcept override { return 0.0f; }
     
     /**
      * @brief Align the top of the image to the top of the window.

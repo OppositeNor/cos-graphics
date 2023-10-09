@@ -14,17 +14,29 @@ class CGVisualComponent : public CGComponent
 
     float matrix_buffer[4][4];
 protected:
+
+    /**
+     * @brief Draw component on the window.
+     */
+    virtual void Draw(float p_delta) {};
+
+public:
+
+    /**
+     * @brief Called every frame by the engine
+     * 
+     * @param p_delta_time The time difference between frames
+     */
+    virtual void Tick(double p_delta_time) override;
+
+protected:
+
     /**
      * @brief Get the render property for objects to render.
      */
     CGRenderObjectProperty* GetRenderProperty() noexcept;
     
     const CGRenderObjectProperty* GetRenderProperty() const noexcept;
-
-    /**
-     * @brief Draw component on the window.
-     */
-    virtual void Draw(float p_delta) {};
 public:
     /**
      * @brief Construct a new CGVisualComponent object.
@@ -48,13 +60,6 @@ public:
     CGVisualComponent(CGVisualComponent&& p_other);
 
     virtual ~CGVisualComponent() override;
-
-    /**
-     * @brief Called every frame by the engine
-     * 
-     * @param p_delta_time The time difference between frames
-     */
-    virtual void Tick(double p_delta_time) override;
 
     /**
      * @brief Set the color of the component.

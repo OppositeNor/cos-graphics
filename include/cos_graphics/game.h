@@ -76,6 +76,19 @@ class CGGame
      * @brief The factory that created the game.
      */
     inline static CGGameFactory* game_factory = nullptr;
+
+protected:
+    /**
+     * @brief Called once when the game is created.
+     */
+    virtual void Ready() {}
+
+    /**
+     * @brief Called every frame.
+     * 
+     * @param p_delta The difference in time between frames.
+     */
+    virtual void Update(float p_delta) {}
     
 protected:
 
@@ -230,17 +243,4 @@ private:
      * @brief Update, called every frame.
      */
     void Tick(float p_delta);
-
-protected:
-    /**
-     * @brief Called once when the game is created.
-     */
-    virtual void Ready() {}
-
-    /**
-     * @brief Called every frame.
-     * 
-     * @param p_delta The difference in time between frames.
-     */
-    virtual void Update(float p_delta) {}
 };
