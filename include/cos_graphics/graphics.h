@@ -686,8 +686,8 @@ typedef struct{
 } CGQuadrangle;
 
 /**
- * @brief Construct a CGQuadrangle object
- * 
+ * @brief Construct a CGQuadrangle object. The verticies
+ * must be assigned counter-clockwise.
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
  * @param vert_3 vertex 3

@@ -244,9 +244,9 @@ int main()
         CGTickRenderStart(window);
         
         CGQuadrangle quad = CGConstructQuadrangle(
-            (CGVector2){20, 20},
+            (CGVector2){-20, -20},
             (CGVector2){-100, 100},
-            (CGVector2){100, 100},
+            (CGVector2){-100, -100},
             (CGVector2){100, -100});
         CGDraw(&quad, NULL, window, CG_RD_TYPE_QUADRANGLE);
 

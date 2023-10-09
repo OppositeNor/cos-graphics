@@ -1400,6 +1400,7 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
             has_reflex = CG_TRUE;
             indices[0] = i, indices[1] = (i + 1) % 4, indices[2] = (i + 2) % 4;
             indices[3] = i, indices[4] = (i + 2) % 4, indices[5] = (i + 3) % 4;
+            break;
         }
     }
     if (!has_reflex)
