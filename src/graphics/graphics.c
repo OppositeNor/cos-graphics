@@ -38,20 +38,23 @@ static FT_Face cg_ft_default_face;
 static CGRenderObjectProperty* cg_default_geo_property;
 static CGRenderObjectProperty* cg_default_visual_image_property;
 
-#define CG_BUFFERS_TRIANGLE_VBO 0
-#define CG_BUFFERS_QUADRANGLE_VBO 1
-#define CG_BUFFERS_QUADRANGLE_EBO 2
-#define CG_BUFFERS_VISUAL_IMAGE_VBO 3
-#define CG_BUFFERS_VISUAL_IMAGE_EBO 4
+enum {
+    CG_GL_BUFFERS_TRIANGLE_VBO = 0,
+    CG_GL_BUFFERS_QUADRANGLE_VBO,
+    CG_GL_BUFFERS_QUADRANGLE_EBO,
+    CG_GL_BUFFERS_VISUAL_IMAGE_VBO,
+    CG_GL_BUFFERS_VISUAL_IMAGE_EBO,
 
-static unsigned int cg_buffers[CG_MAX_BUFFER_SIZE] = {0};
-static unsigned int cg_buffer_count;
+    CG_GL_BUFFER_COUNT  // buffer counter
+};
+
+static unsigned int cg_gl_buffers[CG_GL_BUFFER_COUNT] = {0};
 
 static CGKeyCallbackFunction cg_key_callback = NULL;
 static CGMouseButtonCallbackFunction cg_mouse_button_callback = NULL;
 static CGCursorPositionCallbackFunction cg_cursor_position_callback = NULL;
 
-static float cg_global_buffer_20[20];
+static float cg_global_buffer_f20[20];
 
 /**
  * @brief vertex shader resource key for a geometry
@@ -354,6 +357,11 @@ static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action
  */
 static void CGGLFWCursorPositionCallback(GLFWwindow* window, double x, double y);
 
+float CGVectorCross(CGVector2 vec_1, CGVector2 vec_2)
+{
+    return vec_1.y * vec_2.x - vec_1.x * vec_2.y;
+}
+
 CGColor CGConstructColor(float r, float g, float b, float alpha)
 {
     CGColor color;
@@ -444,8 +452,7 @@ void CGTerminateGraphics()
     if (cg_is_glad_initialized)
     {
         CGClearTextureResource();
-        glDeleteBuffers(cg_buffer_count, cg_buffers);
-        cg_buffer_count = 0;
+        glDeleteBuffers(CG_GL_BUFFER_COUNT, cg_gl_buffers);
         glDeleteProgram(cg_default_geo_shader_program);
         glDeleteProgram(cg_default_visual_image_shader_program);
         glDeleteProgram(cg_default_bitmap_visual_image_shader_program);
@@ -511,8 +518,7 @@ static void CGInitGLAD()
         CGConstructVector2(1.0f, 1.0f),
         0.0f);
     
-    glGenBuffers(5, cg_buffers);
-    cg_buffer_count = 5;
+    glGenBuffers(CG_GL_BUFFER_COUNT, cg_gl_buffers);
     cg_is_glad_initialized = CG_TRUE;
 }
 
@@ -718,15 +724,10 @@ void CGCreateViewport(CGWindow* window)
     glViewport(0, 0, window->width, window->height);
     float temp_vertices[20] = {0};
 
-    unsigned int cg_quadrangle_indices[6] = {
-        0, 1, 2,
-        0, 2, 3
-    };
-
     // set triangle vao properties
     glGenVertexArrays(1, &window->triangle_vao);
     glBindVertexArray(window->triangle_vao);
-    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_TRIANGLE_VBO], 9 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_TRIANGLE_VBO], 9 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -735,19 +736,20 @@ void CGCreateViewport(CGWindow* window)
     // set quadrangle vao properties
     glGenVertexArrays(1, &window->quadrangle_vao);
     glBindVertexArray(window->quadrangle_vao);
-    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_VBO], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
-    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_QUADRANGLE_VBO], 12 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
+    glGenBuffers(1, &cg_gl_buffers[CG_GL_BUFFERS_QUADRANGLE_EBO]);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    unsigned int indices[6] = {0, 1, 2, 0, 2, 3};
     // set visual_image vao properties
     glGenVertexArrays(1, &window->visual_image_vao);
     glBindVertexArray(window->visual_image_vao);
-    CGBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
-    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_EBO], 6 * sizeof(unsigned int), cg_quadrangle_indices, GL_STATIC_DRAW);
+    CGBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_VISUAL_IMAGE_VBO], 20 * sizeof(float), temp_vertices, GL_DYNAMIC_DRAW);
+    CGBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_VISUAL_IMAGE_EBO], 6 * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -1270,12 +1272,12 @@ static float* CGMakeTriangleVertices(const CGTriangle* triangle, float assigned_
     CG_ERROR_COND_RETURN(triangle == NULL, NULL, CGSTR("Cannot make vertices array out of a triangle of value NULL."));
     static const float denom = (CG_RENDER_FAR - CG_RENDER_NEAR);
     float depth = (assigned_z - CG_RENDER_NEAR) / denom;
-    CGSetFloatArrayValue(9, cg_global_buffer_20,
+    CGSetFloatArrayValue(9, cg_global_buffer_f20,
         triangle->vert_1.x, triangle->vert_1.y, depth,
         triangle->vert_2.x, triangle->vert_2.y, depth,
         triangle->vert_3.x, triangle->vert_3.y, depth
     );
-    return cg_global_buffer_20;
+    return cg_global_buffer_f20;
 }
 
 static void CGBindBuffer(GLenum buffer_type, unsigned int buffer, unsigned int buffer_size, void* buffer_data, unsigned int usage)
@@ -1300,7 +1302,7 @@ static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectPro
     //draw
     glBindVertexArray(window->triangle_vao);
     glUseProgram(cg_geo_shader_program);
-    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_TRIANGLE_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_TRIANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 9 * sizeof(float), triangle_vertices);
 
     CGSetPropertyUniforms(cg_geo_shader_program, property);
@@ -1315,7 +1317,7 @@ static void CGRenderTriangle(const CGTriangle* triangle, const CGRenderObjectPro
 static float* CGMakeQuadrangleVertices(const CGQuadrangle* quadrangle, float assigned_z)
 {
     CG_ERROR_COND_RETURN(quadrangle == NULL, NULL, CGSTR("Cannot make vertices array out of a quadrangle of value NULL."));
-    float* vertices = cg_global_buffer_20;
+    float* vertices = cg_global_buffer_f20;
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     CGSetFloatArrayValue(12, vertices, 
         quadrangle->vert_1.x, quadrangle->vert_1.y, depth,
@@ -1332,13 +1334,13 @@ static float* CGMakeVisualImageVertices(const CGVisualImage* visual_image, float
     float depth = (assigned_z - CG_RENDER_NEAR) / (CG_RENDER_FAR - CG_RENDER_NEAR);
     double temp_half_width = (double)visual_image->img_width / 2;
     double temp_half_height = (double)visual_image->img_height / 2;
-    CGSetFloatArrayValue(20, cg_global_buffer_20,
+    CGSetFloatArrayValue(20, cg_global_buffer_f20,
         -1 * temp_half_width,      temp_half_height, depth, 0.0, 0.0,
              temp_half_width,      temp_half_height, depth, 1.0, 0.0,
              temp_half_width, -1 * temp_half_height, depth, 1.0, 1.0,
         -1 * temp_half_width, -1 * temp_half_height, depth, 0.0, 1.0
     );
-    return cg_global_buffer_20;
+    return cg_global_buffer_f20;
 }
 
 CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
@@ -1387,13 +1389,32 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     CG_ERROR_CONDITION(vertices == NULL, CGSTR("Failed to draw quadrangle."));
     if (property == NULL)
         property = cg_default_geo_property;
+
+    CG_BOOL has_reflex = CG_FALSE;
+    unsigned int indices[6];
+    // triangulate
+    for (int i = 0; i < 4; ++i)
+    {
+        if (CGVectorCross(quadrangle->vertices[((i - 1) + 4) % 4], quadrangle->vertices[(i + 1) % 4]) > 0)
+        {
+            has_reflex = CG_TRUE;
+            indices[0] = i, indices[1] = (i + 1) % 4, indices[2] = (i + 2) % 4;
+            indices[3] = i, indices[4] = (i + 2) % 4, indices[5] = (i + 3) % 4;
+        }
+    }
+    if (!has_reflex)
+    {
+        indices[0] = 0, indices[1] = 1, indices[2] = 2;
+        indices[3] = 0, indices[4] = 2, indices[5] = 3;
+    }
     
     //draw
     glBindVertexArray(window->quadrangle_vao);
     glUseProgram(cg_default_geo_shader_program);
-    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_QUADRANGLE_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_QUADRANGLE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 12, vertices);
-    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_QUADRANGLE_EBO]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indices, GL_DYNAMIC_DRAW);
     CGSetPropertyUniforms(cg_geo_shader_program, property);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_width", (float)window->width / 2.0f);
     CGSetShaderUniform1f(cg_geo_shader_program, "render_height", (float)window->height / 2.0f);
@@ -1784,7 +1805,7 @@ static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjec
     float* vertices = CGMakeVisualImageVertices(visual_image, assigned_z);
     glBindVertexArray(window->visual_image_vao);
     glUseProgram(cg_visual_image_shader_program);
-    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_VISUAL_IMAGE_VBO]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), vertices);
 
     glBindTexture(GL_TEXTURE_2D, visual_image->texture_id);
@@ -1817,16 +1838,16 @@ static void CGDrawGlyph( int offset, const FT_GlyphSlot glyph, const CGRenderObj
 
     glUseProgram(cg_bitmap_visual_image_shader_program);
     glBindVertexArray(window->visual_image_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, cg_buffers[CG_BUFFERS_VISUAL_IMAGE_VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, cg_gl_buffers[CG_GL_BUFFERS_VISUAL_IMAGE_VBO]);
     double bottom = ((double)glyph->bitmap_top - (double)glyph->bitmap.rows);
     double right = (double)(glyph->bitmap_left + glyph->bitmap.width);
-    CGSetFloatArrayValue(20, cg_global_buffer_20,
+    CGSetFloatArrayValue(20, cg_global_buffer_f20,
         (double)(glyph->bitmap_left + offset), (double)glyph->bitmap_top, 0.0, 0.0, 0.0,
         (double)(right + offset), (double)glyph->bitmap_top, 0.0, 1.0, 0.0,
         (double)(right + offset), (double)bottom, 0.0, 1.0, 1.0,
         (double)(glyph->bitmap_left + offset), (double)bottom, 0.0, 0.0, 1.0
     );
-    glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), cg_global_buffer_20);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * sizeof(float), cg_global_buffer_f20);
     CGSetPropertyUniforms(cg_bitmap_visual_image_shader_program, render_property);
     CGSetShaderUniform1f(cg_bitmap_visual_image_shader_program, "render_width", (float)window->width / 2.0f);
     CGSetShaderUniform1f(cg_bitmap_visual_image_shader_program, "render_height", (float)window->height / 2.0f);

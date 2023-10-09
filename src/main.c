@@ -158,7 +158,7 @@ void MouseButtonCallback(CGWindow* window, int button, int action)
 
 #endif
 
-#if 1
+#if 0
 #include "cos_graphics/graphics.h"
 #include "cos_graphics/log.h"
 #include <stdio.h>
@@ -229,4 +229,33 @@ int main()
     CGTerminateGraphics();
     return 0;
 }
+#endif
+
+#if 1
+#include "cos_graphics/graphics.h"
+
+int main()
+{
+    CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    CGWindow* window = CGCreateWindow(640, 480, CGSTR("Quadrangle Test"), window_property);
+
+    while (!CGShouldWindowClose(window))
+    {
+        CGTickRenderStart(window);
+        
+        CGQuadrangle quad = CGConstructQuadrangle(
+            (CGVector2){20, 20},
+            (CGVector2){-100, 100},
+            (CGVector2){100, 100},
+            (CGVector2){100, -100});
+        CGDraw(&quad, NULL, window, CG_RD_TYPE_QUADRANGLE);
+
+        CGWindowDraw(window);
+        CGTickRenderEnd();
+    }
+    
+    CGTerminateGraphics();
+    return 0;
+}
+
 #endif
