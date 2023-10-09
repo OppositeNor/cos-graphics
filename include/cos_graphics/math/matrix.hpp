@@ -219,6 +219,6 @@ namespace CGMat3
     
 inline static CGVector2 operator*(const CGMat3::CGMat3& p_m, const CGVector2& p_v) noexcept
 {
-    return CGConstructVector2(p_m[0][0] * p_v.x + p_m[0][1] * p_v.y + p_m[0][2],
-                        p_m[1][0] * p_v.x + p_m[1][1] * p_v.y + p_m[1][2]);
+    return (CGVector2){p_m[0][0] * p_v.x + p_m[0][1] * p_v.y + p_m[0][2],
+                        p_m[1][0] * p_v.x + p_m[1][1] * p_v.y + p_m[1][2]};
 }

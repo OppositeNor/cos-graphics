@@ -1,10 +1,11 @@
 #include "cos_graphics/component/texture_container.h"
+#include "cos_graphics/utils.hpp"
 
 #define CGBoarderFunc(Direction, AXIS, axis, comp)                          \
 float CGTextureContainer::GetBoarder##Direction##AXIS() noexcept            \
 {                                                                           \
     auto& children = GetChildren();                                         \
-    CGVector2 result = CGConstructVector2(0.0f, 0.0f);                      \
+    CGVector2 result = CGVec2(0.0f, 0.0f);                                  \
     if (texture == nullptr)                                                 \
     {                                                                       \
         if (children.empty())                                               \

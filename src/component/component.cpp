@@ -18,7 +18,7 @@ CGMat3::CGMat3 CGComponent::CGTransform::GetTransformMatrix() const noexcept
 CGMat3::CGMat3 CGComponent::CGTransform::GetInvTransformMatrix() const noexcept
 {
     return CGMat3::GetScaleMatrix(
-        CGConstructVector2(CGUtils::GetReciprocal(scale.x), CGUtils::GetReciprocal(scale.y))) 
+        CGVec2(CGUtils::GetReciprocal(scale.x), CGUtils::GetReciprocal(scale.y))) 
         * CGMat3::GetInvRoationMatrix(rotation)
         * CGMat3::GetPositionMatrix(-1 * position);
 }

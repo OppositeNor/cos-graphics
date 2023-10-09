@@ -17,7 +17,7 @@ class CGGame
     /**
      * @brief The instance of the game.
      */
-    inline static CGGame* game_instance = nullptr;
+    static CGGame* game_instance;
 
     /**
      * @brief The root component of the game.

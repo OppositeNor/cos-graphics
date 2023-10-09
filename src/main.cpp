@@ -116,6 +116,7 @@ void KeyCallback(CGWindow* window, int key, int action)
 #include "cos_graphics/game_factory.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"
+#include "cos_graphics/utils.hpp"
 int main()
 {
     CGGame::InitGame(new CGGameFactory(), 1280, 720, CGSTR("Test"), CG_FALSE, CG_FALSE);
@@ -125,11 +126,11 @@ int main()
     sprite2->GetLabel() = CGSTR("sprite2");
     sprite->AddChild(sprite2);
     //sprite->GetTransform().scale = CGConstructVector2(2.0f, 2.0f);
-    sprite2->GetTransform().position = CGConstructVector2(100.0f, -100.0f);
+    sprite2->GetTransform().position = CGVec2(100.0f, -100.0f);
     //sprite->AlignLeft();
     auto sprite3 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite3->GetLabel() = CGSTR("sprite3");
-    sprite3->GetTransform().position = CGConstructVector2(0.0f, -100.0f);
+    sprite3->GetTransform().position = CGVec2(0.0f, -100.0f);
     //sprite3->AlignLeftToRight(sprite2);
     //sprite->SetVisible(false);
     sprite3->QueueFree();

@@ -4,6 +4,8 @@
 #include "cos_graphics/component/camera.h"
 #include "cos_graphics/game_factory.h"
 
+CGGame* CGGame::game_instance = nullptr;
+
 CGGame::CGGame() : window_properties(WindowProperties(640, 480, CGSTR(""), CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE, CG_FALSE))
 {
     
@@ -42,7 +44,10 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
 {
     CG_PRINT(CGSTR("Initializing game..."));
     if (game_factory != nullptr)
+    {
         delete game_factory;
+        game_factory = nullptr;
+    }
     game_factory = p_factory;
     if (game_instance != nullptr)
     {

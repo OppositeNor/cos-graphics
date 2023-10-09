@@ -112,6 +112,43 @@ static inline CGVector2 operator/(const CGVector2& p_vec, float p_num)
     return {p_vec.x / p_num, p_vec.y / p_num};
 }
 
+/**
+ * @brief A constructor for CGVector2.
+ * 
+ * @param x The x value of the vector.
+ * @param y The y value of the vector.
+ * @return CGVector2 
+ */
+static inline CGVector2 CGVec2(float x, float y)
+{
+    return (CGVector2){x, y};
+}
+
+/**
+ * @brief The length of a vector.
+ * 
+ * @param p_vec The vector to get the length from.
+ * @return float The length of the vector.
+ */
+static inline float length(const CGVector2& p_vec) noexcept
+{
+    return sqrt(p_vec.x * p_vec.x + p_vec.y * p_vec.y);
+}
+
+/**
+ * @brief The normalized vector of a vector.
+ * @details A normalized vector is a vector with the same direction but with length 1.
+ * @param p_vec The vector to be normalized.
+ * @return CGVector2 The normalized vector.
+ */
+static inline CGVector2 normalize(const CGVector2& p_vec) noexcept
+{
+    if (p_vec.x == 0 && p_vec.y == 0)
+        return CGVec2(0.0f, 0.0f);
+    float length = sqrt(p_vec.x * p_vec.x + p_vec.y * p_vec.y);
+    return CGVec2(p_vec.x / length, p_vec.y / length);
+}
+
 static inline CGColor operator*(const CGColor& p_color, float p_num) noexcept
 {
     return {p_color.r * p_num, p_color.g * p_num, p_color.b * p_num, p_color.alpha * p_num};
