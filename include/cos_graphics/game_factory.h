@@ -6,7 +6,7 @@ class CGGame;
 class CGGameFactory
 {
     friend CGGame;
-private:
+protected:
     /**
      * @brief Create a instance of the game.
      * 

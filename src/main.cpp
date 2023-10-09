@@ -113,11 +113,12 @@ void KeyCallback(CGWindow* window, int key, int action)
 #endif
 #if 1
 #include "cos_graphics/game.h"
+#include "cos_graphics/game_factory.h"
 #include "cos_graphics/component/sprite.h"
 #include "cos_graphics/component/text.h"
 int main()
 {
-    CGGame::InitGame(1280, 720, CGSTR(""));
+    CGGame::InitGame(new CGGameFactory(), 1280, 720, CGSTR("Test"), CG_FALSE, CG_FALSE);
     auto sprite = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));
     sprite->GetLabel() = CGSTR("sprite");
     auto sprite2 = new CGSprite(CGCreateVisualImage(CGSTR("test1"), CGGame::GetInstance()->GetGameWindow()));

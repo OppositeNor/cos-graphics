@@ -44,13 +44,13 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
     if (game_factory != nullptr)
         delete game_factory;
     game_factory = p_factory;
-    if (CGGame::game_instance != nullptr)
+    if (game_instance != nullptr)
     {
         delete game_instance;
         game_instance = nullptr;
     }
-    CGGame::game_instance = game_factory->CreateGame();
-    CGGame::game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
+    game_instance = game_factory->CreateGame();
+    game_instance->window_properties = WindowProperties(p_width, p_height, p_title, p_fullscreen, 
         p_resizable, p_boarderless, p_transparent, p_topmost);
     CG_PRINT(CGSTR("Creating window..."));
     
@@ -61,13 +61,13 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
     window_sub_property.transparent = p_transparent;
     window_sub_property.topmost = p_topmost;
 
-    CGGame::game_instance->game_window = CGCreateWindow(
+    game_instance->game_window = CGCreateWindow(
         p_width, 
         p_height, 
         p_title.c_str(),
         window_sub_property);
     
-    CG_ERROR_COND_EXIT(CGGame::game_instance->game_window == nullptr, -1, CGSTR("Failed to create window"));
+    CG_ERROR_COND_EXIT(game_instance->game_window == nullptr, -1, CGSTR("Failed to create window"));
     CG_PRINT(CGSTR("Window created."));
     CG_PRINT(CGSTR("Game initialized."));
     game_instance->game_initialized = true;
