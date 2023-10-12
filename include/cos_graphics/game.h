@@ -1,5 +1,6 @@
 #pragma once
 #include "cos_graphics/graphics.h"
+#include "cos_graphics/input_handler.h"
 #include <vector>
 #include <string>
 #include <functional>
@@ -77,6 +78,11 @@ class CGGame
      */
     inline static CGGameFactory* game_factory = nullptr;
 
+    /**
+     * @brief Input handler.
+     */
+    CGInputHandler input_handler;
+
 protected:
     /**
      * @brief Called once when the game is created.
@@ -89,6 +95,14 @@ protected:
      * @param p_delta The difference in time between frames.
      */
     virtual void Update(float p_delta) {}
+    
+    /**
+     * @brief Called when a key input is received.
+     * 
+     * @param p_key The key that recieves the action.
+     * @param p_action The action of the key. This should be one of CG_PRESS, CG_RELEASE, CG_REPEAT.
+     */
+    virtual void KeyInput(int p_key, int p_action) {}
     
 protected:
 
@@ -243,4 +257,22 @@ private:
      * @brief Update, called every frame.
      */
     void Tick(float p_delta);
+
+    /**
+     * @brief Process the input function in the components
+     * 
+     * @param p_key The key that recieves the action.
+     * @param p_action The action of the key. This should be one of CG_PRESS, CG_RELEASE, CG_REPEAT.
+     */
+    void ProcessComponentKeyInput(int p_key, int p_action);
+
+    /**
+     * @brief The callback function for keyboard input.
+     * 
+     * @param p_window The window that the input is from.
+     * @param p_key The key that is pressed.
+     * @param p_action The action of the key. This should be one of CG_PRESS, CG_RELEASE, CG_REPEAT.
+     */
+    static void KeyInputCallback(CGWindow* p_window, int p_key, int p_action);
+
 };

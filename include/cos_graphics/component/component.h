@@ -99,6 +99,14 @@ public:
     
 
     /**
+     * @brief Called when a keyboard input is received.
+     * 
+     * @param p_key The key that is receiving the action.
+     * @param p_action The action of the key. This should be one of CG_PRESS, CG_RELEASE, CG_REPEAT.
+     */
+    virtual void KeyInput(int p_key, int p_action) {}
+
+    /**
      * @brief Move constructor.
      * @param other The other CGComponent object.
      */

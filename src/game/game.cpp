@@ -71,7 +71,7 @@ void CGGame::InitGame(CGGameFactory*&& p_factory, unsigned int p_width, unsigned
         p_height, 
         p_title.c_str(),
         window_sub_property);
-    
+    CGSetKeyCallback(CGGame::KeyInputCallback);
     CG_ERROR_COND_EXIT(game_instance->game_window == nullptr, -1, CGSTR("Failed to create window"));
     CG_PRINT(CGSTR("Window created."));
     CG_PRINT(CGSTR("Game initialized."));
@@ -171,6 +171,14 @@ void CGGame::Tick(float p_delta)
     }
 }
 
+void CGGame::ProcessComponentKeyInput(int p_key, int p_action)
+{
+    for (auto& i : component_list)
+    {
+        i->KeyInput(p_key, p_action);
+    }
+}
+
 void CGGame::GameLoop()
 {
     double tick_end_time = CGGetCurrentTime();
@@ -193,4 +201,11 @@ void CGGame::GameLoop()
         tick_end_time = CGGetCurrentTime();
         delta = tick_end_time - tick_start_time;
     }
+}
+
+void CGGame::KeyInputCallback(CGWindow* p_window, int p_key, int p_action)
+{
+    CGGame::GetInstance()->input_handler.KeyFunc(p_key, p_action);
+    CGGame::GetInstance()->ProcessComponentKeyInput(p_key, p_action);
+    
 }
