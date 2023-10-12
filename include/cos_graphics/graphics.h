@@ -186,6 +186,16 @@ typedef struct {
     float r, g, b, alpha;
 }CGColor;
 
+
+/**
+ * @brief Cross product of two vectors.
+ * 
+ * @param vec_1 The first vector.
+ * @param vec_2 The second vector.
+ * @param result The result.
+ */
+float CGVectorCross(CGVector2 vec_1, CGVector2 vec_2);
+
 /**
  * @brief Construct a Color
  * 
@@ -652,27 +662,32 @@ typedef struct{
      * This will be set to CG_FALSE by default.
      */
     CG_BOOL is_temp;
-    /**
-     * @brief first vertex position
-     */
-    CGVector2 vert_1;
-    /**
-     * @brief second vertex position
-     */
-    CGVector2 vert_2;
-    /**
-     * @brief third vertex position
-     */
-    CGVector2 vert_3;
-    /**
-     * @brief forth vertex position
-     */
-    CGVector2 vert_4;
-}CGQuadrangle;
+    union {
+        struct {
+            /**
+             * @brief first vertex position
+             */
+            CGVector2 vert_1;
+            /**
+             * @brief second vertex position
+             */
+            CGVector2 vert_2;
+            /**
+             * @brief third vertex position
+             */
+            CGVector2 vert_3;
+            /**
+             * @brief forth vertex position
+             */
+            CGVector2 vert_4;
+        };
+        CGVector2 vertices[4];
+    };
+} CGQuadrangle;
 
 /**
- * @brief Construct a CGQuadrangle object
- * 
+ * @brief Construct a CGQuadrangle object. The verticies
+ * must be assigned counter-clockwise.
  * @param vert_1 vertex 1
  * @param vert_2 vertex 2
  * @param vert_3 vertex 3
