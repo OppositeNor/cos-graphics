@@ -47,9 +47,14 @@ class CGComponent :
     std::vector<CGComponent*> children;
 
     /**
-     * @brief Should the global transform matrix and the inv global transform matrix been updated.
+     * @brief Should the global transform matrix.
      */
-    bool should_update_matrix = true;
+    bool should_update_global_matrix = true;
+
+    /**
+     * @brief Should the inverse of the global transform matrix be updated
+     */
+    bool should_update_inv_global_matrix = true;
 
     /**
      * @brief The global transform matrix.
@@ -59,7 +64,7 @@ class CGComponent :
     /**
      * @brief The inverse of the global transform matrix.
      */
-    CGMat3::CGMat3 global_inv_transform_matrix;
+    CGMat3::CGMat3 inv_global_transform_matrix;
 
     /**
      * @brief Setup the should_update_matrix flag.
@@ -342,7 +347,7 @@ protected:
      * 
      * @return CGMat3::CGMat3 The inverse global transform matrix of the component.
      */
-    CGMat3::CGMat3 GetGlobalInvTransformMatrix() const noexcept;
+    CGMat3::CGMat3 GetInvGlobalTransformMatrix() noexcept;
 
 public:
     /**

@@ -42,10 +42,11 @@ void CGComponent::QueueFree()
 
 void CGComponent::ShouldUpdateMatrix()
 {
-    should_update_matrix = true;
+    should_update_global_matrix = true;
+    should_update_inv_global_matrix = true;
     for (auto child : children)
     {
-        if (!child->should_update_matrix)
+        if (!child->should_update_global_matrix || !child->should_update_inv_global_matrix)
             child->ShouldUpdateMatrix();
     }
 }
@@ -141,26 +142,31 @@ CGMat3::CGMat3 CGComponent::GetGlobalTransformMatrix() noexcept
 {
     if (parent == nullptr)
         return GetTransform().GetTransformMatrix();
-    if (should_update_matrix)
+    if (should_update_global_matrix)
     {
         global_transform_matrix = parent->GetGlobalTransformMatrix() * GetTransform().GetTransformMatrix();
-        should_update_matrix = false;
+        should_update_global_matrix = false;
     }
     return global_transform_matrix;
 }
 
-CGMat3::CGMat3 CGComponent::GetGlobalInvTransformMatrix() const noexcept
+CGMat3::CGMat3 CGComponent::GetInvGlobalTransformMatrix() noexcept
 {
     if (parent == nullptr)
         return GetTransform().GetInvTransformMatrix();
-    return GetTransform().GetInvTransformMatrix() * parent->GetGlobalInvTransformMatrix();
+    if (should_update_inv_global_matrix)
+    {
+        inv_global_transform_matrix = parent->GetInvGlobalTransformMatrix() * GetTransform().GetInvTransformMatrix();
+        should_update_inv_global_matrix = false;
+    }
+    return inv_global_transform_matrix;
 }
 
 CGVector2 CGComponent::ToRelativePosition(const CGVector2& global_position) const
 {
     if (parent == nullptr)
         return global_position;
-    return parent->GetGlobalInvTransformMatrix() * GetTransform().GetInvTransformMatrix() * global_position;
+    return parent->GetInvGlobalTransformMatrix() * GetTransform().GetInvTransformMatrix() * global_position;
 }
 
 CGVector2 CGComponent::ToGlobalPosition(const CGVector2& relative_position) const
@@ -175,7 +181,7 @@ void CGComponent::SetGlobalPosition(const CGVector2& global_position)
     if (parent == nullptr)
         GetTransform().position = global_position;
     else
-        GetTransform().position = parent->GetGlobalInvTransformMatrix() * global_position;
+        GetTransform().position = parent->GetInvGlobalTransformMatrix() * global_position;
 }
 
 void CGComponent::SetDepth(float p_depth)

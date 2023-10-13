@@ -40,8 +40,6 @@ float CGTextureContainer::GetBoarderWidth() noexcept
 {
     if (texture == nullptr)
         return 0;
-    if (GetChildren().empty())
-        return texture->img_width * GetTransform().scale.x;
     return GetBoarderRightX() - GetBoarderLeftX();
 }
 
@@ -49,8 +47,6 @@ float CGTextureContainer::GetBoarderHeight() noexcept
 {
     if (texture == nullptr)
         return 0;
-    if (GetChildren().empty())
-        return texture->img_height * GetTransform().scale.y;
     return GetBoarderTopY() - GetBoarderBottomY();
 }
 
