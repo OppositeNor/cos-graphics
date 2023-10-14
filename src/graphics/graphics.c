@@ -177,6 +177,9 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
 // render visual_image
 static void CGRenderVisualImage(CGVisualImage* visual_image, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
 
+// render polygon
+static void CGRenderPolygon(CGPolygon* polygon, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z);
+
 // draw a glyph
 static void CGDrawGlyph(int offset, const FT_GlyphSlot glyph, const CGRenderObjectProperty* render_property, const CGWindow* window);
 
@@ -329,6 +332,13 @@ static void CGDeleteShaderProgram(CGShaderProgram program);
 static void CGDeleteVisualImage(CGVisualImage* visual_image);
 
 /**
+ * @brief Delete CGPolygon object.
+ * 
+ * @param polygon polygon object instance to be deleted.
+ */
+static void CGDeletePolygon(CGPolygon* polygon);
+
+/**
  * @brief Key callback function for GLFW
  * 
  * @param window The window that the key event is triggered on
@@ -357,9 +367,35 @@ static void CGGLFWMouseButtonCallback(GLFWwindow* window, int button, int action
  */
 static void CGGLFWCursorPositionCallback(GLFWwindow* window, double x, double y);
 
-float CGVectorCross(CGVector2 vec_1, CGVector2 vec_2)
+/**
+ * @brief Create a triangle list node. Move the triangle to the node.
+ * 
+ * @param triangle The triangle to be moved.
+ * @return CGTriangleListNode* The result node.
+ */
+static CGTriangleListNode* CGCreateTriangleListNodeMove(CGTriangle* triangle);
+
+/**
+ * @brief Is a vertex a ear.
+ * 
+ * @param vertex The vertex to be checked.
+ * @return CG_BOOL Is the vertex a ear.
+ */
+static CG_BOOL CGIsVertexEar(CGPolygonVertex* vertex);
+
+float CGVector2Cross(CGVector2 vec_1, CGVector2 vec_2)
 {
     return vec_1.y * vec_2.x - vec_1.x * vec_2.y;
+}
+
+CGVector2 CGVector2Add(CGVector2 vec_1, CGVector2 vec_2)
+{
+    return (CGVector2){vec_1.x + vec_2.x, vec_1.y + vec_2.y};
+}
+
+CGVector2 CGVector2Sub(CGVector2 vec_1, CGVector2 vec_2)
+{
+    return (CGVector2){vec_1.x - vec_2.x, vec_1.y - vec_2.y};
 }
 
 CGColor CGConstructColor(float r, float g, float b, float alpha)
@@ -800,6 +836,11 @@ void CGWindowDraw(CGWindow* window)
         case CG_RD_TYPE_VISUAL_IMAGE:
             CGRenderVisualImage(data->object, data->property, window, assign_z);
             if (((CGVisualImage*)(data->object))->is_temp)
+                CGFree(data->object);
+            break;
+        case CG_RD_TYPE_POLYGON:
+            CGRenderPolygon(data->object, data->property, window, assign_z);
+            if (((CGPolygon*)(data->object))->is_temp)
                 CGFree(data->object);
             break;
         default:
@@ -1243,26 +1284,14 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
     return result;
 }
 
-CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
+CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CG_BOOL is_temp)
 {
     CGTriangle* result = (CGTriangle*)malloc(sizeof(CGTriangle));
     CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle."));
     result->vert_1 = vert_1;
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
-    result->is_temp = CG_FALSE;
-    CGRegisterResource(result, free);
-    return result;
-}
-
-CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3)
-{
-    CGTriangle* result = (CGTriangle*)malloc(sizeof(CGTriangle));
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle."));
-    result->vert_1 = vert_1;
-    result->vert_2 = vert_2;
-    result->vert_3 = vert_3;
-    result->is_temp = CG_TRUE;
+    result->is_temp = is_temp;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1354,7 +1383,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
     return result;
 }
 
-CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
+CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4, CG_BOOL is_temp)
 {
     CGQuadrangle* result = (CGQuadrangle*)malloc(sizeof(CGQuadrangle));
     CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for CGQuadrangle object"));
@@ -1362,20 +1391,7 @@ CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 v
     result->vert_2 = vert_2;
     result->vert_3 = vert_3;
     result->vert_4 = vert_4;
-    result->is_temp = CG_FALSE;
-    CGRegisterResource(result, free);
-    return result;
-}
-
-CGQuadrangle* CGCreateTQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4)
-{
-    CGQuadrangle* result = (CGQuadrangle*)malloc(sizeof(CGQuadrangle));
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for CGQuadrangle object"));
-    result->vert_1 = vert_1;
-    result->vert_2 = vert_2;
-    result->vert_3 = vert_3;
-    result->vert_4 = vert_4;
-    result->is_temp = CG_TRUE;
+    result->is_temp = is_temp;
     CGRegisterResource(result, free);
     return result;
 }
@@ -1395,7 +1411,7 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     // triangulate
     for (int i = 0; i < 4; ++i)
     {
-        if (CGVectorCross(quadrangle->vertices[((i - 1) + 4) % 4], quadrangle->vertices[(i + 1) % 4]) > 0)
+        if (CGVector2Cross(quadrangle->vertices[((i - 1) + 4) % 4], quadrangle->vertices[(i + 1) % 4]) > 0)
         {
             has_reflex = CG_TRUE;
             indices[0] = i, indices[1] = (i + 1) % 4, indices[2] = (i + 2) % 4;
@@ -1470,7 +1486,7 @@ void CGDeleteTexture(unsigned int texture_id)
     glDeleteTextures(1, &texture_id);
 }
 
-CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window)
+CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window, CG_BOOL is_temp)
 {
     CG_ERROR_COND_RETURN(img_rk == NULL, NULL, CGSTR("Cannot create image with NULL texture path."));
     CG_ERROR_COND_RETURN(window == NULL || window->glfw_window_instance == NULL, NULL, CGSTR("Cannot create image with NULL window."));
@@ -1480,7 +1496,7 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window)
     if (glfwGetCurrentContext() != window->glfw_window_instance)
         glfwMakeContextCurrent(window->glfw_window_instance);
     visual_image->in_window = window;
-    visual_image->is_temp = CG_FALSE;
+    visual_image->is_temp = is_temp;
     CGImage* image = CGLoadImageFromResource(img_rk);
     CG_ERROR_COND_RETURN(image == NULL, NULL, CGSTR("Failed to create visual_image."));
     visual_image->img_width = image->width;
@@ -1498,14 +1514,6 @@ CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window)
     CGFree(image);
     CGRegisterResource(visual_image, CG_DELETER(CGDeleteVisualImage));
     return visual_image;
-}
-
-CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window)
-{
-    CGVisualImage* result = CGCreateVisualImage(img_rk, window);
-    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to create visual_image."));
-    result->is_temp = CG_TRUE;
-    return result;
 }
 
 CGVisualImage* CGCopyVisualImage(CGVisualImage* visual_image)
@@ -1917,4 +1925,213 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
         FT_Done_Face(face);
     free(text);
     return CG_TRUE;
+}
+
+CGPolygonVertex* CGCreatePolygonVertex(CGVector2 position)
+{
+    CGPolygonVertex* result = (CGPolygonVertex*)malloc(sizeof(CGPolygonVertex));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for polygon vertex."));
+    result->position = position;
+    result->previous = NULL;
+    result->next = NULL;
+    return result;
+}
+
+CGPolygon* CGCreatePolygon(CGVector2* vertices, unsigned int vertex_count, CG_BOOL is_temp)
+{
+    CG_ERROR_COND_RETURN(vertices == NULL, NULL, CGSTR("Cannot create polygon with NULL vertices."));
+    CG_ERROR_COND_RETURN(vertex_count < 3, NULL, CGSTR("Cannot create polygon with less than 3 vertices."));
+    CGPolygon* result = (CGPolygon*)malloc(sizeof(CGPolygon));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for polygon."));
+    result->vertex_head = CGCreatePolygonVertex(vertices[0]);
+    CG_ERROR_COND_RETURN(result->vertex_head == NULL, NULL, CGSTR("Failed to create polygon vertex."));
+    CGPolygonVertex* p = result->vertex_head;
+    for (unsigned int i = 1; i < vertex_count; ++i)
+    {
+        p->next = CGCreatePolygonVertex(vertices[i]);
+        CG_ERROR_COND_RETURN(p->next == NULL, NULL, CGSTR("Failed to create polygon vertex."));
+        p->next->previous = p;
+        p = p->next;
+    }
+    p->next = result->vertex_head;
+    result->vertex_head->previous = p;
+    result->is_temp = is_temp;
+    CGRegisterResource(result, CG_DELETER(CGDeletePolygon));
+    return result;
+}
+
+static void CGDeletePolygon(CGPolygon* polygon)
+{
+    if (polygon == NULL)
+        return;
+    if (polygon->vertex_head != NULL)
+    {
+        for (CGPolygonVertex* p = polygon->vertex_head->next; p != polygon->vertex_head;)
+        {
+            CGPolygonVertex* temp = p;
+            p = p->next;
+            free(temp);
+        }
+        free(polygon->vertex_head);
+    }
+    free(polygon);
+}
+
+void CGInsertPolygonVertexAfter(CGPolygonVertex* previous, CGPolygonVertex* node)
+{
+    CG_ERROR_CONDITION(previous == NULL, CGSTR("Cannot insert polygon vertex after NULL previous vertex."));
+    CG_ERROR_CONDITION(node == NULL, CGSTR("Cannot insert NULL polygon vertex."));
+    node->previous = previous;
+    node->next = previous->next;
+    previous->next = node;
+    node->next->previous = node;
+}
+
+void CGInsertPolygonVertexBefore(CGPolygonVertex* next, CGPolygonVertex* node)
+{
+    CG_ERROR_CONDITION(next == NULL, CGSTR("Cannot insert polygon vertex before NULL next vertex."));
+    CG_ERROR_CONDITION(node == NULL, CGSTR("Cannot insert NULL polygon vertex."));
+    node->next = next;
+    node->previous = next->previous;
+    next->previous = node;
+    node->previous->next = node;
+}
+
+void CGAppendPolygonVertex(CGPolygonVertex* head, CGPolygonVertex* node)
+{
+    CG_ERROR_CONDITION(node == NULL, CGSTR("Cannot append NULL polygon vertex."));
+    CGPolygonVertex* last = head->previous;
+    node->previous = last;
+    node->next = head;
+    last->next = node;
+    head->previous = node;
+}
+
+void CGDeletePolygonVertex(CGPolygonVertex* node)
+{
+    CG_ERROR_CONDITION(node == NULL, CGSTR("Cannot delete NULL polygon vertex."));
+    node->previous->next = node->next;
+    node->next->previous = node->previous;
+    free(node);
+}
+
+CGTriangleListNode* CGCreateTriangleListNode(CGTriangle triangle)
+{
+    CGTriangleListNode* result = (CGTriangleListNode*)malloc(sizeof(CGTriangleListNode));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle list node."));
+    result->triangle = (CGTriangle*)malloc(sizeof(CGTriangle));
+    *result->triangle = triangle;
+    result->next = NULL;
+    return result;
+}
+
+void CGDeleteTriangleListNode(CGTriangleListNode* node)
+{
+    CG_ERROR_CONDITION(node == NULL, CGSTR("Cannot delete NULL triangle list node."));
+    free(node->triangle);
+    free(node);
+}
+
+static CGTriangleListNode* CGCreateTriangleListNodeMove(CGTriangle* triangle)
+{
+    CG_ERROR_COND_RETURN(triangle == NULL, NULL, CGSTR("Cannot create triangle list node from NULL triangle."));
+    CGTriangleListNode* result = (CGTriangleListNode*)malloc(sizeof(CGTriangleListNode));
+    CG_ERROR_COND_RETURN(result == NULL, NULL, CGSTR("Failed to allocate memory for triangle list node."));
+    result->triangle = triangle;
+    result->next = NULL;
+    return result;
+}
+
+static CG_BOOL CGIsVertexEar(CGPolygonVertex* vertex)
+{
+    CG_ERROR_COND_RETURN(vertex == NULL, CG_FALSE, CGSTR("Cannot check if NULL vertex is ear."));
+    for (CGPolygonVertex* p = vertex->next->next; p != vertex->previous->previous; p = p->next)
+    {   
+        float cross = CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position));
+        if (cross == 0.0f)
+        {
+            CGDeletePolygonVertex(p);
+            return CG_FALSE;
+        }
+        else if (cross > 0.0f)
+            return CG_FALSE;
+    }
+    return CG_TRUE;
+}
+
+CGTriangleListNode* CGTriangulatePolygon(CGPolygon* polygon, CG_BOOL is_triangles_temp)
+{
+    CG_ERROR_COND_RETURN(polygon == NULL, NULL, CGSTR("Cannot triangulate NULL polygon."));
+    CGPolygonVertex* polygon_vertex_head;
+    if (!polygon->is_temp)
+    {
+        polygon_vertex_head = CGCreatePolygonVertex(polygon->vertex_head->position);
+        CG_ERROR_COND_RETURN(polygon_vertex_head == NULL, NULL, CGSTR("Failed to create polygon vertex."));
+        polygon_vertex_head->next = polygon_vertex_head;
+        polygon_vertex_head->previous = polygon_vertex_head;
+        for (CGPolygonVertex* p = polygon->vertex_head->next; p != polygon->vertex_head; p = p->next)
+        {
+            CGPolygonVertex* node = CGCreatePolygonVertex(p->position);
+            CG_ERROR_COND_RETURN(node == NULL, NULL, CGSTR("Failed to create polygon vertex."));
+            node->next = polygon_vertex_head;
+            node->previous = polygon_vertex_head->previous;
+            node->next->previous = node;
+            node->previous->next = node;
+        }
+    }
+    else
+        polygon_vertex_head = polygon->vertex_head;
+    
+    CGTriangleListNode* result_head = NULL;
+    CGPolygonVertex* p = polygon_vertex_head;
+    while (polygon_vertex_head->next->next != polygon_vertex_head->previous)
+    {
+        if (CGIsVertexEar(p))
+        {
+            CGTriangleListNode* node = 
+                CGCreateTriangleListNodeMove(
+                    CGCreateTriangle(p->previous->position, p->position, p->next->position, is_triangles_temp));
+            CG_ERROR_COND_RETURN(node == NULL, NULL, CGSTR("Failed to create triangle list node."));
+            node->next = result_head;
+            result_head = node;
+            if (p == polygon_vertex_head)
+                polygon_vertex_head = polygon_vertex_head->next;
+            CGPolygonVertex* temp = p;
+            p = p->previous;
+            CGDeletePolygonVertex(temp);
+        }
+        else
+            p = p->next;
+    }
+    CGTriangleListNode* node = CGCreateTriangleListNodeMove(CGCreateTriangle(
+            polygon_vertex_head->previous->position, 
+            polygon_vertex_head->position, 
+            polygon_vertex_head->next->position, 
+            is_triangles_temp));
+    
+    node->next = result_head;
+    result_head = node;
+
+    free(polygon_vertex_head->previous);
+    free(polygon_vertex_head->next);
+    free(polygon_vertex_head);
+    if (polygon->is_temp)
+        polygon->vertex_head = NULL;
+    return result_head;
+}
+
+static void CGRenderPolygon(CGPolygon* polygon, const CGRenderObjectProperty* property, CGWindow* window, float assigned_z)
+{
+    CG_ERROR_CONDITION(polygon == NULL, CGSTR("Failed to draw polygon: Polygon must be specified to a non-null polygon instance."));
+    CG_ERROR_CONDITION(window == NULL || window->glfw_window_instance == NULL, CGSTR("Failed to draw polygon: Attempting to draw polygon on a NULL window"));
+    CGGladInitializeCheck();
+    CGTriangleListNode* triangles = CGTriangulatePolygon(polygon, CG_TRUE);
+    for (CGTriangleListNode* p = triangles; p != NULL;)
+    {
+        CGRenderTriangle(p->triangle, property, window, assigned_z);
+        CGFree(p->triangle);
+        CGTriangleListNode* temp = p;
+        p = p->next;
+        free(temp);
+    }
 }
