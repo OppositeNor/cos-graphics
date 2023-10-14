@@ -251,12 +251,6 @@ int main()
     {
         CGTickRenderStart(window);
         
-        // CGQuadrangle quad = CGConstructQuadrangle(
-        //     (CGVector2){-20, -20},
-        //     (CGVector2){-100, 100},
-        //     (CGVector2){-100, -100},
-        //     (CGVector2){100, -100});
-        // CGDrawQuadrangle(&quad, NULL, window);
         CGDrawPolygon(polygon, NULL, window);
         CGWindowDraw(window);
         CGTickRenderEnd();
