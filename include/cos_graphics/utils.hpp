@@ -35,7 +35,7 @@ public:
         std::vector<CGVisualImage*> list;
         for (auto iter : p_image_rks)
         {
-            list.insert(list.end(), CGCreateVisualImage(iter.c_str(), CGGame::GetInstance()->GetGameWindow()));
+            list.insert(list.end(), CGCreateVisualImage(iter.c_str(), CGGame::GetInstance()->GetGameWindow(), CG_FALSE));
         }
         return list;
     }
