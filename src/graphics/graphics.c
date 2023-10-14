@@ -1411,7 +1411,7 @@ static void CGRenderQuadrangle(const CGQuadrangle* quadrangle, const CGRenderObj
     // triangulate
     for (int i = 0; i < 4; ++i)
     {
-        if (CGVector2Cross(quadrangle->vertices[((i - 1) + 4) % 4], quadrangle->vertices[(i + 1) % 4]) > 0)
+        if (CGVector2Cross(quadrangle->vertices[((i - 1) + 4) % 4], quadrangle->vertices[(i + 1) % 4]) < 0)
         {
             has_reflex = CG_TRUE;
             indices[0] = i, indices[1] = (i + 1) % 4, indices[2] = (i + 2) % 4;
@@ -2045,15 +2045,11 @@ static CGTriangleListNode* CGCreateTriangleListNodeMove(CGTriangle* triangle)
 static CG_BOOL CGIsVertexEar(CGPolygonVertex* vertex)
 {
     CG_ERROR_COND_RETURN(vertex == NULL, CG_FALSE, CGSTR("Cannot check if NULL vertex is ear."));
+    if (CGVector2Cross(CGVector2Sub(vertex->position, vertex->previous->position), CGVector2Sub(vertex->next->position, vertex->position)) > 0.0f)
+        return CG_FALSE;
     for (CGPolygonVertex* p = vertex->next->next; p != vertex->previous->previous; p = p->next)
-    {   
-        float cross = CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position));
-        if (cross == 0.0f)
-        {
-            CGDeletePolygonVertex(p);
-            return CG_FALSE;
-        }
-        else if (cross > 0.0f)
+    {
+        if (CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position)) < 0.0f)
             return CG_FALSE;
     }
     return CG_TRUE;
@@ -2086,6 +2082,11 @@ CGTriangleListNode* CGTriangulatePolygon(CGPolygon* polygon, CG_BOOL is_triangle
     CGPolygonVertex* p = polygon_vertex_head;
     while (polygon_vertex_head->next->next != polygon_vertex_head->previous)
     {
+        if (CGVector2Cross(CGVector2Sub(p->position, p->previous->position), CGVector2Sub(p->next->position, p->position)) == 0.0f)
+        {
+            p = p->previous;
+            CGDeletePolygonVertex(p->next);
+        }
         if (CGIsVertexEar(p))
         {
             CGTriangleListNode* node = 
@@ -2096,9 +2097,8 @@ CGTriangleListNode* CGTriangulatePolygon(CGPolygon* polygon, CG_BOOL is_triangle
             result_head = node;
             if (p == polygon_vertex_head)
                 polygon_vertex_head = polygon_vertex_head->next;
-            CGPolygonVertex* temp = p;
             p = p->previous;
-            CGDeletePolygonVertex(temp);
+            CGDeletePolygonVertex(p->next);
         }
         else
             p = p->next;
