@@ -61,6 +61,11 @@ extern "C" {
  */
 #define CGDrawVisualImage(visual_image_object, property, window) CGDraw(visual_image_object, property, window, CG_RD_TYPE_VISUAL_IMAGE)
 
+/**
+ * @brief Draw polygon.
+ */
+#define CGDrawPolygon(polygon_object, property, window) CGDraw(polygon_object, property, window, CG_RD_TYPE_POLYGON)
+
 typedef CGLinkedListNode CGRenderNode, CGAnimationNode;
 
 /**
@@ -194,7 +199,25 @@ typedef struct {
  * @param vec_2 The second vector.
  * @param result The result.
  */
-float CGVectorCross(CGVector2 vec_1, CGVector2 vec_2);
+float CGVector2Cross(CGVector2 vec_1, CGVector2 vec_2);
+
+/**
+ * @brief Add two vectors. (vector1 + vector2)
+ * 
+ * @param vec_1 vector1
+ * @param vec_2 vector2
+ * @return CGVector2 vector1 + vector2
+ */
+CGVector2 CGVector2Add(CGVector2 vec_1, CGVector2 vec_2);
+
+/**
+ * @brief Subtract two vectors. (vector1 - vector2)
+ * 
+ * @param vec_1 vector1
+ * @param vec_2 vector2
+ * @return CGVector2 vector1 - vector2
+ */
+CGVector2 CGVector2Sub(CGVector2 vec_1, CGVector2 vec_2);
 
 /**
  * @brief Construct a Color
@@ -535,7 +558,8 @@ enum CGIdentifiers{
 
     CG_RD_TYPE_TRIANGLE,
     CG_RD_TYPE_QUADRANGLE,
-    CG_RD_TYPE_VISUAL_IMAGE
+    CG_RD_TYPE_VISUAL_IMAGE,
+    CG_RD_TYPE_POLYGON
 };
 
 /************GEOMETRIES************/
@@ -614,18 +638,25 @@ typedef struct{
      * This will be set to CG_FALSE by default.
      */
     CG_BOOL is_temp;
-    /**
-     * @brief first vertex position
-     */
-    CGVector2 vert_1;
-    /**
-     * @brief second vertex position
-     */
-    CGVector2 vert_2;
-    /**
-     * @brief third vertex position
-     */
-    CGVector2 vert_3;
+    union
+    {
+        struct
+        {
+            /**
+             * @brief first vertex position
+             */
+            CGVector2 vert_1;
+            /**
+             * @brief second vertex position
+             */
+            CGVector2 vert_2;
+            /**
+             * @brief third vertex position
+             */
+            CGVector2 vert_3;
+        };
+        CGVector2 vertices[3];
+    };
 }CGTriangle;
 
 /**
@@ -645,16 +676,7 @@ CGTriangle CGConstructTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 ver
  * @param vert_3 vertex 3
  * @return CGTriangle* triangle instance
  */
-CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
-/**
- * @brief Create a temporary triangle
- * 
- * @param vert_1 vertex 1
- * @param vert_2 vertex 2
- * @param vert_3 vertex 3
- * @return CGTriangle* triangle instance
- */
-CGTriangle* CGCreateTTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3);
+CGTriangle* CGCreateTriangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CG_BOOL is_temp);
 
 typedef struct{
     /**
@@ -705,18 +727,7 @@ CGQuadrangle CGConstructQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2
  * @param vert_4 vertex 4
  * @return CGQuadrangle* created quadrangle object
  */
-CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
-
-/**
- * @brief Create a temporary quadrangle object. A temporary quadrangle object will
- * be automatically deleted after the render.
- * @param vert_1 vertex 1
- * @param vert_2 vertex 2
- * @param vert_3 vertex 3
- * @param vert_4 vertex 4
- * @return CGQuadrangle* created quadrangle object
- */
-CGQuadrangle* CGCreateTQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4);
+CGQuadrangle* CGCreateQuadrangle(CGVector2 vert_1, CGVector2 vert_2, CGVector2 vert_3, CGVector2 vert_4, CG_BOOL is_temp);
 
 
 /************VISUAL_IMAGES************/
@@ -790,16 +801,7 @@ void CGDeleteTexture(unsigned int texture_id);
  * @param window the window that the visual_image is going to be drawn.
  * @return CGVisualImage* The created CGVisualImage object
  */
-CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window);
-
-/**
- * @brief Create a temporary CGVisualImage object. A temporary CGVisualImage object will
- * be automatically deleted after the render.
- * @param img_rk The resource key of the texture.
- * @param window The window that the visual_image is going to be drawn.
- * @return CGVisualImage* The created CGVisualImage object
- */
-CGVisualImage* CGCreateTVisualImage(const CGChar* img_rk, CGWindow* window);
+CGVisualImage* CGCreateVisualImage(const CGChar* img_rk, CGWindow* window, CG_BOOL is_temp);
 
 /**
  * @brief Copy CGVisualImage object
@@ -868,6 +870,129 @@ CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font
  * @return CG_TRUE if the text is successfully drawn. CG_FALSE if failed.
  */
 CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, const CGRenderObjectProperty* render_property, const CGWindow* window);
+
+/**
+ * @brief A vertex node of a polygon.
+ * @warning For this node, you should NOT use CGFree to free it.
+ * You should call CGDeletePolygonVertex instead.
+ */
+typedef struct CGPolygonVertex{
+    /**
+     * @brief The position of the vertex
+     */
+    CGVector2 position;
+    /**
+     * @brief The previous vertex
+     */
+    struct CGPolygonVertex* previous;
+    /**
+     * @brief The next vertex
+     */
+    struct CGPolygonVertex* next;
+}CGPolygonVertex;
+
+/**
+ * @brief Create a polygon vertex.
+ * 
+ * @param position The position of the vertex.
+ * @return CGPolygonVertex* The created polygon vertex.
+ */
+CGPolygonVertex* CGCreatePolygonVertex(CGVector2 position);
+
+/**
+ * @brief A polygon
+ * @details A polygon that can be rendered.
+ * @note The polygon MUST satisfy all of the following conditions to be correctly
+ * rendered:
+ * - The edges of the polygon must be counter-clockwise, 
+ * - The edges must not intersect with each other. The polygon
+ * - The polygon is not allowed to have any holes.
+ */
+typedef struct{
+    /**
+     * @brief Is this a temporary polygon. If true, the polygon will be automatically deleted after the render.
+     * This will be set to CG_FALSE by default.
+     */
+    CG_BOOL is_temp;
+    /**
+     * @brief The head of the vertex list. The vertex list is a double circular linked list.
+     */
+    CGPolygonVertex* vertex_head;
+}CGPolygon;
+
+CGPolygon* CGCreatePolygon(CGVector2* vertices, unsigned int vertex_count, CG_BOOL is_temp);
+
+/**
+ * @brief A list node for triangles.
+ */
+typedef struct CGTriangleListNode{
+    /**
+     * @brief The triangle.
+     */
+    CGTriangle* triangle;
+    /**
+     * @brief The next node.
+     */
+    struct CGTriangleListNode* next;
+}CGTriangleListNode;
+
+/**
+ * @brief Insert a polygon vertex to a polygon vertex list.
+ * 
+ * @param previous The node will be added after this node.
+ * @param node The node to be added.
+ */
+void CGInsertPolygonVertexAfter(CGPolygonVertex* previous, CGPolygonVertex* node);
+
+/**
+ * @brief Insert a polygon vertex to a polygon vertex list.
+ * 
+ * @param next The node will be added before this node.
+ * @param node The node to be added.
+ */
+void CGInsertPolygonVertexBefore(CGPolygonVertex* next, CGPolygonVertex* node);
+
+/**
+ * @brief Add a polygon vertex to the end of the polygon vertex list.
+ * 
+ * @param head The head of the polygon vertex list.
+ * @param polygon The polygon that the vertex is going to be appended to.
+ * @param node The vertex to be appended.
+ */
+void CGAppendPolygonVertex(CGPolygonVertex* head, CGPolygonVertex* node);
+
+/**
+ * @brief Delete a polygon vertex.
+ * 
+ * @param node The vertex to be deleted.
+ */
+void CGDeletePolygonVertex(CGPolygonVertex* node);
+
+/**
+ * @brief Create a triangle list node.
+ * 
+ * @param triangle The triangle of the node.
+ * @param next The next node.
+ * @return CGTriangleListNode* 
+ */
+CGTriangleListNode* CGCreateTriangleListNode(CGTriangle triangle);
+
+/**
+ * @brief Delete a triangle list node.
+ * 
+ * @param node The node to be deleted.
+ */
+void CGDeleteTriangleListNode(CGTriangleListNode* node);
+
+/**
+ * @brief Triangulate a polygon.
+ * 
+ * @param polygon The polygon to be triangulated.
+ * @return CGTriangleListNode* The list of triangles. Returns NULL if failed.
+ */
+CGTriangleListNode* CGTriangulatePolygon(CGPolygon* polygon, CG_BOOL is_triangles_temp);
+
+
 
 #ifdef __cplusplus
 }
