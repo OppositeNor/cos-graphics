@@ -902,9 +902,11 @@ CGPolygonVertex* CGCreatePolygonVertex(CGVector2 position);
 /**
  * @brief A polygon
  * @details A polygon that can be rendered.
- * @note The edges of the polygon must be counter-clockwise, 
- * and they must not intersect with each other. The polygon
- * is also not allowed to have any holes.
+ * @note The polygon MUST satisfy all of the following conditions to be correctly
+ * rendered:
+ * - The edges of the polygon must be counter-clockwise, 
+ * - The edges must not intersect with each other. The polygon
+ * - The polygon is not allowed to have any holes.
  */
 typedef struct{
     /**
