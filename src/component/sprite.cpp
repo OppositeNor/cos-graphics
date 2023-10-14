@@ -7,7 +7,7 @@ CGSprite::CGSprite(const CGString& p_texture_rk) : CGTextureContainer()
     texture = nullptr;
     if (p_texture_rk == CGString(CGSTR("")))
         return;
-    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow());
+    texture = CGCreateVisualImage(p_texture_rk.c_str(), CGGame::GetInstance()->GetGameWindow(), CG_FALSE);
 }
 
 CGSprite::CGSprite(CGVisualImage*& p_texture) : CGTextureContainer()

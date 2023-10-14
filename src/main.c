@@ -239,22 +239,26 @@ int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
     CGWindow* window = CGCreateWindow(640, 480, CGSTR("Quadrangle Test"), window_property);
+    CGVector2 polygon_vertices[6] = {
+        (CGVector2){0, 0},
+        (CGVector2){-10, -100},
+        (CGVector2){100, -100},
+        (CGVector2){100, 100},
+        (CGVector2){-100, 100},
+        (CGVector2){-20, -100}
+    };
+    CGPolygon* polygon = CGCreatePolygon(polygon_vertices, 6, CG_FALSE);
 
     while (!CGShouldWindowClose(window))
     {
         CGTickRenderStart(window);
         
-        CGQuadrangle quad = CGConstructQuadrangle(
-            (CGVector2){-20, -20},
-            (CGVector2){-100, 100},
-            (CGVector2){-100, -100},
-            (CGVector2){100, -100});
-        CGDraw(&quad, NULL, window, CG_RD_TYPE_QUADRANGLE);
-
+        CGDrawPolygon(polygon, NULL, window);
+        
         CGWindowDraw(window);
         CGTickRenderEnd();
     }
-    
+    CGFree(polygon);
     CGTerminateGraphics();
     return 0;
 }
