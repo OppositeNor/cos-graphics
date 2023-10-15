@@ -849,16 +849,24 @@ CGTextProperty CGConstructTextProperty(unsigned int text_width, unsigned int tex
 /**
  * @brief Create a text image.
  * 
- * @note Try not to make a text a temporary object. It will be very inefficient. If you want to draw a temporary text, 
- * please use @ref CGDrawText instead.
- * 
  * @param text_rk The resource key of the text to be drawn.
  * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. 
  * @param text_property The property of the text.
  * @param window The window that the text is going to be drawn.
  * @return CGVisualImage* The created visual image.
  */
-CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window);
+CGVisualImage* CGCreateTextVisualImage(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window, CG_BOOL is_temp);
+
+/**
+ * @brief Create a text image based on a raw string.
+ * 
+ * @param text_rk The string of the text to be drawn.
+ * @param font_rk The key of the font to be used. You can set this to NULL if you want to use the default font. 
+ * @param text_property The property of the text.
+ * @param window The window that the text is going to be drawn.
+ * @return CGVisualImage* The created visual image.
+ */
+CGVisualImage* CGCreateTextVisualImageRaw(const CGChar* text, const CGChar* font_rk, CGTextProperty text_property, CGWindow* window, CG_BOOL is_temp);
 
 /**
  * @brief Draw a text on the screen. Compare to @ref CGCreateTextVisualImage, this function is more efficient
