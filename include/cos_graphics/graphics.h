@@ -106,6 +106,11 @@ typedef struct{
      */
     CG_BOOL topmost;
     /**
+     * @brief Use anti-aliasing
+     * @default CG_FALSE
+     */
+    CG_BOOL anti_aliasing;
+    /**
      * @brief How the viewport is going to be scaled.
      * @default CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO
      */

@@ -237,6 +237,8 @@ int main()
 int main()
 {
     CGWindowSubProperty window_property = CGConstructDefaultWindowSubProperty();
+    window_property.resizable = CG_TRUE;
+    window_property.anti_aliasing = CG_TRUE;
     CGWindow* window = CGCreateWindow(640, 480, CGSTR("Polygon Test"), window_property);
     CGVector2 polygon_vertices[6] = {
         (CGVector2){0, 0},

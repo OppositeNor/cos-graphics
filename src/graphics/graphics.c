@@ -466,6 +466,8 @@ static void CGInitGLFW(CGWindowSubProperty window_sub_property)
     glfwWindowHint(GLFW_DECORATED, window_sub_property.boarderless ? GLFW_FALSE : GLFW_TRUE);
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, window_sub_property.transparent);
     glfwWindowHint(GLFW_RESIZABLE, window_sub_property.resizable);
+    if (window_sub_property.anti_aliasing)
+        glfwWindowHint(GLFW_SAMPLES, 4);
     glfwSwapInterval(0);
     cg_window_list = CGCreateLinkedListNode(NULL, 0);
     cg_is_glfw_initialized = CG_TRUE;
@@ -621,6 +623,7 @@ CGWindowSubProperty CGConstructDefaultWindowSubProperty()
     property.use_full_screen = CG_FALSE;
     property.transparent = CG_FALSE;
     property.topmost = CG_FALSE;
+    property.anti_aliasing = CG_FALSE;
     property.viewport_scale_mode = CG_VIEWPORT_SCALE_KEEP_ASPECT_RATIO;
     return property;
 }
@@ -753,6 +756,8 @@ void CGCreateViewport(CGWindow* window)
         CGInitGLAD();
 
     //glEnable(GL_DEPTH_TEST);
+    if (window->sub_property.anti_aliasing)
+        glEnable(GL_MULTISAMPLE);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
