@@ -29,6 +29,10 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Triangle rendering
 
+    * Quadrangle rendering
+
+    * Polygon rendering
+
     * Text rendering
 
 * ### CPP Version
