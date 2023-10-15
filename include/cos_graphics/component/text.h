@@ -10,7 +10,6 @@ class CGText : public CGTextureContainer
     CG_COMPONENT(CGText)
 private:
     CGString text;
-    CGString text_rk;
     CGString font_rk;
     CGTextProperty text_property;
 
@@ -25,7 +24,7 @@ public:
      * @param p_text_rk The resource key of the text.
      * @param p_text_property The property of the text.
      */
-    CGText(const CGString& p_text_rk, const CGTextProperty& p_text_property);
+    CGText(const CGString& p_text, const CGTextProperty& p_text_property, bool p_is_text_rk = false);
 
     /**
      * @brief Construct a new CGText object.
@@ -34,7 +33,7 @@ public:
      * @param p_font_rk The resource key of the font.
      * @param p_text_property The property of the text.
      */
-    CGText(const CGString& p_text_rk, const CGString& p_font_rk, const CGTextProperty& p_text_property);
+    CGText(const CGString& p_text, const CGString& p_font_rk, const CGTextProperty& p_text_property, bool p_is_text_rk = false);
     
     /**
      * @brief Copy constructor.
