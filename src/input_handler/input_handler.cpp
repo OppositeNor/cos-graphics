@@ -35,6 +35,12 @@ void CGInputHandler::AddInput(const CGString& input_name, int p_key)
     input_state_map[input_name] = InputState::Released;
 }
 
+void CGInputHandler::ClearInput()
+{
+    input_map.clear();
+    input_state_map.clear();
+}
+
 bool CGInputHandler::IsInputPressed(const CGString& p_key) const
 {
     return input_state_map.at(p_key) & InputState::Pressed;

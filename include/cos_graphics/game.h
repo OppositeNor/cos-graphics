@@ -245,6 +245,13 @@ public:
      * @param p_camera The camera that the main camera will be set to.
      */
     void SetMainCamera(CGCamera* p_camera) noexcept;
+
+    /**
+     * @brief Get the input handler
+     * 
+     * @return CGInputHandler& The input handler
+     */
+    CGInputHandler& GetInputHandler() noexcept {return input_handler;};
     
 private:
 

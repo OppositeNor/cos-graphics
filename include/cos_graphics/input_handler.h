@@ -88,6 +88,11 @@ public:
     void AddInput(const CGString& input_name, int p_key);
 
     /**
+     * @brief Clear all the input.
+     */
+    void ClearInput();
+
+    /**
      * @brief Is the input pressed.
      * 
      * @param p_key The name of the input.
