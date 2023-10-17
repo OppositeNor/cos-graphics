@@ -2059,7 +2059,9 @@ static CG_BOOL CGIsVertexEar(CGPolygonVertex* vertex)
         return CG_FALSE;
     for (CGPolygonVertex* p = vertex->next->next; p != vertex->previous->previous; p = p->next)
     {
-        if (CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position)) < 0.0f)
+        if (CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position)) < 0.0f
+            && CGVector2Cross(CGVector2Sub(p->position, vertex->next->position), CGVector2Sub(vertex->position, p->position)) < 0.0f
+            && CGVector2Cross(CGVector2Sub(p->position, vertex->position), CGVector2Sub(vertex->previous->position, p->position)) < 0.0f)
             return CG_FALSE;
     }
     return CG_TRUE;
