@@ -2,8 +2,7 @@
 #include "cos_graphics/component/texture_container.h"
 
 /**
- * @brief A text 
- * 
+ * @brief A text that can be rendered on the screen.
  */
 class CGText : public CGTextureContainer
 {
@@ -19,19 +18,23 @@ protected:
 
 public:
     /**
-     * @brief Construct a new CGText object with the default font.
+     * @brief Constructor of CGText.
      * 
-     * @param p_text_rk The resource key of the text.
+     * @param p_text The text that the component will draw. If p_is_text_rk is 
+     * set to true, then p_text is the resource key of the text.
      * @param p_text_property The property of the text.
+     * @param p_is_text_rk Is p_text a resource key of the text.
      */
     CGText(const CGString& p_text, const CGTextProperty& p_text_property, bool p_is_text_rk = false);
 
     /**
-     * @brief Construct a new CGText object.
+     * @brief Constructor of CGText.
      * 
-     * @param p_text_rk The resource key of the text.
+     * @param p_text The text that the component will draw. If p_is_text_rk is 
+     * set to true, then p_text is the resource key of the text.
      * @param p_font_rk The resource key of the font.
      * @param p_text_property The property of the text.
+     * @param p_is_text_rk Is p_text a resource key of the text.
      */
     CGText(const CGString& p_text, const CGString& p_font_rk, const CGTextProperty& p_text_property, bool p_is_text_rk = false);
     

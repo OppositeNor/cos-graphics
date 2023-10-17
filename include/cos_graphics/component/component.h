@@ -1,7 +1,8 @@
 #pragma once
 /**
- * @brief Component is a base class for all the items that exists in the game world.
- * 
+ * @file component.h
+ * @author OppositeNor
+ * @brief The base class for all the components in the game.
  */
 #include "cos_graphics/graphics.h"
 #include <vector>
@@ -25,6 +26,26 @@
 
 /**
  * @brief The base class for all the components in the game.
+ * 
+ * @details 
+ * A Component is any item that exists in the game. Every component has a transform
+ * which contains the position, rotation and scale of the component. The component
+ * can be attached to a parent component, and the children component will inherit
+ * the parent's transformation and the visibility of the parent.
+ * 
+ * When defining your own component, you have to put CG_COMPONENT(YourClassName) at
+ * the beginning of the class. The region under CG_COMPONENT will be set to private.
+ * 
+ * This is an example of a component class:
+ * 
+ * @code
+ * class YourComponentName : public CGComponent
+ * {
+ *     CG_COMPONENT(YourComponentName)
+ * private:
+ * ... (your properties and functions)
+ * }
+ * @endcode
  */
 class CGComponent :
     public CGIRectBoarder
@@ -91,12 +112,12 @@ public:
     inline virtual CGString GetComponentType() const noexcept {return CGSTR("CGComponent");}
 
     /**
-     * @brief Called once when the component is created.
+     * @brief Called once when the component is activated.
      */
     virtual void Ready() {}
 
     /**
-     * @brief Called every frame after the component is created.
+     * @brief Called every frame after the component is activated.
      * 
      * @param p_delta_time the time in seconds since the last frame.
      */
@@ -121,40 +142,52 @@ public:
 
     /**
      * @brief Get the width of the boarder.
-     * @note rotation is not considered.
+     * @details The global width of the boarder is used for alignment. It can calculate the whole component's 
+     * demensions (including the children). You can override this function if you want to use different method
+     * in alignment.
      * @return float The width of the boarder.
      */
     inline virtual float GetBoarderWidth() noexcept override { return 0.0f; };
     /**
      * @brief Get the height of the boarder.
-     * @note rotation is not considered.
+     * @details The global height of the boarder is used for alignment. It can calculate the whole component's 
+     * demensions (including the children). You can override this function if you want to use different method
+     * in alignment.
      * @return float The height of the boarder.
      */
     inline virtual float GetBoarderHeight() noexcept override { return 0.0f; };
 
     /**
      * @brief Get the y coordinate value of the top of the boarder.
-     * @note rotation is not considered.
+     * @details The global y coordinate value of the top of the boarder is used for alignment. It can calculate 
+     * the whole component's demensions (including the children). You can override this function if you want to 
+     * use different method in alignment.
      * @return float The y coordinate value of the top of the boarder.
      */
     virtual float GetBoarderTopY() noexcept override;
     /**
      * @brief Get the y coordinate value of the bottom of the boarder.
-     * @note rotation is not considered.
+     * @details The global y coordinate value of the bottom of the boarder is used for alignment. It can calculate 
+     * the whole component's demensions (including the children). You can override this function if you want to 
+     * use different method in alignment.
      * @return float The y coordinate value of the bottom of the boarder.
      */
     virtual float GetBoarderBottomY() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the left of the boarder.
-     * @note rotation is not considered.
+     * @details The global x coordinate value of the left of the boarder is used for alignment. It can calculate 
+     * the whole component's demensions (including the children). You can override this function if you want to 
+     * use different method in alignment.
      * @return float The x coordinate value of the left of the boarder.
      */
     virtual float GetBoarderLeftX() noexcept override;
 
     /**
      * @brief Get the x coordinate value of the right of the boarder.
-     * @note rotation is not considered.
+     * @details The global x coordinate value of the right of the boarder is used for alignment. It can calculate 
+     * the whole component's demensions (including the children). You can override this function if you want to 
+     * use different method in alignment.
      * @return float The x coordinate value of the right of the boarder.
      */
     virtual float GetBoarderRightX() noexcept override;
@@ -180,28 +213,36 @@ public:
     inline virtual float GetHeight() const noexcept override { return 0.0f; };
 
     /**
-     * @brief Get the y coordinate value of the top of the shape.
-     * 
+     * @brief Get the local y coordinate value of the top of the shape.
+     * @details This function only get the local coordinate value of theshape. It does not 
+     * take the children and parent's transformation into account. If you want to get the 
+     * global y coordinate value of the top of the shape, use @ref GetBoarderTopY.
      * @return float The y coordinate value of the top of the shape.
      */
     inline virtual float GetTopY() const noexcept override { return 0.0f; }
     /**
      * @brief Get the y coordinate value of the bottom of the shape.
-     * 
+     * @details This function only get the local coordinate value of theshape. It does not 
+     * take the children and parent's transformation into account. If you want to get the 
+     * global y coordinate value of the bottom of the shape, use @ref GetBoarderBottomY.
      * @return float The y coordinate value of the bottom of the shape.
      */
     inline virtual float GetBottomY() const noexcept override { return 0.0f; }
 
     /**
      * @brief Get the x coordinate value of the left of the shape.
-     * 
+     * @details This function only get the local coordinate value of theshape. It does not 
+     * take the children and parent's transformation into account. If you want to get the 
+     * global x coordinate value of the left of the shape, use @ref GetBoarderLeftX.
      * @return float The x coordinate value of the left of the shape.
      */
     inline virtual float GetLeftX() const noexcept override { return 0.0f; }
 
     /**
      * @brief Get the x coordinate value of the right of the shape.
-     * 
+     * @details This function only get the local coordinate value of theshape. It does not 
+     * take the children and parent's transformation into account. If you want to get the 
+     * global x coordinate value of the right of the shape, use @ref GetBoarderRightX.
      * @return float The x coordinate value of the right of the shape.
      */
     inline virtual float GetRightX() const noexcept override { return 0.0f; }
@@ -209,6 +250,7 @@ public:
 protected:
     /**
      * @brief Is the component visible in the game.
+     * @details If this is set to false, this component and all of its children will not be drawn.
      */
     bool visible = true;
 
@@ -230,6 +272,9 @@ public:
 
     /**
      * @brief Is the component queued to free.
+     * 
+     * @note When freeing a component, the children of the component will not be freed.
+     * So you have to free the children of the component manually.
      * 
      * @return true The component is queued to free.
      * @return false The component is not queued to free.
@@ -299,12 +344,14 @@ public:
 
     /**
      * @brief Get if the component is visible.
+     * 
      * @note This function is different from @ref IsVisible(). IsVisible will return true
      * if the component is globaly visible, and this function will only return if the
      * component is locally visible. Such as when you call SetVisible and set the visible
      * to true for the component, it can still be invisible if the parent is invisible in
      * the game. In this case IsVisible() will return false and GetVisible() will return 
      * true.
+     * 
      * @return true The component is locally visible
      * @return false The component is locally invisible
      */
@@ -319,6 +366,7 @@ public:
      * to true for the component, it can still be invisible if the parent is invisible in
      * the game. In this case IsVisible() will return false and GetVisible() will return 
      * true.
+     * 
      * @return true The component is visible in the game
      * @return false The component is not visible in the game
      */
@@ -331,6 +379,7 @@ public:
 
     /**
      * @brief Queue the component to be freed at the end of the frame.
+     * @details You can check a component is queued to be freed by calling @ref IsQueueFreed.
      */
     void QueueFree();
 private:

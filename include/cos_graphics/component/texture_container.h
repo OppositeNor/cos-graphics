@@ -3,6 +3,13 @@
 #include "cos_graphics/component/visual_component.h"
 #include "cos_graphics/graphics.h"
 
+/**
+ * @brief The texture container component. It can contain a texture.
+ * 
+ * @brief This is the base class of all components that contains a texture.
+ * By inheriting this class, the boarder demensions of the component can be
+ * automatically calculated based on the texture.
+ */
 class CGTextureContainer : public CGVisualComponent
 {
     CG_COMPONENT(CGTextureContainer)

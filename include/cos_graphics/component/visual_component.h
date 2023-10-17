@@ -23,7 +23,7 @@ protected:
 public:
 
     /**
-     * @brief Called every frame by the engine
+     * @brief Called every frame by the game.
      * 
      * @param p_delta_time The time difference between frames
      */
@@ -39,14 +39,14 @@ protected:
     const CGRenderObjectProperty* GetRenderProperty() const noexcept;
 public:
     /**
-     * @brief Construct a new CGVisualComponent object.
+     * @brief Constructor of CGVisualComponent.
      * 
      * @param p_position The initial position of the component.
      */
     CGVisualComponent();
 
     /**
-     * @brief Copy a new CGVisualComponent object.
+     * @brief Copy constructor.
      * 
      * @param p_other The other CGVisualComponent object.
      */

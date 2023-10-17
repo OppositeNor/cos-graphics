@@ -6,7 +6,8 @@
 /**
  * @brief The sprite component. It can be used to render a component with a texture.
  * 
- * @bug The texture copy is still unusable.
+ * @details The Sprite component can render a texture on the screen.
+ * 
  */
 class CGSprite : public CGTextureContainer
 {
@@ -39,8 +40,6 @@ public:
     /**
      * @brief Construct a new CGSprite object
      * 
-     * @bug The texture copy is still unusable.
-     * 
      * @param p_texture The texture for the sprite. The texture is going to be copied.
      * @param p_position The position that the sprite is going to be on.
      */
@@ -58,8 +57,6 @@ public:
 
     /**
      * @brief Set the texture of the sprite. The texture is going to be copied.
-     * 
-     * @bug The texture copy is still unusable.
      * 
      * @param p_texture The texture that the sprite is going to be set to.
      */
