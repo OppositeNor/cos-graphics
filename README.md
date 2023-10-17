@@ -41,6 +41,8 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Image(Sprite) rendering
 
+    * Input handler
+
     * Frame animation
 
     * Text rendering
@@ -71,7 +73,7 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
 * ### CPP Version
 
-    * Coroutine
+    * Class reference documentation
 
 ## Planned :arrow_heading_up:
 
@@ -88,10 +90,6 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
     * Multiple window support
 
     * Tutorial on how to use.
-
-    * API Reference Documentation.
-
-    * Scene management
 
 # Licence and Copyright 
 
