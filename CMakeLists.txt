@@ -124,3 +124,5 @@ if (USE_TEST_EXE)
         ${LIB_OUTPUT_NAME}
     )
 endif()
+
+add_subdirectory(test)
