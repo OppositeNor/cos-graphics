@@ -183,11 +183,7 @@ void CGInitResourceSystem()
 CGByte* CGLoadFile(const CGChar* file_path)
 {
     FILE* file = CGFOpen(file_path, "rb");
-    if (file == NULL)
-    {
-        CG_ERROR(CGSTR("Failed to open file at path: %s."), file_path);
-        return NULL;
-    }
+    CG_ERROR_COND_RETURN(file == NULL, NULL, CGSTR("Failed to open file at path: %s."), file_path);
     fseek(file, 0, SEEK_END);
     unsigned int file_size = ftell(file);
 

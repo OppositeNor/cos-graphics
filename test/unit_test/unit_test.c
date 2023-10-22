@@ -4,20 +4,19 @@ static unsigned int failed_test_count = 0;
 
 void CGStartUnitTest()
 {
-    CG_PRINT(CGSTR("Starting unit test. All of the error below printed out are for testing purposes. Please ignore."));
+    CG_PRINT(CGSTR("Starting unit test."));
     total_test_count = 0;
     failed_test_count = 0;
-    
 }
 
 void CGEndUnitTest()
 {
     if (failed_test_count == 0)
-        CG_PRINT(CGSTR("All tests passed"));
+        CG_PRINT(CGSTR("All tests passed."));
     else
     {
-        CG_PRINT(CGSTR("Total test count: %d"), total_test_count);
-        CG_PRINT(CGSTR("Failed test count: %d"), failed_test_count);
+        CG_PRINT(CGSTR("%d tests run."), total_test_count);
+        CG_PRINT(CGSTR("%d tests failed."), failed_test_count);
     }
 }
 

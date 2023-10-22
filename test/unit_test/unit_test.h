@@ -1,3 +1,6 @@
+#ifndef _CGT_UNIT_TEST_H_
+#define _CGT_UNIT_TEST_H_
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -5,6 +8,7 @@ extern "C" {
 #include "cos_graphics/defs.h"
 #include <memory.h>
 #include <string.h>
+#include <math.h>
 
 static CG_BOOL cgt_is_test_failed;
 
@@ -26,14 +30,14 @@ static CG_BOOL cgt_is_test_failed;
     }
 
 #define CGT_EXPECT_INT_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST((val_1) == (val_2), CGSTR("Expected equal values: %ld, %ld"), (long long)val_1, (long long)val_2)
+    CGT_UNIT_TEST((val_1) == (val_2), CGSTR("Expected interger value to be: %ld, but get %ld instead."), (long long)val_2, (long long)val_1)
 #define CGT_EXPECT_INT_NOT_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST((val_1) != (val_2), CGSTR("Expected not equal values: %ld, %ld"), (long long)val_1, (long long)val_2)
+    CGT_UNIT_TEST((val_1) != (val_2), CGSTR("Expected interger value to not be: %ld, but get %ld instead."), (long long)val_2, (long long)val_1)
 
 #define CGT_EXPECT_REAL_EQUAL(val_1, val_2, error)\
-    CGT_UNIT_TEST(fabs((val_1) - (val_2)) < error, CGSTR("Expected equal values: %lf, %lf"), (double)val_1, (double)val_2)
+    CGT_UNIT_TEST(fabs((val_1) - (val_2)) < error, CGSTR("Expected real value to be: %lf, but get %lf instead."), (double)val_2, (double)val_1)
 #define CGT_EXPECT_REAL_NOT_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST(fabs((val_1) - (val_2)) >= error, CGSTR("Expected not equal values: %lf, %lf"), (double)val_1, (double)val_2)
+    CGT_UNIT_TEST(fabs((val_1) - (val_2)) >= error, CGSTR("Expected real value to not be: %lf, but get %lf instead."), (double)val_2, (double)val_1)
 
 #define CGT_EXPECT_STRING_EQUAL(val_1, val_2)\
     CGT_UNIT_TEST(strcmp(val_1, val_2) == 0, CGSTR("Expected string value to be: \"%hs\", but get \"%hs\" instead."), val_2, val_1)
@@ -53,7 +57,14 @@ static CG_BOOL cgt_is_test_failed;
     #define CGT_EXPECT_CG_STRING_NOT_EQUAL(val_1, val_2) CGT_EXPECT_W_STRING_NOT_EQUAL(val_1, val_2)
 #endif
 
+#define CGT_EXPECT_MEM_EQUAL(val_1, val_2) \
+    CGT_UNIT_TEST(memcmp(val_1, val_2, size) == 0, CGSTR("Expected equal memory."))
+#define CGT_EXPECT_MEM_NOT_EQUAL(val_1, val_2) \
+    CGT_UNIT_TEST(memcmp(val_1, val_2, size) != 0, CGSTR("Expected not equal memory."))
+
 #define CGT_EXPECT_ERROR() CGT_UNIT_TEST(CGIsHasError(), CGSTR("Expected error."))
+#define CGT_EXPECT_NO_ERROR() CGT_UNIT_TEST(!CGIsHasError(), CGSTR("An error occured. expected no error."))
+
 #define CGT_EXPECT_NOT_NULL(ptr) CGT_UNIT_TEST(ptr != NULL, CGSTR("Expected not null pointer, but get %p instead."), ptr);
 
 void CGStartUnitTest();
@@ -65,3 +76,5 @@ CG_BOOL CGTIsMemoryEqual(const void* array_1, const void* array_2, unsigned int 
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // _CGT_UNIT_TEST_H_

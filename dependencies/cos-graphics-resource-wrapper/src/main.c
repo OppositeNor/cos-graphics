@@ -26,17 +26,10 @@ int main(int argc, char* argv[])
     temp = head;
     while (temp != NULL)
     {
-#ifdef CGRW_USE_WCHAR
-        if (!temp->is_data_value)
-                CGRW_PRINT_VERBOSE(CGSTR("type: %ls, key: %ls, path: %ls"), temp->type, temp->key, temp->data.path);
-        else
-                CGRW_PRINT_VERBOSE(CGSTR("type: %ls, key: %ls, value: %ls"), temp->type, temp->key, temp->data.value.data);
-#else
         if (!temp->is_data_value)
                 CGRW_PRINT_VERBOSE(CGSTR("type: %s, key: %s, path: %s"), temp->type, temp->key, temp->data.path);
         else
                 CGRW_PRINT_VERBOSE(CGSTR("type: %s, key: %s, value: %s"), temp->type, temp->key, temp->data.value.data);
-#endif
         CGRWAddResource(temp);
         CGRWResourceData* temp2 = temp;
         temp = temp->next;

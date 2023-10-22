@@ -8,6 +8,7 @@ void CGTestCGCharToChar1()
     char buffer[256];
     CGCharToChar(CGSTR("Hello World"), buffer, 256);
     CGT_EXPECT_STRING_EQUAL(buffer, "Hello World");
+    CGT_EXPECT_NO_ERROR();
 }
 
 void CGTestCGCharToChar2()
@@ -15,6 +16,7 @@ void CGTestCGCharToChar2()
     char buffer[256];
     CGCharToChar(CGSTR(""), buffer, 256);
     CGT_EXPECT_STRING_EQUAL(buffer, "");
+    CGT_EXPECT_NO_ERROR();
 }
 
 void CGTestCGCharToChar3()
@@ -45,6 +47,7 @@ void CGTestCharToCGChar1()
     CGChar buffer[256];
     CharToCGChar("Hello World", buffer, 256);
     CGT_EXPECT_CG_STRING_EQUAL(buffer, CGSTR("Hello World"));
+    CGT_EXPECT_NO_ERROR();
 }
 
 void CGTestCharToCGChar2()
@@ -52,6 +55,7 @@ void CGTestCharToCGChar2()
     CGChar buffer[256];
     CharToCGChar("", buffer, 256);
     CGT_EXPECT_CG_STRING_EQUAL(buffer, CGSTR(""));
+    CGT_EXPECT_NO_ERROR();
 }
 
 void CGTestCharToCGChar3()

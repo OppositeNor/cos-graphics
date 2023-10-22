@@ -1,3 +1,6 @@
+#ifndef _CGT_UTILS_H_
+#define _CGT_UTILS_H_
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,3 +23,5 @@ void CGTestCharToCGChar5();
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // _CGT_UTILS_H_
