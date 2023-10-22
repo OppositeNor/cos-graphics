@@ -17,11 +17,11 @@ static CG_BOOL cgt_is_test_failed;
 #include "cos_graphics/log.h"
 
 #define CGT_UNIT_TEST(cond, ...)      \
-    cgt_is_test_failed = !cond;     \
+    cgt_is_test_failed = !(cond);     \
     CGTUpadate(cgt_is_test_failed); \
     if (cgt_is_test_failed)         \
     {                               \
-        CG_WARNING(CGSTR("A unit test failed at: %s, line: %d"), __FILE__, __LINE__);     \
+        CG_WARNING(CGSTR("A unit test failed at: %hs, line: %d"), __FILE__, __LINE__);     \
         CG_WARNING(__VA_ARGS__);     \
     }
 
@@ -36,14 +36,14 @@ static CG_BOOL cgt_is_test_failed;
     CGT_UNIT_TEST(fabs((val_1) - (val_2)) >= error, CGSTR("Expected not equal values: %lf, %lf"), (double)val_1, (double)val_2)
 
 #define CGT_EXPECT_STRING_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST(strcmp(val_1, val_2) == 0, CGSTR("Expected equal strings: %s, %s"), val_1, val_2)
+    CGT_UNIT_TEST(strcmp(val_1, val_2) == 0, CGSTR("Expected string value to be: \"%hs\", but get \"%hs\" instead."), val_2, val_1)
 #define CGT_EXPECT_STRING_NOT_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST(strcmp(val_1, val_2) != 0, CGSTR("Expected not equal strings: %s, %s"), val_1, val_2)
+    CGT_UNIT_TEST(strcmp(val_1, val_2) == 0, CGSTR("Expected string value to not be: \"%hs\", but get \"%hs\" instead."), val_2, val_1)
 
 #define CGT_EXPECT_W_STRING_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST(wcscmp(val_1, val_2) == 0, CGSTR("Expected equal strings: %ls, %ls"), val_1, val_2)
+    CGT_UNIT_TEST(wcscmp(val_1, val_2) == 0, CGSTR("Expected string value to be: %ls, but get %ls instead."), val_2, val_1)
 #define CGT_EXPECT_W_STRING_NOT_EQUAL(val_1, val_2)\
-    CGT_UNIT_TEST(wcscmp(val_1, val_2) != 0, CGSTR("Expected not equal strings: %ls, %ls"), val_1, val_2)
+    CGT_UNIT_TEST(wcscmp(val_1, val_2) == 0, CGSTR("Expected string value to not be: %ls, but get %ls instead."), val_2, val_1)
 
 #ifdef CG_USE_WCHAR
     #define CGT_EXPECT_CG_STRING_EQUAL(val_1, val_2) CGT_EXPECT_W_STRING_EQUAL(val_1, val_2)
@@ -54,7 +54,7 @@ static CG_BOOL cgt_is_test_failed;
 #endif
 
 #define CGT_EXPECT_ERROR() CGT_UNIT_TEST(CGIsHasError(), CGSTR("Expected error."))
-
+#define CGT_EXPECT_NOT_NULL(ptr) CGT_UNIT_TEST(ptr != NULL, CGSTR("Expected not null pointer, but get %p instead."), ptr);
 
 void CGStartUnitTest();
 void CGEndUnitTest();

@@ -202,9 +202,8 @@ CGByte* CGLoadFile(const CGChar* file_path)
     }
     fseek(file, 0, SEEK_END);
     unsigned int file_size = ftell(file);
-    ++file_size;
 
-    CGByte* file_data = (CGByte*)malloc(file_size * sizeof(CGByte));
+    CGByte* file_data = (CGByte*)malloc((file_size + 1) * sizeof(CGByte) + sizeof(CGChar));
     if (file_data == NULL)
     {
         fclose(file);
@@ -212,7 +211,10 @@ CGByte* CGLoadFile(const CGChar* file_path)
         return NULL;
     }
     rewind(file);
-    fread(file_data, sizeof(CGByte), file_size - 1, file);
+    fread(file_data, sizeof(CGByte), file_size, file);
+
+    // Adding a '\0' at the end of the file data to make sure that text data can be used as string.
+    *(CGChar*)(file_data + file_size) = (CGChar)'\0';
     fclose(file);
     return file_data;
 }
