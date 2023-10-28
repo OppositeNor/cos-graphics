@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.15)
 
 project(CosGraphics LANGUAGES C)
 
@@ -8,15 +8,13 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
 
-if (${CMAKE_SOURCE_DIR} EQUAL ${PROJECT_SOURCE_DIR})
+if (${CMAKE_SOURCE_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
 
 # set this to OFF if you only want to export the library
 set (CG_USE_TEST_EXE ON)
 
 # set this to OFF if you don't want to export the library
 set (CG_EXPORT_LIBRARY ON)
-
-add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
 else()
 set (CG_USE_TEST_EXE OFF)
@@ -52,15 +50,10 @@ add_subdirectory(src/log)
 add_subdirectory(src/resource)
 add_subdirectory(src/utils)
 
-if (USE_TEST_EXE)
+if (CG_USE_TEST_EXE)
     list(APPEND CG_RESOURCES image_resource.cgures)
     list(APPEND CG_RESOURCES text_resource.cgures)
     list(APPEND CG_RESOURCES font_resource.cgures)
-endif()
-
-
-if (USE_WCHAR)
-    add_definitions(-DCG_USE_WCHAR)
 endif()
 
 # opengl
@@ -85,7 +78,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 #windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if (CMAKE_SIZEOF_VOID_P STREQUAL 8)
         message("Building for: x64")
         list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/include")
         list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include")
@@ -118,7 +111,11 @@ include_directories(
     ${CG_INCLUDE_DIRECTORIES}
 )
 
-if (NOT ${CMAKE_SOURCE_DIR} EQUAL ${PROJECT_SOURCE_DIR})
+if (${CMAKE_SOURCE_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
+
+    add_subdirectory(dependencies/cos-graphics-resource-wrapper)
+
+else()
     set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper PARENT_SCOPE)
     set(CG_SOURCES ${CG_SOURCES} PARENT_SCOPE)
     set (CG_LIB_OUTPUT_NAME ${CG_LIB_OUTPUT_NAME} PARENT_SCOPE)
