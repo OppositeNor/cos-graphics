@@ -1,12 +1,12 @@
 project(cg_game)
 
-set(SOURCES
+set(CG_SOURCES
 
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/game.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/game_factory.h
 
     ${PROJECT_SOURCE_DIR}/game.cpp
     ${PROJECT_SOURCE_DIR}/game_factory.cpp
-    ${SOURCES}
+    ${CG_SOURCES}
     PARENT_SCOPE
 )

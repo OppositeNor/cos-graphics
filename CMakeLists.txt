@@ -152,7 +152,7 @@ endif()
 
 if (CG_USE_TEST_EXE)
     add_executable(${CG_EXE_OUTPUT_NAME}
-        src/main.c
+        src/main.cpp
     )
     target_link_libraries(${CG_EXE_OUTPUT_NAME} PUBLIC
         ${CG_LIB_OUTPUT_NAME}

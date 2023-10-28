@@ -1,3 +1,5 @@
+# WARNING: This branch is currently deprecated. The CPP version is moved to the new repository [KosEngine](https://github.com/OppositeNor/kos-engine)
+
 <p align="center">
     <image src="./assets/cos-graphics-white-with-background-high-res.png">
 </p>

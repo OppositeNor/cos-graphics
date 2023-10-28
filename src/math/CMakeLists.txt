@@ -1,8 +1,8 @@
 project(cg_math)
 
-set(SOURCES
+set(CG_SOURCES
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/math/matrix.hpp
     ${PROJECT_SOURCE_DIR}/matrix.cpp
-    ${SOURCES}
+    ${CG_SOURCES}
     PARENT_SCOPE
 )

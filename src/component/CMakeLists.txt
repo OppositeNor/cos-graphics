@@ -1,6 +1,6 @@
 project(cg_component)
 
-set (SOURCES
+set (CG_SOURCES
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/animation_sprite.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/camera.h
     ${CMAKE_SOURCE_DIR}/include/cos_graphics/component/component.h
@@ -16,7 +16,7 @@ set (SOURCES
     ${PROJECT_SOURCE_DIR}/sprite.cpp
     ${PROJECT_SOURCE_DIR}/text.cpp
     ${PROJECT_SOURCE_DIR}/visual_component.cpp
-    ${SOURCES}
+    ${CG_SOURCES}
     PARENT_SCOPE
 )
 
