@@ -5,6 +5,23 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+static CG_BOOL cg_has_error = CG_FALSE;
+
+void CGError()
+{
+    cg_has_error = CG_TRUE;
+}
+
+CG_BOOL CGIsHasError()
+{
+    return cg_has_error;
+}
+
+void CGResetError()
+{
+    cg_has_error = CG_FALSE;
+}
+
 void CGPrint(const CGChar* sender, const CGChar* type, const CGChar* fmt, ...)
 {
     va_list args;

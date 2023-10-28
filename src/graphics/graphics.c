@@ -963,13 +963,7 @@ static CG_BOOL CGCompileShader(unsigned int shader_id, const char* shader_source
     if (!success)
     {
         glGetShaderInfoLog(shader_id, CG_INFO_LOG_SIZE, NULL, info_log);
-#ifdef CG_USE_WCHAR
-        CGChar info_log_w[CG_INFO_LOG_SIZE];
-        CharToCGChar(info_log, info_log_w, CG_INFO_LOG_SIZE);
-        CG_ERROR(CGSTR("Failed to compile shader with id: %d. \nOutput log: %ls."), shader_id, info_log_w);
-#else
-        CG_ERROR(CGSTR("Failed to compile shader with id: %d. \nOutput log: %s."), shader_id, info_log);
-#endif
+        CG_ERROR(CGSTR("Failed to compile shader with id: %d. \nOutput log: %hs."), shader_id, info_log);
         return CG_FALSE;
     }
     return CG_TRUE;
@@ -1731,15 +1725,9 @@ static CG_BOOL CGCreateFreetypeFace(const CGChar* font_rk, FT_Face* face)
 {
     unsigned int resource_size;
     CGByte* resource = CGLoadReusableResource(font_rk, CG_DELETER(free), &resource_size);
-    #ifdef CG_USE_WCHAR
-    CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %ls"), font_rk);
-    CG_ERROR_COND_RETURN(FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face), CG_FALSE, 
-        CGSTR("Failed to create font face with rk: %ls"), font_rk);
-    #else
     CG_ERROR_COND_RETURN(resource == NULL, CG_FALSE, CGSTR("Failed to load font resource with rk: %s"), font_rk);
     CG_ERROR_COND_RETURN(FT_New_Memory_Face(cg_ft_library, resource, resource_size, 0, face), CG_FALSE, 
         CGSTR("Failed to create font face with rk: %s"), font_rk);
-    #endif
     return CG_TRUE;
 }
 
@@ -1768,11 +1756,7 @@ CGVisualImage* CGCreateTextVisualImageRaw(const CGChar* text, const CGChar* font
         face = cg_ft_default_face;
     else if (!CGCreateFreetypeFace(font_rk, &face))
     {
-        #ifdef CG_USE_WCHAR
-        CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
-        #else
         CG_ERROR_COND_RETURN(CG_TRUE, NULL, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
-        #endif
     }
 
     // get texture
@@ -1781,11 +1765,7 @@ CGVisualImage* CGCreateTextVisualImageRaw(const CGChar* text, const CGChar* font
     {
         if (font_rk != NULL)
             FT_Done_Face(face);
-        #ifdef CG_USE_WCHAR
-        CG_ERROR(CGSTR("Failed to get bitmap from text: %ls"), text);
-        #else
         CG_ERROR(CGSTR("Failed to get bitmap from text: %s"), text);
-        #endif
         return NULL;
     }
     if (font_rk != NULL)
@@ -1894,11 +1874,7 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
     else if (!CGCreateFreetypeFace(font_rk, &face))
     {
         free(text);
-        #ifdef CG_USE_WCHAR
-        CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%ls\"."), font_rk);
-        #else
         CG_ERROR_COND_RETURN(CG_TRUE, CG_FALSE, CGSTR("Failed to create freetype face with rk: \"%s\"."), font_rk);
-        #endif
     }
     if (FT_Set_Pixel_Sizes(face, text_property.text_width, text_property.text_height))
     {
@@ -1919,11 +1895,7 @@ CG_BOOL CGDrawText(const CGChar* text_rk, const CGChar* font_rk, CGTextProperty 
         {
             if (font_rk != NULL)
                 FT_Done_Face(face);
-            #ifdef CG_USE_WCHAR
-            CG_ERROR(CGSTR("Failed to load glyph with char: \'%lc\' (unicode: %#x)."), text[i], text[i]);
-            #else
             CG_ERROR(CGSTR("Failed to load glyph with char: \'%c\' (unicode: %#x)."), text[i], text[i]);
-            #endif
             free(text);
             return CG_FALSE;
         }
@@ -2059,7 +2031,9 @@ static CG_BOOL CGIsVertexEar(CGPolygonVertex* vertex)
         return CG_FALSE;
     for (CGPolygonVertex* p = vertex->next->next; p != vertex->previous->previous; p = p->next)
     {
-        if (CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position)) < 0.0f)
+        if (CGVector2Cross(CGVector2Sub(p->position, vertex->previous->position), CGVector2Sub(vertex->next->position, p->position)) < 0.0f
+            && CGVector2Cross(CGVector2Sub(p->position, vertex->next->position), CGVector2Sub(vertex->position, p->position)) < 0.0f
+            && CGVector2Cross(CGVector2Sub(p->position, vertex->position), CGVector2Sub(vertex->previous->position, p->position)) < 0.0f)
             return CG_FALSE;
     }
     return CG_TRUE;
