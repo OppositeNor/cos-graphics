@@ -28,8 +28,8 @@ endif()
 # stored as 4 bytes instead of 2.
 set (USE_UTF16LE ON)
 
-set (LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
-set (EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
+set (CG_LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
+set (CG_EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
 
 # Turn this to OFF if you want to print out more information about the resource build process.
 set(CGRW_NO_VERBOSE OFF)
@@ -38,8 +38,8 @@ set(CGRW_NO_VERBOSE OFF)
 # example:
 # list(APPEND CG_RESOURCES image_resource.cgures)
 
-if (CG_USE_TEST_EXE OR CG_EXPORT_LIBRARY)
-    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
+if (CG_USE_TEST_EXE MATCHES ON OR CG_EXPORT_LIBRARY MATCHES ON)
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
     file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
     
     set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
@@ -119,26 +119,36 @@ include_directories(
 )
 
 if (NOT ${CMAKE_SOURCE_DIR} EQUAL ${PROJECT_SOURCE_DIR})
-set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper PARENT_SCOPE)
-set(CG_SOURCES ${CG_SOURCES} PARENT_SCOPE)
+    set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper PARENT_SCOPE)
+    set(CG_SOURCES ${CG_SOURCES} PARENT_SCOPE)
+    set (CG_LIB_OUTPUT_NAME ${CG_LIB_OUTPUT_NAME} PARENT_SCOPE)
+    set (USE_UTF16LE ${USE_UTF16LE} PARENT_SCOPE)
 endif()
 
 if (CG_EXPORT_LIBRARY)
-    add_library(${LIB_OUTPUT_NAME} STATIC
+    add_library(${CG_LIB_OUTPUT_NAME} STATIC
         ${CG_SOURCES}
     )
 
-    target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
+    target_link_libraries(${CG_LIB_OUTPUT_NAME} PUBLIC
+        ${libs}
+    )
+else()
+    add_library(${CG_LIB_OUTPUT_NAME}
+        ${CG_SOURCES}
+    )
+
+    target_link_libraries(${CG_LIB_OUTPUT_NAME}
         ${libs}
     )
 endif()
 
 if (CG_USE_TEST_EXE)
-    add_executable(${EXE_OUTPUT_NAME}
+    add_executable(${CG_EXE_OUTPUT_NAME}
         src/main.c
     )
-    target_link_libraries(${EXE_OUTPUT_NAME} PUBLIC
-        ${LIB_OUTPUT_NAME}
+    target_link_libraries(${CG_EXE_OUTPUT_NAME} PUBLIC
+        ${CG_LIB_OUTPUT_NAME}
     )
 endif()
 

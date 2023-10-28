@@ -23,10 +23,10 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/
 )
 
-if (EXISTS ${EXECUTABLE_OUTPUT_PATH}/${CGRW_EXECUTABLE_NAME} AND USE_TEST_EXE)
+if (EXISTS ${EXECUTABLE_OUTPUT_PATH}/${CGRW_EXECUTABLE_NAME})
     execute_process(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
+        COMMAND ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
     )
 endif()
 
@@ -40,10 +40,8 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/log.c
 )
 
-if (USE_TEST_EXE)
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMAND ./dependencies/cos-graphics-resource-wrapper/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
-    )
-endif()
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMAND ${PROJECT_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME}/${PROJECT_NAME} ./bin/exe/${CMAKE_SYSTEM_NAME} ${CG_RESOURCES}
+)
