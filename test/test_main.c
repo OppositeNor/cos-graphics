@@ -21,6 +21,18 @@ int main()
     CGGraphicsTestCGVector2Cross1();
     CGGraphicsTestCGVector2Cross2();
     CGGraphicsTestCGVector2Cross3();
+
+    CGGraphicsTestCGVector2Add1();
+    CGGraphicsTestCGVector2Add2();
+    CGGraphicsTestCGVector2Add3();
+    CGGraphicsTestCGVector2Sub1();
+    CGGraphicsTestCGVector2Sub2();
+    CGGraphicsTestCGVector2Sub3();
+    CGTestCGSetWindowPosition1();
+    CGTestCGSetWindowPosition2();
+    CGTestCGSetWindowPosition3();
+    CGTestCGSetKeyCallback1();
+    CGTestCGSetKeyCallback2();
     CGGraphicsTestEnd();
     
     CGTestResourceStart();
