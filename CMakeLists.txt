@@ -21,7 +21,7 @@ add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 else()
 set (CG_USE_TEST_EXE OFF)
 set (CG_EXPORT_LIBRARY OFF)
-set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper)
+set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper PARENT_SCOPE)
 endif()
 
 # use utf-16 little endian to read files
