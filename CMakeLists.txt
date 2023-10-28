@@ -12,10 +12,10 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_N
 file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 # set this to OFF if you only want to export the library
-set (USE_TEST_EXE ON)
+set (CG_USE_TEST_EXE ON)
 
 # set this to OFF if you don't want to export the library
-set (USE_SHARED_LIB ON)
+set (CG_EXPORT_LIBRARY ON)
 
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
@@ -68,6 +68,9 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     list(APPEND libs "glfw")
 
     list(APPEND libs "m")
+
+    #todo: add freetype library
+
 #windows
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -106,9 +109,9 @@ include_directories(
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
 file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
-if (USE_SHARED_LIB)
+if (CG_EXPORT_LIBRARY)
     add_library(${LIB_OUTPUT_NAME} STATIC
-        ${SOURCES}
+        ${CG_SOURCES}
     )
 
     target_link_libraries(${LIB_OUTPUT_NAME} PUBLIC
@@ -116,7 +119,7 @@ if (USE_SHARED_LIB)
     )
 endif()
 
-if (USE_TEST_EXE)
+if (CG_USE_TEST_EXE)
     add_executable(${EXE_OUTPUT_NAME}
         src/main.c
     )
