@@ -8,11 +8,18 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
 
+if (${CMAKE_SOURCE_DIR} EQUAL ${PROJECT_SOURCE_DIR})
+
 # set this to OFF if you only want to export the library
 set (CG_USE_TEST_EXE ON)
 
 # set this to OFF if you don't want to export the library
 set (CG_EXPORT_LIBRARY ON)
+
+else()
+set (CG_USE_TEST_EXE OFF)
+set (CG_EXPORT_LIBRARY OFF)
+endif()
 
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
