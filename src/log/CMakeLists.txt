@@ -1,8 +1,8 @@
-project(cg_log)
+# Log
 
 set(SOURCES
-    ${CMAKE_SOURCE_DIR}/include/cos_graphics/log.h
-    ${PROJECT_SOURCE_DIR}/log.c
+    ${PROJECT_SOURCE_DIR}/include/cos_graphics/log.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/log.c
     ${SOURCES}
     PARENT_SCOPE
 )
