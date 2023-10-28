@@ -8,9 +8,6 @@ if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
 
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
-file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-
 # set this to OFF if you only want to export the library
 set (CG_USE_TEST_EXE ON)
 
@@ -32,6 +29,10 @@ set(CGRW_NO_VERBOSE OFF)
 # example:
 # list(APPEND CG_RESOURCES image_resource.cgures)
 
+if (CG_USE_TEST_EXE OR CG_EXPORT_LIBRARY)
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
+    file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+endif()
 
 set_property(GLOBAL PROPERTY CG_RESOURCES ${CG_RESOURCES})
 add_subdirectory(src/graphics)
