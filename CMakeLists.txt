@@ -16,9 +16,12 @@ set (CG_USE_TEST_EXE ON)
 # set this to OFF if you don't want to export the library
 set (CG_EXPORT_LIBRARY ON)
 
+add_subdirectory(dependencies/cos-graphics-resource-wrapper)
+
 else()
 set (CG_USE_TEST_EXE OFF)
 set (CG_EXPORT_LIBRARY OFF)
+set(CGRW_PATH ${PROJECT_SOURCE_DIR}/dependencies/cos-graphics-resource-wrapper)
 endif()
 
 # use utf-16 little endian to read files
@@ -39,6 +42,9 @@ set(CGRW_NO_VERBOSE OFF)
 if (CG_USE_TEST_EXE OR CG_EXPORT_LIBRARY)
     set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
     file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+    
+    set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
+    file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 endif()
 
 set_property(GLOBAL PROPERTY CG_RESOURCES ${CG_RESOURCES})
@@ -52,7 +58,6 @@ if (USE_TEST_EXE)
     list(APPEND CG_RESOURCES text_resource.cgures)
     list(APPEND CG_RESOURCES font_resource.cgures)
 endif()
-add_subdirectory(dependencies/cos-graphics-resource-wrapper)
 
 
 if (USE_WCHAR)
@@ -65,8 +70,8 @@ list(APPEND libs OpenGL::GL)
 
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/dependencies/glad/include
-    ${CMAKE_SOURCE_DIR}/dependencies/stb)
+    ${PROJECT_SOURCE_DIR}/dependencies/glad/include
+    ${PROJECT_SOURCE_DIR}/dependencies/stb)
 
 message("System: ${CMAKE_SYSTEM_NAME}")
 
@@ -83,25 +88,25 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message("Building for: x64")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/include")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/include")
+        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/include")
+        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include")
         if (MINGW)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/mingw/freetype.a")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/mingw/freetype.a")
         elseif (MSVC)
             add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/64/lib-vc2022/glfw3.lib")
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/freetype/windows/64/msvc/freetype.lib")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-vc2022/glfw3.lib")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/msvc/freetype.lib")
         endif()
     else()
     #todo: add freetype 32 bit support
         message("Building for: x86")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/include")
+        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/include")
         if (MINGW)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
         elseif (MSVC)
             add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-            list(APPEND libs "${CMAKE_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
+            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
         endif()
     endif()
 endif()
@@ -113,9 +118,6 @@ endif()
 include_directories(
     ${CG_INCLUDE_DIRECTORIES}
 )
-
-set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
-file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 
 if (CG_EXPORT_LIBRARY)
     add_library(${LIB_OUTPUT_NAME} STATIC
