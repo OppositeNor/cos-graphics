@@ -103,12 +103,15 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     endif()
     #macos
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # TODO: add freetype x86_64 support
     execute_process(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
     message("Building for: Mac OS")
     message("Architecture: ${ARCHITECTURE}")
     list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/include")
+    list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/freetype/macos/include")
     if (${ARCHITECTURE} MATCHES "arm64")
         list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-arm64/libglfw3.a")
+        list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/macos/lib-arm64/lib/libfreetype.a")
     elseif (${ARCHITECTURE} MATCHES "amd64")
         list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-universal/libglfw3.a")
     elseif (${ARCHITECTURE} MATCHES "x86_64")
@@ -119,12 +122,11 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             message("Attempting to use macos universal lib...")
             list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-universal/libglfw3.a")
         else ()
-            error("32 bit system detected, which is not supported for macos build")
+            error("32 bit system detected, and it's not supported!")
         endif ()
     endif ()
 endif()
 
-message("${libs} ${CG_INCLUDE_DIRECTORIES}")
 
 
 
