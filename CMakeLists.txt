@@ -101,7 +101,24 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
             list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
         endif()
     endif()
+    #macos
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    execute_process(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
+    message("Building for: Mac OS")
+    message("Architecture: ${ARCHITECTURE}")
+    list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/include")
+    if (${ARCHITECTURE} MATCHES "arm64")
+        list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-arm64/libglfw3.a")
+    elseif (${ARCHITECTURE} MATCHES "amd64")
+        list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-universal/libglfw3.a")
+    elseif (${ARCHITECTURE} MATCHES "x86_64")
+        list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/macos/lib-x86_64/libglfw3.a")
+    endif ()
 endif()
+
+message("${libs} ${CG_INCLUDE_DIRECTORIES}")
+
+
 
 if (USE_UTF16LE MATCHES ON)
     add_definitions(-DCG_USE_UTF16LE)

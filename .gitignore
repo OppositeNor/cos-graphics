@@ -9,3 +9,7 @@ CppProperties.json
 
 # testing resources
 test_assets
+
+# clion & idea exclude
+cmake-build-debug/
+.idea/
