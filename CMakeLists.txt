@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
 
 include(FetchContent)
+
 project(CosGraphics LANGUAGES C)
+
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DCG_DEBUG)
 endif()
+
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
 
@@ -64,24 +67,32 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 FetchContent_Declare(
+        libpng
+        GIT_REPOSITORY https://github.com/pnggroup/libpng.git
+        GIT_TAG        v1.6.41
+)
+FetchContent_MakeAvailable(libpng)
+FetchContent_Declare(
         freetype
         GIT_REPOSITORY https://github.com/freetype/freetype.git
         TAG        VER-2-13-2
 )
 FetchContent_MakeAvailable(freetype)
 
-# opengl
 find_package(glfw3 REQUIRED)
-find_package(freetype REQUIRED)
+find_package(Freetype REQUIRED)
+#set(PNG_DIR dependencies/libpng/lib/libpng)
+find_package(PNG REQUIRED)
+
+
 list(APPEND libs "glfw")
 list(APPEND libs "freetype")
-list(APPEND libs "m")
+list(APPEND libs "PNG::PNG")
 
-set(CG_INCLUDE_DIRECTORIES 
+set(CG_INCLUDE_DIRECTORIES
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/dependencies/glad/include
     ${PROJECT_SOURCE_DIR}/dependencies/stb
-    ${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include
 )
 
 message("System: ${CMAKE_SYSTEM_NAME}")

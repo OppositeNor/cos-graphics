@@ -11,3 +11,10 @@ CppProperties.json
 test_assets
 
 cmake-build-debug
+
+r
+f
+cmake-build-release
+
+.idea
+.DS_Store
