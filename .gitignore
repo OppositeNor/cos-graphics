@@ -9,3 +9,5 @@ CppProperties.json
 
 # testing resources
 test_assets
+
+cmake-build-debug

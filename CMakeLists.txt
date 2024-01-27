@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
+include(FetchContent)
 project(CosGraphics LANGUAGES C)
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
@@ -56,52 +57,70 @@ if (CG_USE_TEST_EXE)
     list(APPEND CG_RESOURCES font_resource.cgures)
 endif()
 
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG        3.3.9
+)
+FetchContent_MakeAvailable(glfw)
+FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://github.com/freetype/freetype.git
+        TAG        VER-2-13-2
+)
+FetchContent_MakeAvailable(freetype)
+
 # opengl
-find_package(OpenGL REQUIRED)
-list(APPEND libs OpenGL::GL)
+find_package(glfw3 REQUIRED)
+find_package(freetype REQUIRED)
+list(APPEND libs "glfw")
+list(APPEND libs "freetype")
+list(APPEND libs "m")
 
 set(CG_INCLUDE_DIRECTORIES 
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/dependencies/glad/include
-    ${PROJECT_SOURCE_DIR}/dependencies/stb)
+    ${PROJECT_SOURCE_DIR}/dependencies/stb
+    ${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include
+)
 
 message("System: ${CMAKE_SYSTEM_NAME}")
 
 #linux
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    find_package(glfw3 REQUIRED)
-    list(APPEND libs "glfw")
-
-    list(APPEND libs "m")
-
-    #todo: add freetype library
-
-#windows
-elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    if (CMAKE_SIZEOF_VOID_P STREQUAL 8)
-        message("Building for: x64")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/include")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include")
-        if (MINGW)
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/mingw/freetype.a")
-        elseif (MSVC)
-            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-vc2022/glfw3.lib")
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/msvc/freetype.lib")
-        endif()
-    else()
-    #todo: add freetype 32 bit support
-        message("Building for: x86")
-        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/include")
-        if (MINGW)
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
-        elseif (MSVC)
-            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
-        endif()
-    endif()
-endif()
+#if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+#    find_package(glfw3 REQUIRED)
+#    list(APPEND libs "glfw")
+#
+#    list(APPEND libs "m")
+#
+#    #todo: add freetype library
+#
+##windows
+#elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+#    if (CMAKE_SIZEOF_VOID_P STREQUAL 8)
+#        message("Building for: x64")
+#        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/include")
+#        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/include")
+#        if (MINGW)
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-mingw-w64/libglfw3.a")
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/mingw/freetype.a")
+#        elseif (MSVC)
+#            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/64/lib-vc2022/glfw3.lib")
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/freetype/windows/64/msvc/freetype.lib")
+#        endif()
+#    else()
+#    #todo: add freetype 32 bit support
+#        message("Building for: x86")
+#        list(APPEND CG_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/include")
+#        if (MINGW)
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-mingw-w64/libglfw3.a")
+#        elseif (MSVC)
+#            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+#            list(APPEND libs "${PROJECT_SOURCE_DIR}/dependencies/glfw/windows/32/lib-vc2022/glfw3.lib")
+#        endif()
+#    endif()
+#endif()
 
 if (USE_UTF16LE MATCHES ON)
     add_definitions(-DCG_USE_UTF16LE)
