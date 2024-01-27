@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.27)
 
 include(FetchContent)
 
@@ -14,19 +14,19 @@ endif()
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
 
-# set this to OFF if you only want to export the library
-set (CG_USE_TEST_EXE ON)
+    # set this to OFF if you only want to export the library
+    set (CG_USE_TEST_EXE ON)
 
-# set this to OFF if you don't want to export the library
-set (CG_EXPORT_LIBRARY ON)
+    # set this to OFF if you don't want to export the library
+    set (CG_EXPORT_LIBRARY ON)
 
 else()
-set (CG_USE_TEST_EXE OFF)
-set (CG_EXPORT_LIBRARY OFF)
+    set (CG_USE_TEST_EXE OFF)
+    set (CG_EXPORT_LIBRARY OFF)
 endif()
 
 # use utf-16 little endian to read files
-# NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are 
+# NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are
 # stored as 4 bytes instead of 2.
 set (USE_UTF16LE ON)
 
@@ -43,7 +43,7 @@ set(CGRW_NO_VERBOSE OFF)
 if (CG_USE_TEST_EXE MATCHES ON OR CG_EXPORT_LIBRARY MATCHES ON)
     set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/lib/${CMAKE_SYSTEM_NAME})
     file (MAKE_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-    
+
     set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/exe/${CMAKE_SYSTEM_NAME})
     file (MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 endif()
@@ -66,33 +66,48 @@ FetchContent_Declare(
         GIT_TAG        3.3.9
 )
 FetchContent_MakeAvailable(glfw)
+add_library(glfw::glfw INTERFACE IMPORTED)
+target_link_libraries(glfw::glfw INTERFACE libglfw3)
+
+target_include_directories(glfw::glfw INTERFACE "${glfw_SOURCE_DIR}/include")
+
+FetchContent_Declare(
+        zlib
+        GIT_REPOSITORY "https://github.com/madler/zlib.git"
+        FIND_PACKAGE_ARGS NAMES ZLIB
+)
+FetchContent_MakeAvailable(zlib)
+add_library(ZLIB::ZLIB INTERFACE IMPORTED)
+target_include_directories(ZLIB::ZLIB INTERFACE ${zlib_SOURCE_DIR})
+target_link_libraries(ZLIB::ZLIB INTERFACE zlibstatic)
 FetchContent_Declare(
         libpng
         GIT_REPOSITORY https://github.com/pnggroup/libpng.git
         GIT_TAG        v1.6.41
 )
 FetchContent_MakeAvailable(libpng)
+add_library(libpng::libpng INTERFACE IMPORTED)
+target_include_directories(libpng::libpng INTERFACE ${libpng_SOURCE_DIR})
+target_link_libraries(libpng::libpng INTERFACE libpng16_static)
 FetchContent_Declare(
         freetype
         GIT_REPOSITORY https://github.com/freetype/freetype.git
         TAG        VER-2-13-2
 )
 FetchContent_MakeAvailable(freetype)
+add_library(freetype::freetype INTERFACE IMPORTED)
+target_include_directories(freetype::freetype INTERFACE ${freetype_SOURCE_DIR}/include)
+target_link_libraries(freetype::freetype INTERFACE libfreetype)
 
-find_package(glfw3 REQUIRED)
-find_package(Freetype REQUIRED)
-
-find_package(PNG REQUIRED)
-
-
-list(APPEND libs "glfw")
-list(APPEND libs "freetype")
-list(APPEND libs "PNG::PNG")
+list(APPEND libs "ZLIB::ZLIB")
+list(APPEND libs "libpng::libpng")
+list(APPEND libs "freetype::freetype")
+list(APPEND libs "glfw::glfw")
 
 set(CG_INCLUDE_DIRECTORIES
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/dependencies/glad/include
-    ${PROJECT_SOURCE_DIR}/dependencies/stb
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/dependencies/glad/include
+        ${PROJECT_SOURCE_DIR}/dependencies/stb
 )
 
 message("System: ${CMAKE_SYSTEM_NAME}")
@@ -138,7 +153,7 @@ if (USE_UTF16LE MATCHES ON)
 endif()
 
 include_directories(
-    ${CG_INCLUDE_DIRECTORIES}
+        ${CG_INCLUDE_DIRECTORIES}
 )
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${PROJECT_SOURCE_DIR})
@@ -154,28 +169,28 @@ endif()
 
 if (CG_EXPORT_LIBRARY)
     add_library(${CG_LIB_OUTPUT_NAME} STATIC
-        ${CG_SOURCES}
+            ${CG_SOURCES}
     )
 
     target_link_libraries(${CG_LIB_OUTPUT_NAME} PUBLIC
-        ${libs}
+            ${libs}
     )
 else()
     add_library(${CG_LIB_OUTPUT_NAME}
-        ${CG_SOURCES}
+            ${CG_SOURCES}
     )
 
     target_link_libraries(${CG_LIB_OUTPUT_NAME}
-        ${libs}
+            ${libs}
     )
 endif()
 
 if (CG_USE_TEST_EXE)
     add_executable(${CG_EXE_OUTPUT_NAME}
-        src/main.c
+            src/main.c
     )
     target_link_libraries(${CG_EXE_OUTPUT_NAME} PUBLIC
-        ${CG_LIB_OUTPUT_NAME}
+            ${CG_LIB_OUTPUT_NAME}
     )
 endif()
 
