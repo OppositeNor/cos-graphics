@@ -81,7 +81,7 @@ FetchContent_MakeAvailable(freetype)
 
 find_package(glfw3 REQUIRED)
 find_package(Freetype REQUIRED)
-#set(PNG_DIR dependencies/libpng/lib/libpng)
+
 find_package(PNG REQUIRED)
 
 

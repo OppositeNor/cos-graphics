@@ -91,6 +91,19 @@ CosGraphics is a graphics library that can do simple 2D rendering. It is based o
 
     * Tutorial on how to use.
 
+# How To Compile: :hammer:
+
+execute:
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+Note: For macOS arm64 user, you have to use `cmake .. -DFT_DISABLE_BROTLI=True -DFT_DISABLE_HARFBUZZ=True` instead of `cmake ..` to disable brotli and harfbuzz. 
+
 # Licence and Copyright 
 
 * ## CosGraphics:
