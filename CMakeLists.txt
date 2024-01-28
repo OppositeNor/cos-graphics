@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.26)
 
 include(FetchContent)
 
@@ -25,10 +25,11 @@ else()
     set (CG_EXPORT_LIBRARY OFF)
 endif()
 
+# ! DEPRECATED
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are
 # stored as 4 bytes instead of 2.
-set (USE_UTF16LE ON)
+set (USE_UTF16LE OFF)
 
 set (CG_LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (CG_EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
@@ -63,44 +64,38 @@ endif()
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG        3.3.9
 )
 FetchContent_MakeAvailable(glfw)
 add_library(glfw::glfw INTERFACE IMPORTED)
-target_link_libraries(glfw::glfw INTERFACE libglfw3)
+target_link_libraries(glfw::glfw INTERFACE glfw)
 
 target_include_directories(glfw::glfw INTERFACE "${glfw_SOURCE_DIR}/include")
 
 FetchContent_Declare(
         zlib
         GIT_REPOSITORY "https://github.com/madler/zlib.git"
-        FIND_PACKAGE_ARGS NAMES ZLIB
 )
 FetchContent_MakeAvailable(zlib)
-add_library(ZLIB::ZLIB INTERFACE IMPORTED)
-target_include_directories(ZLIB::ZLIB INTERFACE ${zlib_SOURCE_DIR})
-target_link_libraries(ZLIB::ZLIB INTERFACE zlibstatic)
+find_package(ZLIB REQUIRED)
 FetchContent_Declare(
         libpng
         GIT_REPOSITORY https://github.com/pnggroup/libpng.git
-        GIT_TAG        v1.6.41
 )
 FetchContent_MakeAvailable(libpng)
-add_library(libpng::libpng INTERFACE IMPORTED)
-target_include_directories(libpng::libpng INTERFACE ${libpng_SOURCE_DIR})
-target_link_libraries(libpng::libpng INTERFACE libpng16_static)
+set(FT_DISABLE_BROTLI True)
+set(FT_DISABLE_HARFBUZZ True)
 FetchContent_Declare(
         freetype
         GIT_REPOSITORY https://github.com/freetype/freetype.git
-        TAG        VER-2-13-2
 )
 FetchContent_MakeAvailable(freetype)
 add_library(freetype::freetype INTERFACE IMPORTED)
 target_include_directories(freetype::freetype INTERFACE ${freetype_SOURCE_DIR}/include)
-target_link_libraries(freetype::freetype INTERFACE libfreetype)
+target_link_libraries(freetype::freetype INTERFACE freetype)
 
-list(APPEND libs "ZLIB::ZLIB")
-list(APPEND libs "libpng::libpng")
+list(APPEND libs "zlib")
+find_package(PNG REQUIRED)
+list(APPEND libs "PNG::PNG")
 list(APPEND libs "freetype::freetype")
 list(APPEND libs "glfw::glfw")
 
