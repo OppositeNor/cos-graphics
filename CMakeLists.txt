@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.26)
 
 include(FetchContent)
 
@@ -25,10 +25,11 @@ else()
     set (CG_EXPORT_LIBRARY OFF)
 endif()
 
+# ! DEPRECATED
 # use utf-16 little endian to read files
 # NOTE: the data stored will be still stored with wide character. In some systems (such as Linux) wide characters are
 # stored as 4 bytes instead of 2.
-set (USE_UTF16LE ON)
+set (USE_UTF16LE OFF)
 
 set (CG_LIB_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_lib)
 set (CG_EXE_OUTPUT_NAME ${PROJECT_NAME}_${CMAKE_BUILD_TYPE}_executable)
@@ -81,6 +82,8 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/pnggroup/libpng.git
 )
 FetchContent_MakeAvailable(libpng)
+set(FT_DISABLE_BROTLI True)
+set(FT_DISABLE_HARFBUZZ True)
 FetchContent_Declare(
         freetype
         GIT_REPOSITORY https://github.com/freetype/freetype.git
