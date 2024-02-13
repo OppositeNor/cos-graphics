@@ -82,6 +82,14 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/pnggroup/libpng.git
 )
 FetchContent_MakeAvailable(libpng)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (CMAKE_SIZEOF_VOID_P STREQUAL 8)
+        add_library(png::png INTERFACE IMPORTED)
+        target_include_directories(png::png INTERFACE ${libpng_SOURCE_DIR})
+        find_library(PNG_LIBRARY png)
+        target_link_libraries(png::png INTERFACE ${PNG_LIBRARY})
+    endif()
+endif ()
 set(FT_DISABLE_BROTLI True)
 set(FT_DISABLE_HARFBUZZ True)
 FetchContent_Declare(
@@ -94,8 +102,14 @@ target_include_directories(freetype::freetype INTERFACE ${freetype_SOURCE_DIR}/i
 target_link_libraries(freetype::freetype INTERFACE freetype)
 
 list(APPEND libs "zlib")
-find_package(PNG REQUIRED)
-list(APPEND libs "PNG::PNG")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (CMAKE_SIZEOF_VOID_P STREQUAL 8)
+        list(APPEND libs "png::png")
+    endif()
+else ()
+    find_package(PNG REQUIRED)
+    list(APPEND libs "PNG::PNG")
+endif ()
 list(APPEND libs "freetype::freetype")
 list(APPEND libs "glfw::glfw")
 
