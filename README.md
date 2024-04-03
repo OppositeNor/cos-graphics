@@ -104,6 +104,8 @@ cmake --build .
 
 Note: For macOS arm64 user, you have to use `cmake .. -DFT_DISABLE_BROTLI=True -DFT_DISABLE_HARFBUZZ=True` instead of `cmake ..` to disable brotli and harfbuzz. 
 
+Note: For arch linux user without x-server installed, you have to install additional dependencies with `pacman -S xine-lib` and then build the project.
+
 # Licence and Copyright 
 
 * ## CosGraphics:
