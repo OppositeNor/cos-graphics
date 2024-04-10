@@ -65,6 +65,10 @@ FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
 )
+
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Build the GLFW test programs" FORCE)
+
 FetchContent_MakeAvailable(glfw)
 add_library(glfw::glfw INTERFACE IMPORTED)
 target_link_libraries(glfw::glfw INTERFACE glfw)
@@ -160,6 +164,8 @@ message("System: ${CMAKE_SYSTEM_NAME}")
 if (USE_UTF16LE MATCHES ON)
     add_definitions(-DCG_USE_UTF16LE)
 endif()
+
+message("USE_UTF16LE: ${USE_UTF16LE}")
 
 include_directories(
         ${CG_INCLUDE_DIRECTORIES}
